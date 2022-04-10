@@ -52,14 +52,11 @@ int main(void)
     InitWindow(screenWidth, screenHeight, "raylib [core] example - 2d camera");
 
     Image raccoon = LoadImage("res/sprites/raccoon.png");
+
     const int raccoonWidth = raccoon.width;
     const int raccoonHeight = raccoon.height;
 
-    Texture2D raccoonRight = LoadTextureFromImage(raccoon);
-
-    ImageFlipHorizontal(&raccoon);
-    Texture2D raccoonLeft = LoadTextureFromImage(raccoon);
-
+    Texture2D raccoonTex = LoadTextureFromImage(raccoon);
     UnloadImage(raccoon);
 
     Player player = { 0 };
@@ -139,15 +136,18 @@ int main(void)
 
             BeginMode2D(camera);
 
-                for (int i = 0; i < envItemsLength; i++) DrawRectangleRec(envItems[i].rect, envItems[i].color);
+                for (int i = 0; i < envItemsLength; i++)
+                {
+                    DrawRectangleRec(envItems[i].rect, envItems[i].color);
+                }
 
-                DrawTextureEx(
-                    player.facingLeft ? raccoonLeft : raccoonRight,
-                    (Vector2){(float)player.position.x - (((float)raccoonWidth * raccoonScale) / 2.0f), (float)player.position.y - ((float)raccoonHeight * raccoonScale)},
-                    0.0f,
-                    raccoonScale,
-                    WHITE
-                );
+                Vector2 pos = { (float)player.position.x - (((float)raccoonWidth * raccoonScale) / 2.0f), (float)player.position.y - ((float)raccoonHeight * raccoonScale) };
+
+                Rectangle source = { 0.0f, 0.0f, (float)raccoonTex.width * (player.facingLeft ? -1.0f : 1.0f), (float)raccoonTex.height };
+                Rectangle dest = { pos.x, pos.y, (float)raccoonWidth * raccoonScale, (float)raccoonHeight * raccoonScale };
+                Vector2 origin = { 0.0f, 0.0f };
+
+                DrawTexturePro(raccoonTex, source, dest, origin, 0.0f, WHITE);
 
             EndMode2D();
 
@@ -165,8 +165,7 @@ int main(void)
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    UnloadTexture(raccoonRight);
-    UnloadTexture(raccoonLeft);
+    UnloadTexture(raccoonTex);
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
