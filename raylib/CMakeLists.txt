@@ -1,1 +1,1 @@
-add_subdirectory(raylib)
+add_subdirectory(raylib EXCLUDE_FROM_ALL)

@@ -22,6 +22,7 @@ typedef struct Player {
     Vector2 position;
     float speed;
     bool canJump;
+    bool facingLeft;
 } Player;
 
 typedef struct EnvItem {
@@ -46,8 +47,20 @@ int main(void)
     //--------------------------------------------------------------------------------------
     const int screenWidth = 800;
     const int screenHeight = 450;
+    const float raccoonScale = 1.5f;
 
     InitWindow(screenWidth, screenHeight, "raylib [core] example - 2d camera");
+
+    Image raccoon = LoadImage("res/sprites/raccoon.png");
+    const int raccoonWidth = raccoon.width;
+    const int raccoonHeight = raccoon.height;
+
+    Texture2D raccoonRight = LoadTextureFromImage(raccoon);
+
+    ImageFlipHorizontal(&raccoon);
+    Texture2D raccoonLeft = LoadTextureFromImage(raccoon);
+
+    UnloadImage(raccoon);
 
     Player player = { 0 };
     player.position = (Vector2){ 400, 280 };
@@ -128,8 +141,13 @@ int main(void)
 
                 for (int i = 0; i < envItemsLength; i++) DrawRectangleRec(envItems[i].rect, envItems[i].color);
 
-                Rectangle playerRect = { player.position.x - 20, player.position.y - 40, 40, 40 };
-                DrawRectangleRec(playerRect, RED);
+                DrawTextureEx(
+                    player.facingLeft ? raccoonLeft : raccoonRight,
+                    (Vector2){(float)player.position.x - (((float)raccoonWidth * raccoonScale) / 2.0f), (float)player.position.y - ((float)raccoonHeight * raccoonScale)},
+                    0.0f,
+                    raccoonScale,
+                    WHITE
+                );
 
             EndMode2D();
 
@@ -147,6 +165,8 @@ int main(void)
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
+    UnloadTexture(raccoonRight);
+    UnloadTexture(raccoonLeft);
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
@@ -155,8 +175,25 @@ int main(void)
 
 void UpdatePlayer(Player *player, EnvItem *envItems, int envItemsLength, float delta)
 {
-    if (IsKeyDown(KEY_LEFT)) player->position.x -= PLAYER_HOR_SPD*delta;
-    if (IsKeyDown(KEY_RIGHT)) player->position.x += PLAYER_HOR_SPD*delta;
+    int dirMoved = 0;
+
+    if (IsKeyDown(KEY_LEFT))
+    {
+        player->position.x -= PLAYER_HOR_SPD*delta;
+        --dirMoved;
+    }
+
+    if (IsKeyDown(KEY_RIGHT))
+    {
+        player->position.x += PLAYER_HOR_SPD*delta;
+        ++dirMoved;
+    }
+
+    if ( dirMoved != 0 )
+    {
+        player->facingLeft = dirMoved < 0;
+    }
+
     if (IsKeyDown(KEY_SPACE) && player->canJump)
     {
         player->speed = -PLAYER_JUMP_SPD;
