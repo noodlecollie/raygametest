@@ -13,10 +13,13 @@
 
 #include "raylib.h"
 #include "raymath.h"
+#include <string.h>
+#include <stdio.h>
 
 #define G 1000
 #define PLAYER_JUMP_SPD 500.0f
 #define PLAYER_HOR_SPD 200.0f
+#define PLAYER_WIDTH 40.0f
 
 typedef struct Player {
     Vector2 position;
@@ -31,6 +34,13 @@ typedef struct EnvItem {
     Color color;
 } EnvItem;
 
+char* mapData = 0;
+int mapWidth = 0;
+int mapHeight = 0;
+const int blockSize = 32;
+
+int colliderBlockX = -1;
+int colliderBlockY = -1;
 
 void UpdatePlayer(Player *player, EnvItem *envItems, int envItemsLength, float delta);
 
@@ -50,6 +60,29 @@ int main(void)
     const float raccoonScale = 1.5f;
 
     InitWindow(screenWidth, screenHeight, "raylib [core] example - 2d camera");
+
+    {
+        Image map = LoadImage("res/maps/test.png");
+        mapWidth = map.width;
+        mapHeight = map.height;
+
+        mapData = MemAlloc(mapWidth * mapHeight);
+        memset(mapData, 0, mapWidth * mapHeight);
+
+        for ( int index = 0; index < mapWidth * mapHeight; ++index )
+        {
+            int x = index % mapWidth;
+            int y = index / mapWidth;
+            Color c = GetImageColor(map, x, y);
+
+            if ( c.r == 0 && c.g == 0 && c.b == 0 )
+            {
+                mapData[index] = 1;
+            }
+        }
+
+        UnloadImage(map);
+    }
 
     Image raccoon = LoadImage("res/sprites/raccoon.png");
 
@@ -141,6 +174,36 @@ int main(void)
                     DrawRectangleRec(envItems[i].rect, envItems[i].color);
                 }
 
+                for ( int index = 0; index < mapWidth * mapHeight; ++index )
+                {
+                    if ( !mapData[index] )
+                    {
+                        continue;
+                    }
+
+                    int x = index % mapWidth;
+                    int y = index / mapWidth;
+
+                    Rectangle rect;
+                    rect.x = (float)(x * blockSize) - ((float)blockSize / 2.0f);
+                    rect.y = (float)(y * blockSize) - ((float)blockSize / 2.0f);
+                    rect.width = blockSize;
+                    rect.height = blockSize;
+
+                    DrawRectangleRec(rect, BLACK);
+                }
+
+                if ( colliderBlockX >= 0 && colliderBlockY >= 0 )
+                {
+                    Rectangle rect;
+                    rect.x = (float)(colliderBlockX * blockSize) - ((float)blockSize / 2.0f);
+                    rect.y = (float)(colliderBlockY * blockSize) - ((float)blockSize / 2.0f);
+                    rect.width = blockSize;
+                    rect.height = blockSize;
+
+                    DrawRectangleRec(rect, RED);
+                }
+
                 Vector2 pos = { (float)player.position.x - (((float)raccoonWidth * raccoonScale) / 2.0f), (float)player.position.y - ((float)raccoonHeight * raccoonScale) };
 
                 Rectangle source = { 0.0f, 0.0f, (float)raccoonTex.width * (player.facingLeft ? -1.0f : 1.0f), (float)raccoonTex.height };
@@ -159,6 +222,15 @@ int main(void)
             DrawText("Current camera mode:", 20, 120, 10, BLACK);
             DrawText(cameraDescriptions[cameraOption], 40, 140, 10, DARKGRAY);
 
+            char colliderString[64] = "Collider block: None";
+
+            if ( colliderBlockX >= 0 && colliderBlockY >= 0 )
+            {
+                snprintf(colliderString, sizeof(colliderString), "Collider block: (%d, %d)", colliderBlockX, colliderBlockY);
+            }
+
+            DrawText(colliderString, 40, 160, 10, DARKGRAY);
+
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
@@ -166,6 +238,7 @@ int main(void)
     // De-Initialization
     //--------------------------------------------------------------------------------------
     UnloadTexture(raccoonTex);
+    MemFree(mapData);
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
@@ -174,6 +247,9 @@ int main(void)
 
 void UpdatePlayer(Player *player, EnvItem *envItems, int envItemsLength, float delta)
 {
+    colliderBlockX = -1;
+    colliderBlockY = -1;
+
     int dirMoved = 0;
 
     if (IsKeyDown(KEY_LEFT))
@@ -213,6 +289,44 @@ void UpdatePlayer(Player *player, EnvItem *envItems, int envItemsLength, float d
             hitObstacle = 1;
             player->speed = 0.0f;
             p->y = ei->rect.y;
+        }
+    }
+
+    if ( !hitObstacle )
+    {
+        int blockX = (int)((player->position.x + ((float)blockSize / 2.0f)) / (float)blockSize);
+        int blockY = (int)((player->position.y + ((float)blockSize / 2.0f)) / (float)blockSize);
+
+        if ( blockX >= 0 && blockY >= 0 )
+        {
+            int mapDataIndex = (blockY * mapWidth) + blockX;
+
+            if ( mapDataIndex < mapWidth * mapHeight && mapData[mapDataIndex] )
+            {
+                Rectangle blockRect;
+                blockRect.x = (float)(blockX * blockSize) - ((float)blockSize / 2.0f);
+                blockRect.y = (float)(blockY * blockSize) - ((float)blockSize / 2.0f);
+                blockRect.width = blockSize;
+                blockRect.height = blockSize;
+
+                Vector2 *p = &(player->position);
+
+                int isColliding =
+                    blockRect.x <= p->x &&
+                    blockRect.x + blockRect.width >= p->x &&
+                    blockRect.y < p->y &&
+                    blockRect.y + blockRect.height >= p->y + (player->speed * delta);
+
+                if ( isColliding )
+                {
+                    hitObstacle = 1;
+                    player->speed = 0.0f;
+                    p->y = blockRect.y;
+
+                    colliderBlockX = blockX;
+                    colliderBlockY = blockY;
+                }
+            }
         }
     }
 
