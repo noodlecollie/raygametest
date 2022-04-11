@@ -5,116 +5,128 @@
 #define MAX_IMAGE_WIDTH 1024
 #define MAX_IMAGE_HEIGHT 256
 
-#define LIST_ITEM(enumVal, col) col,
-static const Color BLOCK_IMAGE_COLOURS[] =
+typedef struct PlatformerLevelLayer
 {
-	PLATFORMER_BLOCK_TYPE_LIST
-};
-#undef LIST_ITEM
+	Image image;
+} PlatformerLevelLayer;
 
-static inline bool CoOrdsValid(PlatformerLevel* level, size_t x, size_t y)
+static inline bool CoOrdsValid(const PlatformerLevel* level, size_t layer, const Vector2i* coOrds)
 {
-	return level && level->data && x < level->width && y < level->height;
+	return
+		level &&
+		level->layers &&
+		layer < PLATFORMERLEVEL_MAX_LAYERS &&
+		coOrds->x >= 0 &&
+		coOrds->x < level->layers[layer].image.width &&
+		coOrds->y >= 0 &&
+		coOrds->y < level->layers[layer].image.height;
 }
 
-static PlatformerBlockType GetBlockTypeFromColour(Color col)
+static inline void InitLayersIfRequired(PlatformerLevel* level)
 {
-	for ( size_t index = 0; index < ARRAY_SIZE(BLOCK_IMAGE_COLOURS); ++index )
+	if ( !level->layers )
 	{
-		if ( COL_EQUAL3(col, BLOCK_IMAGE_COLOURS[index]) )
-		{
-			return (PlatformerBlockType)index;
-		}
+		level->layers = (PlatformerLevelLayer*)MemAlloc(PLATFORMERLEVEL_MAX_LAYERS * sizeof(PlatformerLevelLayer));
 	}
-
-	return BLOCK_TYPE_EMPTY;
 }
 
-void PlatformerLevel_Clear(PlatformerLevel* level)
+void PlatformerLevel_LoadLayer(PlatformerLevel* level, size_t layer, const char* fileName)
 {
-	if ( !level )
+	if ( !level || layer >= PLATFORMERLEVEL_MAX_LAYERS || !fileName || !(*fileName) )
 	{
 		return;
 	}
 
-	if ( level->data )
-	{
-		MemFree(level->data);
-	}
+	InitLayersIfRequired(level);
+	PlatformerLevel_UnloadLayer(level, layer);
+	level->layers[layer].image = LoadImage(fileName);
 
-	*level = (PlatformerLevel){ 0 };
+	TraceLog(
+		LOG_DEBUG,
+		"PLATFORMERLEVEL: Loaded layer %zu (%dx%d) from %s",
+		layer,
+		level->layers[layer].image.width,
+		level->layers[layer].image.height,
+		fileName
+	);
 }
 
-void PlatformerLevel_LoadFromImage(PlatformerLevel* level, Image image, float scale)
+void PlatformerLevel_UnloadLayer(PlatformerLevel* level, size_t layer)
 {
-	if ( !level )
+	if ( !level || layer >= PLATFORMERLEVEL_MAX_LAYERS || !level->layers || !level->layers[layer].image.data )
 	{
 		return;
 	}
 
-	PlatformerLevel_Clear(level);
-	level->scale = scale;
+	UnloadImage(level->layers[layer].image);
+	level->layers[layer].image = (Image){ 0 };
+}
 
-	if ( image.width < 1 || image.height < 1 )
+Vector2i PlatformerLevel_GetLayerDimensions(PlatformerLevel level, size_t layer)
+{
+	if ( layer >= PLATFORMERLEVEL_MAX_LAYERS || !level.layers )
+	{
+		return (Vector2i){ 0, 0 };
+	}
+
+	return (Vector2i){ level.layers[layer].image.width, level.layers[layer].image.height };
+}
+
+void PlatformerLevel_Unload(PlatformerLevel level)
+{
+	if ( !level.layers )
 	{
 		return;
 	}
 
-	level->data = MemAlloc(image.width * image.height);
-
-	if ( !level->data )
+	for ( size_t index = 0; index < PLATFORMERLEVEL_MAX_LAYERS; ++index )
 	{
-		return;
+		PlatformerLevel_UnloadLayer(&level, index);
 	}
 
-	level->width = MAX_OF((size_t)image.width, MAX_IMAGE_WIDTH);
-	level->height = MAX_OF((size_t)image.height, MAX_IMAGE_HEIGHT);
-
-	for ( size_t index = 0; index < level->width * level->height; ++index )
-	{
-		size_t x = index % level->width;
-		size_t y = index / level->width;
-
-		PlatformerBlockData* blockData = &level->data[index];
-		*blockData = (PlatformerBlockData){ 0 };
-
-		blockData->blockType = GetBlockTypeFromColour(GetImageColor(image, (int)x, (int)y));
-	}
+	MemFree(level.layers);
 }
 
-const PlatformerBlockData* PlatformerLevel_GetBlockByCoOrds(PlatformerLevel* level, size_t x, size_t y)
+Color PlatformerLevel_GetBlockColourByCoOrds(PlatformerLevel level, size_t layer, Vector2i coOrds)
 {
-	if ( !CoOrdsValid(level, x, y) )
+	if ( !CoOrdsValid(&level, layer, &coOrds) )
 	{
-		return NULL;
+		return (Color){ 0, 0, 0, 0 };
 	}
 
-	return &level->data[(y * level->width) + x];
+	return GetImageColor(level.layers[layer].image, coOrds.x, coOrds.y);
 }
 
-const PlatformerBlockData* PlatformerLevel_GetBlockByPosition(PlatformerLevel* level, float x, float y)
-{
-	if ( !level || level->scale == 0.0f )
-	{
-		return NULL;
-	}
-
-	return PlatformerLevel_GetBlockByCoOrds(level, (size_t)(x / level->scale), (size_t)(y / level->scale));
-}
-
-Rectangle PlatformerLevel_GetBlockWorldRectByCoOrds(PlatformerLevel* level, size_t x, size_t y)
+Rectangle PlatformerLevel_GetBlockWorldRectByCoOrds(PlatformerLevel level, Vector2i coOrds)
 {
 	Rectangle rect = (Rectangle){ 0 };
 
-	if ( !level )
+	if ( level.scale == 0.0f )
+	{
+		TraceLog(LOG_DEBUG, "PLATFORMERLEVEL: Scale was zero!");
+		return rect;
+	}
+
+	if ( coOrds.x < 0 || coOrds.y < 0 )
 	{
 		return rect;
 	}
 
-	rect.x = level->scale * (float)x;
-	rect.y = level->scale * (float)y;
-	rect.width = level->scale;
-	rect.height = level->scale;
+	rect.x = level.scale * (float)coOrds.x;
+	rect.y = level.scale * (float)coOrds.y;
+	rect.width = level.scale;
+	rect.height = level.scale;
 
 	return rect;
+}
+
+Vector2i PlatformerLevel_PositionToCoOrds(PlatformerLevel level, Vector2 world)
+{
+	if ( level.scale == 0.0f )
+	{
+		TraceLog(LOG_DEBUG, "PLATFORMERLEVEL: Scale was zero!");
+		return (Vector2i){ -1, -1 };
+	}
+
+	return (Vector2i){ (int)(world.x / level.scale), (int)(world.y / level.scale) };
 }

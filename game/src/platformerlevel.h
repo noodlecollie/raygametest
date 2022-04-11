@@ -2,35 +2,27 @@
 
 #include <stddef.h>
 #include "raylib.h"
+#include "gametypes.h"
 
-#define PLATFORMER_BLOCK_TYPE_LIST \
-	LIST_ITEM(BLOCK_TYPE_EMPTY = 0, ((Color){ 255, 255, 255, 255 })) \
-	LIST_ITEM(BLOCK_TYPE_GROUND, ((Color){ 0, 0, 0, 255 }))
+#define PLATFORMERLEVEL_MAX_LAYERS 32
 
-#define LIST_ITEM(enumVal, col) enumVal,
-typedef enum PlatformerBlockType
-{
-	PLATFORMER_BLOCK_TYPE_LIST
-} PlatformerBlockType;
-#undef LIST_ITEM
-
-typedef struct PlatformerBlockData
-{
-	PlatformerBlockType blockType;
-} PlatformerBlockData;
+struct PlatformerLevelLayer;
 
 typedef struct PlatformerLevel
 {
-	size_t width;
-	size_t height;
-	PlatformerBlockData* data;
+	struct PlatformerLevelLayer* layers;
 
 	// World units per block
 	float scale;
 } PlatformerLevel;
 
-void PlatformerLevel_Clear(PlatformerLevel* level);
-void PlatformerLevel_LoadFromImage(PlatformerLevel* level, Image image, float scale);
-const PlatformerBlockData* PlatformerLevel_GetBlockDataByCoOrds(PlatformerLevel* level, size_t x, size_t y);
-const PlatformerBlockData* PlatformerLevel_GetBlockDataByPosition(PlatformerLevel* level, float x, float y);
-Rectangle PlatformerLevel_GetBlockWorldRectByCoOrds(PlatformerLevel* level, size_t x, size_t y);
+void PlatformerLevel_Unload(PlatformerLevel level);
+
+void PlatformerLevel_LoadLayer(PlatformerLevel* level, size_t layer, const char* fileName);
+void PlatformerLevel_UnloadLayer(PlatformerLevel* level, size_t layer);
+Vector2i PlatformerLevel_GetLayerDimensions(PlatformerLevel level, size_t layer);
+
+Color PlatformerLevel_GetBlockColourByCoOrds(PlatformerLevel level, size_t layer, Vector2i coOrds);
+Rectangle PlatformerLevel_GetBlockWorldRectByCoOrds(PlatformerLevel level, Vector2i coOrds);
+
+Vector2i PlatformerLevel_PositionToCoOrds(PlatformerLevel level, Vector2 world);
