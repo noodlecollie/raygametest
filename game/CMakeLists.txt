@@ -1,4 +1,5 @@
 add_executable(Game
+	src/gameutil.c
 	src/main.c
 	src/platformerlevel.c
 )
