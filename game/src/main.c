@@ -1,6 +1,10 @@
+#include <stdio.h>
 #include "raylib.h"
 #include "raymath.h"
 #include "platformerlevel.h"
+#include "gameutil.h"
+#include "player.h"
+#include "platformmovement.h"
 
 int main(int argc, char** argv)
 {
@@ -22,6 +26,11 @@ int main(int argc, char** argv)
 	PlatformerLevel level = { 0 };
 	level.scale = 10.0f;
 	PlatformerLevel_LoadLayer(&level, 0, "res/maps/test.png");
+
+	Player player = { 0 };
+	player.collisionHull = (Rectangle){ -5.0f, -5.0f, 10.0f, 10.0f };
+	const float playerSpeed = 5000.0f;
+	const float gravity = 100.0f;
 
 	SetTargetFPS(60);
 
@@ -45,6 +54,29 @@ int main(int argc, char** argv)
 			camera.zoom = 1.0f;
 		}
 
+		player.velocity.x = 0;
+
+		if ( IsKeyDown(KEY_LEFT) )
+		{
+			player.velocity.x -= playerSpeed * deltaTime;
+		}
+
+		if ( IsKeyDown(KEY_RIGHT) )
+		{
+			player.velocity.x += playerSpeed * deltaTime;
+		}
+
+		if ( !player.isColliding )
+		{
+			player.velocity.y += gravity * deltaTime;
+		}
+		else
+		{
+			player.velocity.y = 0;
+		}
+
+		PlatformMovement_MovePlayer(&player, deltaTime, level, ~0);
+
 		BeginDrawing();
 
 		ClearBackground(LIGHTGRAY);
@@ -63,9 +95,14 @@ int main(int argc, char** argv)
 			}
 		}
 
+		Rectangle playerRect = Player_GetWorldCollisionHull(&player);
+		DrawRectangle((int)playerRect.x, (int)playerRect.y, (int)playerRect.width, (int)playerRect.height, RED);
+
 		EndMode2D();
 
-		DrawText("Some text", 20, 20, 10, BLACK);
+		char buffer[64];
+		snprintf(buffer, sizeof(buffer), "Player: (%.2f, %.2f) [%.2f, %.2f]", player.position.x, player.position.y, player.velocity.x, player.velocity.y);
+		DrawText(buffer, 10, 10, 10, BLACK);
 
 		EndDrawing();
 	}

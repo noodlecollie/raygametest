@@ -120,7 +120,7 @@ void PlatformMovement_MovePlayer(Player* player, float deltaTime, PlatformerLeve
 		Vector2 clippedDelta = delta;
 		Vector2 contactNormal = { 0.0f, 0.0f };
 
-		bool collided = ClipMovementToLayers(player, &level, collisionLayers, &clippedDelta, &contactNormal);
+		player->isColliding = ClipMovementToLayers(player, &level, collisionLayers, &clippedDelta, &contactNormal);
 
 		if ( Vector2IsZero(clippedDelta) )
 		{
@@ -128,7 +128,7 @@ void PlatformMovement_MovePlayer(Player* player, float deltaTime, PlatformerLeve
 			return;
 		}
 
-		if ( collided )
+		if ( player->isColliding )
 		{
 			// We collided with something in the world. See if we can slide along the contact surface
 			// to match our desired position in at least one of the axes.
