@@ -1,4 +1,5 @@
 #include <float.h>
+#include <stdlib.h>
 #include "gameutil.h"
 #include "raymath.h"
 
@@ -33,7 +34,7 @@ Rectangle ExpandRectangle(Rectangle rect, Vector2 delta)
 
 	if ( delta.y < 0.0f )
 	{
-		rect.y += delta.x;
+		rect.y += delta.y;
 		rect.height -= delta.y;
 	}
 	else
@@ -44,29 +45,19 @@ Rectangle ExpandRectangle(Rectangle rect, Vector2 delta)
 	return rect;
 }
 
-Vector2 Vector2CollapseEpsilon(Vector2 vec)
-{
-	if ( fabsf(vec.x) < FLT_EPSILON )
-	{
-		vec.x = 0.0f;
-	}
-
-	if ( fabsf(vec.y) < FLT_EPSILON )
-	{
-		vec.y = 0.0f;
-	}
-
-	return vec;
-}
-
-Vector2 Vector2SwapComponents(Vector2 vec)
-{
-	return (Vector2){ vec.y, vec.x };
-}
-
 bool Vector2IsZero(Vector2 vec)
 {
-	return vec.x == 0.0f && vec.y == 0.0f;
+	return fabsf(vec.x) < FLT_EPSILON && fabsf(vec.y) < FLT_EPSILON;
+}
+
+Vector2 Vector2PerpendicularClockwise(Vector2 vec)
+{
+	return (Vector2){ vec.y, -vec.x };
+}
+
+Vector2 Vector2PerpendicularCounterClockwise(Vector2 vec)
+{
+	return (Vector2){ -vec.y, vec.x };
 }
 
 Vector2 RectangleMin(Rectangle rect)
@@ -77,6 +68,21 @@ Vector2 RectangleMin(Rectangle rect)
 Vector2 RectangleMax(Rectangle rect)
 {
 	return (Vector2){ rect.x + rect.width, rect.y + rect.height };
+}
+
+Vector2 RectangleMid(Rectangle rect)
+{
+	return (Vector2){ rect.x + (rect.width / 2.0f), rect.y + (rect.height / 2.0f) };
+}
+
+bool RectangleHasNoArea(Rectangle rect)
+{
+	return fabsf(rect.width) < FLT_EPSILON || fabsf(rect.height) < FLT_EPSILON;
+}
+
+bool RectangleIsNull(Rectangle rect)
+{
+	return Vector2IsZero((Vector2){ rect.width, rect.height });
 }
 
 // Adapted from https://stackoverflow.com/a/4543530/2054335
@@ -137,7 +143,7 @@ bool LinesIntersect(Vector2 p0, Vector2 p1, Vector2 q0, Vector2 q1, float* t, Ve
 	return true;
 }
 
-bool LineIntersectsRect(Vector2 p0, Vector2 p1, Rectangle rect, float* t)
+bool LineIntersectsRect(Vector2 p0, Vector2 p1, Rectangle rect, float* t, Vector2* point, Vector2* normal)
 {
 	if ( fabsf(p1.x - p0.x) < FLT_EPSILON && fabsf(p1.y - p0.y) < FLT_EPSILON )
 	{
@@ -176,25 +182,34 @@ bool LineIntersectsRect(Vector2 p0, Vector2 p1, Rectangle rect, float* t)
 		LinesIntersect(p0, p1, (Vector2){ rect.x + rect.width, rect.y }, (Vector2){ rect.x + rect.width, rect.y + rect.height }, &vSlabt1, &vSlabi1);
 
 	// Find out the minimum t value - this is the first intersection point along the line.
-	// Start out with a huge value and trim it down.
+	// Note that in a very literal corner condition, where the intersection lies exactly
+	// on the rectangle corner, two t values could be the same. To cater for this, we also
+	// check the direction of the edge normal against the direction of the line, and choose
+	// the t value whose normal direction is counter to the direction of the line.
 	float mintVal = FLT_MAX;
+	Vector2* minItsPoint = NULL;
+	Vector2 contactNormal = { 0.0f, 0.0f };
 
 	if ( intersectedHSlab )
 	{
 		// Is the intersection with the horizontal slab within the X bounds of the vertical slab?
 		if ( hSlabi0.x >= rect.x && hSlabi0.x <= rect.x + rect.width )
 		{
-			if ( hSlabt0 < mintVal )
+			if ( hSlabt0 < mintVal || (fabsf(mintVal - hSlabt0) < FLT_EPSILON && Vector2DotProduct((Vector2){ 0.0f, -1.0f }, Vector2Subtract(p1, p0)) < 0.0f) )
 			{
 				mintVal = hSlabt0;
+				minItsPoint = &hSlabi0;
+				contactNormal = (Vector2){ 0.0f, -1.0f };
 			}
 		}
 
 		if ( hSlabi1.x >= rect.x && hSlabi1.x <= rect.x + rect.width )
 		{
-			if ( hSlabt1 < mintVal )
+			if ( hSlabt1 < mintVal || (fabsf(mintVal - hSlabt1) < FLT_EPSILON && Vector2DotProduct((Vector2){ 0.0f, 1.0f }, Vector2Subtract(p1, p0)) < 0.0f) )
 			{
 				mintVal = hSlabt1;
+				minItsPoint = &hSlabi1;
+				contactNormal = (Vector2){ 0.0f, 1.0f };
 			}
 		}
 	}
@@ -204,26 +219,40 @@ bool LineIntersectsRect(Vector2 p0, Vector2 p1, Rectangle rect, float* t)
 		// Is the intersection with the vertical slab within the Y bounds of the horizontal slab?
 		if ( vSlabi0.y >= rect.y && vSlabi0.y <= rect.y + rect.height )
 		{
-			if ( vSlabt0 < mintVal )
+			if ( vSlabt0 < mintVal || (fabsf(mintVal - vSlabt0) < FLT_EPSILON && Vector2DotProduct((Vector2){ -1.0f, 0.0f }, Vector2Subtract(p1, p0)) < 0.0f) )
 			{
 				mintVal = vSlabt0;
+				minItsPoint = &vSlabi0;
+				contactNormal = (Vector2){ -1.0f, 0.0f };
 			}
 		}
 
 		if ( vSlabi1.y >= rect.y && vSlabi1.y <= rect.y + rect.height )
 		{
-			if ( vSlabt1 < mintVal )
+			if ( vSlabt1 < mintVal || (fabsf(mintVal - vSlabt1) < FLT_EPSILON && Vector2DotProduct((Vector2){ 1.0f, 0.0f }, Vector2Subtract(p1, p0)) < 0.0f) )
 			{
 				mintVal = vSlabt1;
+				minItsPoint = &vSlabi1;
+				contactNormal = (Vector2){ 1.0f, 0.0f };
 			}
 		}
 	}
 
-	if ( mintVal < FLT_MAX )
+	if ( minItsPoint )
 	{
 		if ( t )
 		{
 			*t = mintVal;
+		}
+
+		if ( point )
+		{
+			*point = *minItsPoint;
+		}
+
+		if ( normal )
+		{
+			*normal = contactNormal;
 		}
 
 		return true;
@@ -233,4 +262,32 @@ bool LineIntersectsRect(Vector2 p0, Vector2 p1, Rectangle rect, float* t)
 		// No intersection.
 		return false;
 	}
+}
+
+// Adapted from https://noonat.github.io/intersect/#aabb-vs-swept-aabb
+bool RectSweep(Rectangle movingRect, Rectangle staticRect, Vector2 delta, Rectangle* contact, Vector2* contactNormal)
+{
+	staticRect = ExpandRectangle(staticRect, (Vector2){ movingRect.width / 2.0f, movingRect.height / 2.0f });
+	staticRect = ExpandRectangle(staticRect, (Vector2){ -movingRect.width / 2.0f, -movingRect.height / 2.0f });
+
+	Vector2 begin = RectangleMid(movingRect);
+	Vector2 end = Vector2Add(begin, delta);
+
+	Vector2 midpointContact = { 0.0f, 0.0f };
+	float contactCoeff = 0.0f;
+
+	if ( !LineIntersectsRect(begin, end, staticRect, &contactCoeff, &midpointContact, contactNormal) || contactCoeff < 0.0f || contactCoeff > 1.0f )
+	{
+		return false;
+	}
+
+	if ( contact )
+	{
+		contact->x = midpointContact.x - (movingRect.width / 2.0f);
+		contact->y = midpointContact.y - (movingRect.height / 2.0f);
+		contact->width = movingRect.width;
+		contact->height = movingRect.height;
+	}
+
+	return true;
 }

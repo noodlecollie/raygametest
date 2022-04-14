@@ -3,10 +3,6 @@
 #include <stdbool.h>
 #include "raylib.h"
 
-#define MAX_OF(a, b) (((a) > (b)) ? (a) : (b))
-#define MIN_OF(a, b) (((a) < (b)) ? (a) : (b))
-#define CLAMP(min, val, max) (MIN_OF(MAX_OF(val, min), max))
-
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 // Ensures that x and y are the minimum point of the rect, and width and height are non-negative.
@@ -16,24 +12,30 @@ Rectangle NormaliseRectangle(Rectangle rect);
 // width and height in positive directions.
 Rectangle ExpandRectangle(Rectangle rect, Vector2 delta);
 
-// If either component less than FLT_EPSILON, sets the component to zero.
-Vector2 Vector2CollapseEpsilon(Vector2 vec);
-
-Vector2 Vector2SwapComponents(Vector2 vec);
 bool Vector2IsZero(Vector2 vec);
+Vector2 Vector2PerpendicularClockwise(Vector2 vec);
+Vector2 Vector2PerpendicularCounterClockwise(Vector2 vec);
 
 // Assumes the rect is normalised.
 Vector2 RectangleMin(Rectangle rect);
 Vector2 RectangleMax(Rectangle rect);
+Vector2 RectangleMid(Rectangle rect);
+
+bool RectangleHasNoArea(Rectangle rect);
+bool RectangleIsNull(Rectangle rect);
 
 // If t is not null, it will be set to a value indicating
-// how far allong the first line the intersection occurred. 0 = at beginning,
-// 1 = at end, other values imply points inside or outside this range.
-bool LinesIntersect(Vector2 begin1, Vector2 end1, Vector2 begin2, Vector2 end2, float* t, Vector2* point);
+// how far allong the first line the intersection occurred. 0 = at p0,
+// 1 = at p1, other values imply points inside or outside this range.
+bool LinesIntersect(Vector2 p0, Vector2 p1, Vector2 q0, Vector2 q1, float* t, Vector2* point);
 
 // If t is not null, it will be set to a value indicating
 // how far allong the line the intersection occurred. 0 = at p0,
 // 1 = at p1, other values imply points inside or outside this range.
-// If the line enters and exits the rectangle, the lowest intersection
-// point value is returned.
-bool LineIntersectsRect(Vector2 p0, Vector2 p1, Rectangle rect, float* t);
+// The earliest intersection point along the line is returned.
+bool LineIntersectsRect(Vector2 p0, Vector2 p1, Rectangle rect, float* t, Vector2* point, Vector2* normal);
+
+// Returns true if the moving rect collided with the static rect, and false otherwise.
+// If the rects collided and contact is not null, it is set to the position of contact.
+// Assumes both rectangles are normalised!
+bool RectSweep(Rectangle movingRect, Rectangle staticRect, Vector2 delta, Rectangle* contact, Vector2* contactNormal);

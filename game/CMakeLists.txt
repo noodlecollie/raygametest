@@ -2,6 +2,8 @@ add_executable(Game
 	src/gameutil.c
 	src/main.c
 	src/platformerlevel.c
+	src/platformmovement.c
+	src/player.c
 )
 
 target_link_libraries(Game PRIVATE raylib)
