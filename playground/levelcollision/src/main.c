@@ -23,6 +23,7 @@ int main(int argc, char** argv)
 	while ( !WindowShouldClose() )
 	{
 		float deltaTime = GetFrameTime();
+		(void)deltaTime;
 
 		BeginDrawing();
 

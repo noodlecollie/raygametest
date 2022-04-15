@@ -305,7 +305,7 @@ bool RectSweep(Rectangle movingRect, Rectangle staticRect, Vector2 delta, Rectan
 		{
 			// Sweep begins colliding. Flip the direction and see where the rectangle is intersected with.
 			LineIntersectsRect(end, begin, staticRect, &contactCoeff, &midpointContact, &normal);
-			contactCoeff = 1.0f - contactCoeff, 1.0f;
+			contactCoeff = 1.0f - contactCoeff;
 		}
 	}
 	else if ( !LineIntersectsRect(begin, end, staticRect, &contactCoeff, &midpointContact, &normal) || contactCoeff < 0.0f || contactCoeff > 1.0f )

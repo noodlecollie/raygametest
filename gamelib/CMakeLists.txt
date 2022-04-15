@@ -1,3 +1,5 @@
+include(compile_options)
+
 add_library(gamelib STATIC
 	src/gameutil.c
 	src/platformerlevel.c
@@ -9,3 +11,4 @@ add_library(gamelib STATIC
 target_include_directories(gamelib PUBLIC include)
 target_include_directories(gamelib PRIVATE src)
 target_link_libraries(gamelib PUBLIC raylib)
+apply_pedantic_compile_options(gamelib)
