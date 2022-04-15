@@ -8,3 +8,4 @@ target_link_libraries(rayguilib PUBLIC
 )
 
 target_include_directories(rayguilib PRIVATE src)
+target_compile_definitions(rayguilib PRIVATE _CRT_SECURE_NO_WARNINGS)

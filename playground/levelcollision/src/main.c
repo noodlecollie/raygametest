@@ -12,13 +12,18 @@ int main(int argc, char** argv)
 	(void)argc;
 	(void)argv;
 
-	const int screenWidth = 800;
-	const int screenHeight = 450;
+	int screenWidth = 800;
+	int screenHeight = 450;
 
 	const Rectangle collisionHull = { 0.0f, 0.0f, 10.0f, 20.0f };
 
 	SetTraceLogLevel(LOG_DEBUG);
 	InitWindow(screenWidth, screenHeight, "Level Collision");
+
+	const Vector2 dpiScale = GetWindowScaleDPI();
+	screenWidth = (int)((float)screenWidth * dpiScale.x);
+	screenHeight = (int)((float)screenHeight * dpiScale.y);
+	SetWindowSize(screenWidth, screenHeight);
 
 	PlatformerLevel level = { 0 };
 	level.scale = 30.0f;
@@ -58,7 +63,13 @@ int main(int argc, char** argv)
 			camera.zoom = 10.0f;
 		}
 
-		Vector2 panDrag = IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) ? GetMouseDelta() : Vector2Zero();
+		Vector2 panDrag = Vector2Zero();
+
+		if ( IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) || (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && IsKeyDown(KEY_SPACE)) )
+		{
+			panDrag = GetMouseDelta();
+		}
+
 		camera.target = Vector2Subtract(camera.target, Vector2Scale(panDrag, 1.0f / camera.zoom));
 
 		if ( IsKeyPressed(KEY_R) )
@@ -67,7 +78,7 @@ int main(int argc, char** argv)
 			camera.zoom = 1.0f;
 		}
 
-		if ( IsMouseButtonDown(MOUSE_BUTTON_LEFT) )
+		if ( IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !IsKeyDown(KEY_SPACE) )
 		{
 			beginPos = GetScreenToWorld2D(GetMousePosition(), camera);
 		}
@@ -138,17 +149,18 @@ int main(int argc, char** argv)
 
 		EndMode2D();
 
+		int fontSize = (int)(10.0f * dpiScale.x);
 		char buffer[64];
 
 		snprintf(buffer, sizeof(buffer), "Left mouse: start point (%d, %d)", (int)beginPos.x, (int)beginPos.y);
 		buffer[sizeof(buffer) - 1] = '\0';
-		DrawText(buffer, 10, 10, 10, BLACK);
+		DrawText(buffer, (int)(10.0f * dpiScale.x), (int)(10.0f * dpiScale.x), fontSize, BLACK);
 
 		snprintf(buffer, sizeof(buffer), "Right mouse: end point (%d, %d)", (int)endPos.x, (int)endPos.y);
 		buffer[sizeof(buffer) - 1] = '\0';
-		DrawText(buffer, 10, 30, 10, BLACK);
+		DrawText(buffer, (int)(10.0f * dpiScale.x), (int)(30.0f * dpiScale.x), fontSize, BLACK);
 
-		DrawText("Middle mouse: pan level", 10, 50, 10, BLACK);
+		DrawText("Middle mouse: pan level", (int)(10.0f * dpiScale.x), (int)(50.0f * dpiScale.x), fontSize, BLACK);
 
 		EndDrawing();
 	}

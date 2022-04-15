@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 			player.velocity.y = 0;
 		}
 
-		PlatformMovement_MovePlayer(&player, deltaTime, level, ~0);
+		PlatformMovement_MovePlayer(&player, deltaTime, level, 0xFFFFFFFF);
 
 		BeginDrawing();
 
