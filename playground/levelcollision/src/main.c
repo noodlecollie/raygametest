@@ -20,15 +20,16 @@ int main(int argc, char** argv)
 	SetTraceLogLevel(LOG_DEBUG);
 	InitWindow(screenWidth, screenHeight, "Level Collision");
 
-	Camera2D camera = { 0 };
-	camera.target = (Vector2){ 0, 0 };
-	camera.offset = (Vector2){ 0, 0 };
-	camera.rotation = 0.0f;
-	camera.zoom = 1.0f;
-
 	PlatformerLevel level = { 0 };
 	level.scale = 30.0f;
 	PlatformerLevel_LoadLayer(&level, 0, "res/maps/test.png");
+	Vector2i levelDim = PlatformerLevel_GetLayerDimensions(level, 0);
+
+	Camera2D camera = { 0 };
+	camera.target = (Vector2){ ((float)levelDim.x / 2.0f) * level.scale, ((float)levelDim.y / 2.0f) * level.scale };
+	camera.offset = (Vector2){ (float)screenWidth / 2.0f, (float)screenHeight / 2.0f };
+	camera.rotation = 0.0f;
+	camera.zoom = 1.0f;
 
 	Vector2 beginPos = Vector2Zero();
 	Vector2 endPos = Vector2Zero();
@@ -37,12 +38,33 @@ int main(int argc, char** argv)
 
 	while ( !WindowShouldClose() )
 	{
+		float wheelDelta = GetMouseWheelMove() * 0.25f;
+
+		if ( wheelDelta >= 0.0f )
+		{
+			camera.zoom *= 1.0f + wheelDelta;
+		}
+		else
+		{
+			camera.zoom *= 1.0f / (1 - wheelDelta);
+		}
+
+		if ( camera.zoom < 0.125f )
+		{
+			camera.zoom = 0.125f;
+		}
+		else if ( camera.zoom > 10.0f )
+		{
+			camera.zoom = 10.0f;
+		}
+
 		Vector2 panDrag = IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) ? GetMouseDelta() : Vector2Zero();
-		camera.offset = Vector2Add(camera.offset, panDrag);
+		camera.target = Vector2Subtract(camera.target, Vector2Scale(panDrag, 1.0f / camera.zoom));
 
 		if ( IsKeyPressed(KEY_R) )
 		{
-			camera.offset = Vector2Zero();
+			camera.target = Vector2Zero();
+			camera.zoom = 1.0f;
 		}
 
 		if ( IsMouseButtonDown(MOUSE_BUTTON_LEFT) )
@@ -96,17 +118,17 @@ int main(int argc, char** argv)
 
 			if ( Vector2Length(traceDelta) > 0.0f )
 			{
-				DrawRectangleLinesEx(beginHull, 1.0f, GREEN);
+				DrawRectangleLinesEx(beginHull, 1.0f / camera.zoom, GREEN);
 				DrawCircle((int)beginPos.x, (int)beginPos.y, 3.0f, GREEN);
 
-				DrawRectangleLinesEx(endHull, 1.0f, BLUE);
+				DrawRectangleLinesEx(endHull, 1.0f / camera.zoom, BLUE);
 				DrawCircle((int)endPos.x, (int)endPos.y, 3.0f, BLUE);
 
-				DrawLineEx(beginPos, endPos, 1.0f, traceResult.collided ? YELLOW : BLACK);
+				DrawLineEx(beginPos, endPos, 1.0f / camera.zoom, traceResult.collided ? YELLOW : BLACK);
 
 				if ( traceResult.collided )
 				{
-					DrawRectangleLinesEx(contactHull, 1.0f, YELLOW);
+					DrawRectangleLinesEx(contactHull, 1.0f / camera.zoom, YELLOW);
 
 					Vector2 contactMid = RectangleMid(contactHull);
 					DrawCircle((int)contactMid.x, (int)contactMid.y, 3.0f, YELLOW);
