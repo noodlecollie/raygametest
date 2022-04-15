@@ -4,7 +4,12 @@ add_executable(level_collision
 	src/main.c
 )
 
-target_link_libraries(level_collision PRIVATE raylib)
+target_link_libraries(level_collision PRIVATE
+	raylib
+	rayguilib
+	gamelib
+)
+
 apply_pedantic_compile_options(level_collision)
 
 install(TARGETS level_collision
