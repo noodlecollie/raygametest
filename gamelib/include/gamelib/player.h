@@ -11,7 +11,7 @@ typedef struct Player
 	Vector2 velocity;
 
 	Rectangle collisionHull;
-	bool isColliding;
+	bool onGround;
 } Player;
 
 Rectangle Player_GetWorldCollisionHull(const Player* player);

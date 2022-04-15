@@ -1,12 +1,8 @@
-add_executable(Game
-	src/gameutil.c
+add_executable(game
 	src/main.c
-	src/platformerlevel.c
-	src/platformmovement.c
-	src/player.c
 )
 
-target_link_libraries(Game PRIVATE raylib)
+target_link_libraries(game PRIVATE gamelib raylib)
 
 if(MSVC)
 	add_compile_options(/W4 /WX)
@@ -16,8 +12,8 @@ else()
 	add_link_options(-Wl,--fatal-warnings)
 endif()
 
-install(TARGETS Game
-	RUNTIME DESTINATION raygametest
+install(TARGETS game
+	RUNTIME DESTINATION game
 )
 
-install(DIRECTORY res DESTINATION raygametest)
+install(DIRECTORY res DESTINATION game)

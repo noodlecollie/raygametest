@@ -1,4 +1,4 @@
-#include "player.h"
+#include "gamelib/player.h"
 
 Rectangle Player_GetWorldCollisionHull(const Player* player)
 {

@@ -1,5 +1,5 @@
-#include "platformmovement.h"
-#include "gameutil.h"
+#include "gamelib/platformmovement.h"
+#include "gamelib/gameutil.h"
 #include "raymath.h"
 
 static bool ClipMovementToBlock(
@@ -20,16 +20,16 @@ static bool ClipMovementToBlock(
 
 	Rectangle blockHull = PlatformerLevel_GetBlockWorldRectByCoOrds(*level, blockCoOrds);
 
-	if ( CheckCollisionRecs(origHull, blockHull) )
-	{
-		// Started out colliding - cannot move.
-		*delta = Vector2Zero();
-		return true;
-	}
+	// if ( CheckCollisionRecs(origHull, blockHull) )
+	// {
+	// 	// Started out colliding - cannot move.
+	// 	*delta = Vector2Zero();
+	// 	return true;
+	// }
 
 	Rectangle contact = { 0 };
 
-	if ( !RectSweep(origHull, blockHull, *delta, &contact, contactNormal) )
+	if ( !RectSweep(origHull, blockHull, *delta, &contact, contactNormal, NULL) )
 	{
 		// No collision.
 		return false;
@@ -120,7 +120,9 @@ void PlatformMovement_MovePlayer(Player* player, float deltaTime, PlatformerLeve
 		Vector2 clippedDelta = delta;
 		Vector2 contactNormal = { 0.0f, 0.0f };
 
-		player->isColliding = ClipMovementToLayers(player, &level, collisionLayers, &clippedDelta, &contactNormal);
+		bool collided = ClipMovementToLayers(player, &level, collisionLayers, &clippedDelta, &contactNormal);
+
+		player->onGround = collided && Vector2DotProduct(contactNormal, (Vector2){ 0.0f, -1.0f }) < 0.5f;
 
 		if ( Vector2IsZero(clippedDelta) )
 		{
@@ -128,7 +130,7 @@ void PlatformMovement_MovePlayer(Player* player, float deltaTime, PlatformerLeve
 			return;
 		}
 
-		if ( player->isColliding )
+		if ( collided )
 		{
 			// We collided with something in the world. See if we can slide along the contact surface
 			// to match our desired position in at least one of the axes.
@@ -146,8 +148,10 @@ void PlatformMovement_MovePlayer(Player* player, float deltaTime, PlatformerLeve
 			slideDelta = Vector2Scale(slideDir, Vector2DotProduct(slideDelta, slideDir));
 
 			// Run another collision check for the slide.
-			ClipMovementToLayers(player, &level, collisionLayers, &slideDelta, &contactNormal);
+			collided = ClipMovementToLayers(player, &level, collisionLayers, &slideDelta, &contactNormal);
 			clippedDelta = Vector2Add(clippedDelta, slideDelta);
+
+			player->onGround = player->onGround || (collided && Vector2DotProduct(contactNormal, (Vector2){ 0.0f, -1.0f }) < 0.5f);
 		}
 
 		delta = clippedDelta;

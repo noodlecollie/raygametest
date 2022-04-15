@@ -1,6 +1,6 @@
 #include <float.h>
 #include <stdlib.h>
-#include "gameutil.h"
+#include "gamelib/gameutil.h"
 #include "raymath.h"
 
 Rectangle NormaliseRectangle(Rectangle rect)
@@ -58,6 +58,21 @@ Vector2 Vector2PerpendicularClockwise(Vector2 vec)
 Vector2 Vector2PerpendicularCounterClockwise(Vector2 vec)
 {
 	return (Vector2){ -vec.y, vec.x };
+}
+
+Vector2 Vector2CollapseEpsilonComponents(Vector2 vec)
+{
+	if ( fabsf(vec.x) < FLT_EPSILON )
+	{
+		vec.x = 0.0f;
+	}
+
+	if ( fabsf(vec.y) < FLT_EPSILON )
+	{
+		vec.y = 0.0f;
+	}
+
+	return vec;
 }
 
 Vector2 RectangleMin(Rectangle rect)
@@ -265,7 +280,7 @@ bool LineIntersectsRect(Vector2 p0, Vector2 p1, Rectangle rect, float* t, Vector
 }
 
 // Adapted from https://noonat.github.io/intersect/#aabb-vs-swept-aabb
-bool RectSweep(Rectangle movingRect, Rectangle staticRect, Vector2 delta, Rectangle* contact, Vector2* contactNormal)
+bool RectSweep(Rectangle movingRect, Rectangle staticRect, Vector2 delta, Rectangle* contact, Vector2* contactNormal, float* fraction)
 {
 	staticRect = ExpandRectangle(staticRect, (Vector2){ movingRect.width / 2.0f, movingRect.height / 2.0f });
 	staticRect = ExpandRectangle(staticRect, (Vector2){ -movingRect.width / 2.0f, -movingRect.height / 2.0f });
@@ -273,12 +288,35 @@ bool RectSweep(Rectangle movingRect, Rectangle staticRect, Vector2 delta, Rectan
 	Vector2 begin = RectangleMid(movingRect);
 	Vector2 end = Vector2Add(begin, delta);
 
+	Vector2 normal = { 0.0f, 0.0f };
 	Vector2 midpointContact = { 0.0f, 0.0f };
 	float contactCoeff = 0.0f;
 
-	if ( !LineIntersectsRect(begin, end, staticRect, &contactCoeff, &midpointContact, contactNormal) || contactCoeff < 0.0f || contactCoeff > 1.0f )
+	if ( CheckCollisionPointRec(begin, staticRect) )
 	{
+		if ( Vector2Length(Vector2Subtract(end, begin)) < FLT_EPSILON )
+		{
+			// Sweep begins colliding but has no movement.
+			contactCoeff = 1.0f;
+			midpointContact = begin;
+			normal = Vector2Zero();
+		}
+		else
+		{
+			// Sweep begins colliding. Flip the direction and see where the rectangle is intersected with.
+			LineIntersectsRect(end, begin, staticRect, &contactCoeff, &midpointContact, &normal);
+			contactCoeff = 1.0f - contactCoeff, 1.0f;
+		}
+	}
+	else if ( !LineIntersectsRect(begin, end, staticRect, &contactCoeff, &midpointContact, &normal) || contactCoeff < 0.0f || contactCoeff > 1.0f )
+	{
+		// No collision.
 		return false;
+	}
+
+	if ( fraction )
+	{
+		*fraction = contactCoeff;
 	}
 
 	if ( contact )
@@ -289,5 +327,39 @@ bool RectSweep(Rectangle movingRect, Rectangle staticRect, Vector2 delta, Rectan
 		contact->height = movingRect.height;
 	}
 
+	if ( contactNormal )
+	{
+		*contactNormal = normal;
+	}
+
 	return true;
+}
+
+Vector2 RectEdgeNormalForPoint(Rectangle rect, Vector2 point)
+{
+	if ( fabsf(rect.width) < FLT_EPSILON || fabsf(rect.height) < FLT_EPSILON )
+	{
+		return (Vector2){ 0.0f, 0.0f };
+	}
+
+	Vector2 mid = RectangleMid(rect);
+	Vector2 line = Vector2Subtract(point, mid);
+
+	// Correct for a non-square rectangle.
+	float distortion = rect.height / rect.width;
+	line.x *= distortion;
+
+	if ( Vector2Length(line) < FLT_EPSILON )
+	{
+		return (Vector2){ 0.0f, 0.0f };
+	}
+
+	if ( line.x > line.y )
+	{
+		return (Vector2){ line.x > 0 ? 1.0f : -1.0f, 0.0f };
+	}
+	else
+	{
+		return (Vector2){ 0.0f, line.y > 0 ? 1.0f : -1.0f };
+	}
 }

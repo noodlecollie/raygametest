@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include "raylib.h"
 #include "raymath.h"
-#include "platformerlevel.h"
-#include "gameutil.h"
-#include "player.h"
-#include "platformmovement.h"
+#include "gamelib/platformerlevel.h"
+#include "gamelib/gameutil.h"
+#include "gamelib/player.h"
+#include "gamelib/platformmovement.h"
 
 int main(int argc, char** argv)
 {
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
 			player.velocity.x += playerSpeed * deltaTime;
 		}
 
-		if ( !player.isColliding )
+		if ( !player.onGround )
 		{
 			player.velocity.y += gravity * deltaTime;
 		}

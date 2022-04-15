@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 #include "raylib.h"
-#include "gametypes.h"
+#include "gamelib/gametypes.h"
 
 #define PLATFORMERLEVEL_MAX_LAYERS 32
 

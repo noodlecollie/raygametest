@@ -16,6 +16,8 @@ bool Vector2IsZero(Vector2 vec);
 Vector2 Vector2PerpendicularClockwise(Vector2 vec);
 Vector2 Vector2PerpendicularCounterClockwise(Vector2 vec);
 
+Vector2 Vector2CollapseEpsilonComponents(Vector2 vec);
+
 // Assumes the rect is normalised.
 Vector2 RectangleMin(Rectangle rect);
 Vector2 RectangleMax(Rectangle rect);
@@ -38,4 +40,9 @@ bool LineIntersectsRect(Vector2 p0, Vector2 p1, Rectangle rect, float* t, Vector
 // Returns true if the moving rect collided with the static rect, and false otherwise.
 // If the rects collided and contact is not null, it is set to the position of contact.
 // Assumes both rectangles are normalised!
-bool RectSweep(Rectangle movingRect, Rectangle staticRect, Vector2 delta, Rectangle* contact, Vector2* contactNormal);
+bool RectSweep(Rectangle movingRect, Rectangle staticRect, Vector2 delta, Rectangle* contact, Vector2* contactNormal, float* fraction);
+
+// Returns the normal of the edge of the rectangle hit by the line from the middle of the rectangle
+// that passes through this point. If the supplied point *is* the middle of the rectangle, or the
+// rectangle has no area, returns (0, 0).
+Vector2 RectEdgeNormalForPoint(Rectangle rect, Vector2 point);

@@ -1,6 +1,6 @@
 #include <stdbool.h>
-#include "platformerlevel.h"
-#include "gameutil.h"
+#include "gamelib/platformerlevel.h"
+#include "gamelib/gameutil.h"
 
 #define MAX_IMAGE_WIDTH 1024
 #define MAX_IMAGE_HEIGHT 256
