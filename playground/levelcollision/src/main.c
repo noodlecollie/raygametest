@@ -7,6 +7,11 @@
 #include "gamelib/trace.h"
 #include "gamelib/gameutil.h"
 
+typedef struct GuiValues
+{
+	float levelScale;
+} GuiValues;
+
 int main(int argc, char** argv)
 {
 	(void)argc;
@@ -24,9 +29,15 @@ int main(int argc, char** argv)
 	screenWidth = (int)((float)screenWidth * dpiScale.x);
 	screenHeight = (int)((float)screenHeight * dpiScale.y);
 	SetWindowSize(screenWidth, screenHeight);
+	GuiSetStyle(DEFAULT, TEXT_SIZE, (int)((float)GuiGetStyle(DEFAULT, TEXT_SIZE) * dpiScale.x));
+
+	GuiValues guiValues = { 0 };
+	guiValues.levelScale = 30;
+
+	const Rectangle guiBounds = { 0.0f, 0.0f, 200.0f * dpiScale.x, 100.0f * dpiScale.y };
 
 	PlatformerLevel level = { 0 };
-	level.scale = 30.0f;
+	level.scale = (float)guiValues.levelScale;
 	PlatformerLevel_LoadLayer(&level, 0, "res/maps/test.png");
 	Vector2i levelDim = PlatformerLevel_GetLayerDimensions(level, 0);
 
@@ -43,34 +54,41 @@ int main(int argc, char** argv)
 
 	while ( !WindowShouldClose() )
 	{
-		float wheelDelta = GetMouseWheelMove() * 0.25f;
+		level.scale = (float)guiValues.levelScale;
 
-		if ( wheelDelta >= 0.0f )
-		{
-			camera.zoom *= 1.0f + wheelDelta;
-		}
-		else
-		{
-			camera.zoom *= 1.0f / (1 - wheelDelta);
-		}
+		bool mouseIsInGuiArea = CheckCollisionPointRec(GetMousePosition(), guiBounds);
 
-		if ( camera.zoom < 0.125f )
+		if ( !mouseIsInGuiArea )
 		{
-			camera.zoom = 0.125f;
-		}
-		else if ( camera.zoom > 10.0f )
-		{
-			camera.zoom = 10.0f;
-		}
+			float wheelDelta = GetMouseWheelMove() * 0.25f;
 
-		Vector2 panDrag = Vector2Zero();
+			if ( wheelDelta >= 0.0f )
+			{
+				camera.zoom *= 1.0f + wheelDelta;
+			}
+			else
+			{
+				camera.zoom *= 1.0f / (1 - wheelDelta);
+			}
 
-		if ( IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) || (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && IsKeyDown(KEY_SPACE)) )
-		{
-			panDrag = GetMouseDelta();
+			if ( camera.zoom < 0.125f )
+			{
+				camera.zoom = 0.125f;
+			}
+			else if ( camera.zoom > 10.0f )
+			{
+				camera.zoom = 10.0f;
+			}
+
+			Vector2 panDrag = Vector2Zero();
+
+			if ( IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) || (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && IsKeyDown(KEY_SPACE)) )
+			{
+				panDrag = GetMouseDelta();
+			}
+
+			camera.target = Vector2Subtract(camera.target, Vector2Scale(panDrag, 1.0f / camera.zoom));
 		}
-
-		camera.target = Vector2Subtract(camera.target, Vector2Scale(panDrag, 1.0f / camera.zoom));
 
 		if ( IsKeyPressed(KEY_R) )
 		{
@@ -78,14 +96,17 @@ int main(int argc, char** argv)
 			camera.zoom = 1.0f;
 		}
 
-		if ( IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !IsKeyDown(KEY_SPACE) )
+		if ( !mouseIsInGuiArea )
 		{
-			beginPos = GetScreenToWorld2D(GetMousePosition(), camera);
-		}
+			if ( IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !IsKeyDown(KEY_SPACE) )
+			{
+				beginPos = GetScreenToWorld2D(GetMousePosition(), camera);
+			}
 
-		if ( IsMouseButtonDown(MOUSE_BUTTON_RIGHT) )
-		{
-			endPos = GetScreenToWorld2D(GetMousePosition(), camera);
+			if ( IsMouseButtonDown(MOUSE_BUTTON_RIGHT) )
+			{
+				endPos = GetScreenToWorld2D(GetMousePosition(), camera);
+			}
 		}
 
 		Vector2 traceDelta = Vector2Subtract(endPos, beginPos);
@@ -149,18 +170,32 @@ int main(int argc, char** argv)
 
 		EndMode2D();
 
-		int fontSize = (int)(10.0f * dpiScale.x);
+		DrawRectangleLinesEx(guiBounds, dpiScale.x, BLACK);
+
+		int fontSize = (int)(10.0f * dpiScale.y);
+		int leftMargin = (int)(10.0f * dpiScale.x);
+
+		int controlHeight = (int)(15.0f * dpiScale.y);
+		int controlLeftMargin = (int)(70.0f * dpiScale.x);
+
+		Rectangle guiRect = { (float)controlLeftMargin, 0.0f, 100.0f * dpiScale.x, (float)controlHeight };
+
 		char buffer[64];
 
 		snprintf(buffer, sizeof(buffer), "Left mouse: start point (%d, %d)", (int)beginPos.x, (int)beginPos.y);
 		buffer[sizeof(buffer) - 1] = '\0';
-		DrawText(buffer, (int)(10.0f * dpiScale.x), (int)(10.0f * dpiScale.x), fontSize, BLACK);
+		DrawText(buffer, leftMargin, (int)(10.0f * dpiScale.x), fontSize, BLACK);
 
 		snprintf(buffer, sizeof(buffer), "Right mouse: end point (%d, %d)", (int)endPos.x, (int)endPos.y);
 		buffer[sizeof(buffer) - 1] = '\0';
-		DrawText(buffer, (int)(10.0f * dpiScale.x), (int)(30.0f * dpiScale.x), fontSize, BLACK);
+		DrawText(buffer, leftMargin, (int)(30.0f * dpiScale.x), fontSize, BLACK);
 
-		DrawText("Middle mouse: pan level", (int)(10.0f * dpiScale.x), (int)(50.0f * dpiScale.x), fontSize, BLACK);
+		DrawText("Middle mouse: pan level", leftMargin, (int)(50.0f * dpiScale.x), fontSize, BLACK);
+
+		guiRect.y = 70.0f * dpiScale.x;
+		snprintf(buffer, sizeof(buffer), "%.2f", guiValues.levelScale);
+		buffer[sizeof(buffer) - 1] = '\0';
+		guiValues.levelScale = GuiSlider(guiRect, "Level scale: ", buffer, guiValues.levelScale, 1, 100);
 
 		EndDrawing();
 	}
