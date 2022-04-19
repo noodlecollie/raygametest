@@ -12,6 +12,11 @@ typedef struct GuiValues
 	float levelScale;
 } GuiValues;
 
+static inline bool PanKeyPressed()
+{
+	return IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_SPACE);
+}
+
 int main(int argc, char** argv)
 {
 	(void)argc;
@@ -82,7 +87,7 @@ int main(int argc, char** argv)
 
 			Vector2 panDrag = Vector2Zero();
 
-			if ( IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) || (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && IsKeyDown(KEY_SPACE)) )
+			if ( IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) || (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && PanKeyPressed()) )
 			{
 				panDrag = GetMouseDelta();
 			}
@@ -98,7 +103,7 @@ int main(int argc, char** argv)
 
 		if ( !mouseIsInGuiArea )
 		{
-			if ( IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !IsKeyDown(KEY_SPACE) )
+			if ( IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !PanKeyPressed() )
 			{
 				beginPos = GetScreenToWorld2D(GetMousePosition(), camera);
 			}
