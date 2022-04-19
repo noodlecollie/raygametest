@@ -15,8 +15,8 @@ Rectangle ExpandRectangle(Rectangle rect, Vector2 delta);
 bool Vector2IsZero(Vector2 vec);
 Vector2 Vector2PerpendicularClockwise(Vector2 vec);
 Vector2 Vector2PerpendicularCounterClockwise(Vector2 vec);
-
 Vector2 Vector2CollapseEpsilonComponents(Vector2 vec);
+Vector2 Vector2RoundToIntegers(Vector2 vec);
 
 // Assumes the rect is normalised.
 Vector2 RectangleMin(Rectangle rect);

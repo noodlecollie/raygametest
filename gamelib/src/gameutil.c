@@ -75,6 +75,11 @@ Vector2 Vector2CollapseEpsilonComponents(Vector2 vec)
 	return vec;
 }
 
+Vector2 Vector2RoundToIntegers(Vector2 vec)
+{
+	return (Vector2){ roundf(vec.x), roundf(vec.y) };
+}
+
 Vector2 RectangleMin(Rectangle rect)
 {
 	return (Vector2){ rect.x, rect.y };
