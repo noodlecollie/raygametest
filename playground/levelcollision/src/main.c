@@ -10,6 +10,7 @@
 typedef struct GuiValues
 {
 	float levelScale;
+	bool snapToContactPositionClicked;
 } GuiValues;
 
 static inline bool PanKeyPressed()
@@ -39,7 +40,7 @@ int main(int argc, char** argv)
 	GuiValues guiValues = { 0 };
 	guiValues.levelScale = 30;
 
-	const Rectangle guiBounds = { 0.0f, 0.0f, 200.0f * dpiScale.x, 100.0f * dpiScale.y };
+	const Rectangle guiBounds = { 0.0f, 0.0f, 240.0f * dpiScale.x, 120.0f * dpiScale.y };
 
 	PlatformerLevel level = { 0 };
 	level.scale = (float)guiValues.levelScale;
@@ -136,6 +137,17 @@ int main(int argc, char** argv)
 			}
 		}
 
+		if ( guiValues.snapToContactPositionClicked )
+		{
+			endHull = contactHull;
+			endPos.x = RectangleMid(endHull).x;
+			endPos.y = RectangleMid(endHull).y;
+
+			traceResult.collided = false;
+
+			guiValues.snapToContactPositionClicked = false;
+		}
+
 		BeginDrawing();
 
 		ClearBackground(LIGHTGRAY);
@@ -183,24 +195,27 @@ int main(int argc, char** argv)
 		int controlHeight = (int)(15.0f * dpiScale.y);
 		int controlLeftMargin = (int)(70.0f * dpiScale.x);
 
-		Rectangle guiRect = { (float)controlLeftMargin, 0.0f, 100.0f * dpiScale.x, (float)controlHeight };
+		Rectangle guiRect = { (float)controlLeftMargin, 0.0f, 130.0f * dpiScale.x, (float)controlHeight };
 
 		char buffer[64];
 
 		snprintf(buffer, sizeof(buffer), "Left mouse: start point (%d, %d)", (int)beginPos.x, (int)beginPos.y);
 		buffer[sizeof(buffer) - 1] = '\0';
-		DrawText(buffer, leftMargin, (int)(10.0f * dpiScale.x), fontSize, BLACK);
+		DrawText(buffer, leftMargin, (int)(10.0f * dpiScale.y), fontSize, BLACK);
 
 		snprintf(buffer, sizeof(buffer), "Right mouse: end point (%d, %d)", (int)endPos.x, (int)endPos.y);
 		buffer[sizeof(buffer) - 1] = '\0';
-		DrawText(buffer, leftMargin, (int)(30.0f * dpiScale.x), fontSize, BLACK);
+		DrawText(buffer, leftMargin, (int)(30.0f * dpiScale.y), fontSize, BLACK);
 
-		DrawText("Middle mouse: pan level", leftMargin, (int)(50.0f * dpiScale.x), fontSize, BLACK);
+		DrawText("Middle mouse: pan level", leftMargin, (int)(50.0f * dpiScale.y), fontSize, BLACK);
 
-		guiRect.y = 70.0f * dpiScale.x;
+		guiRect.y = 70.0f * dpiScale.y;
 		snprintf(buffer, sizeof(buffer), "%.2f", guiValues.levelScale);
 		buffer[sizeof(buffer) - 1] = '\0';
 		guiValues.levelScale = GuiSlider(guiRect, "Level scale: ", buffer, guiValues.levelScale, 1, 100);
+
+		guiRect.y = 90.0f * dpiScale.y;
+		guiValues.snapToContactPositionClicked = GuiButton(guiRect, "Snap to contact position");
 
 		EndDrawing();
 	}
