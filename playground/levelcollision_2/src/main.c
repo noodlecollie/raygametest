@@ -6,11 +6,12 @@
 #include "gamelib/platformerlevel.h"
 #include "gamelib/trace.h"
 #include "gamelib/gameutil.h"
+#include "gamelib/player.h"
+#include "gamelib/platformmovement.h"
 
 typedef struct GuiValues
 {
 	float levelScale;
-	bool snapToContactPositionClicked;
 } GuiValues;
 
 static inline bool PanKeyPressed()
@@ -25,8 +26,6 @@ int main(int argc, char** argv)
 
 	int screenWidth = 800;
 	int screenHeight = 450;
-
-	const Rectangle collisionHull = { 0.0f, 0.0f, 10.0f, 20.0f };
 
 	SetTraceLogLevel(LOG_DEBUG);
 	InitWindow(screenWidth, screenHeight, "Level Collision");
@@ -55,6 +54,9 @@ int main(int argc, char** argv)
 
 	Vector2 beginPos = Vector2Zero();
 	Vector2 endPos = Vector2Zero();
+
+	Player player = { 0 };
+	player.collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
 
 	SetTargetFPS(60);
 
@@ -116,37 +118,13 @@ int main(int argc, char** argv)
 		}
 
 		Vector2 traceDelta = Vector2Subtract(endPos, beginPos);
-		Rectangle beginHull = { beginPos.x - (collisionHull.width / 2.0f), beginPos.y - (collisionHull.height / 2.0f), collisionHull.width, collisionHull.height };
 
-		Rectangle endHull = beginHull;
-		endHull.x += traceDelta.x;
-		endHull.y += traceDelta.y;
+		player.position = beginPos;
+		player.velocity = traceDelta;
 
-		Rectangle contactHull = endHull;
+		Rectangle beginHull = Player_GetWorldCollisionHull(&player);
 
-		TraceResult traceResult = { 0 };
-
-		if ( Vector2Length(traceDelta) > 0.0f )
-		{
-			traceResult = TraceRectangleMovementInLevel(beginHull, traceDelta, level, 1 << 0);
-
-			if ( traceResult.collided )
-			{
-				contactHull.x = traceResult.contactPosition.x;
-				contactHull.y = traceResult.contactPosition.y;
-			}
-		}
-
-		if ( guiValues.snapToContactPositionClicked )
-		{
-			endHull = contactHull;
-			endPos.x = RectangleMid(endHull).x;
-			endPos.y = RectangleMid(endHull).y;
-
-			traceResult.collided = false;
-
-			guiValues.snapToContactPositionClicked = false;
-		}
+		PlatformMovement_MovePlayer(&player, 1.0f, level, 0xFFFFFFFF);
 
 		BeginDrawing();
 
@@ -170,18 +148,13 @@ int main(int argc, char** argv)
 				DrawRectangleLinesEx(beginHull, 1.0f / camera.zoom, GREEN);
 				DrawCircle((int)beginPos.x, (int)beginPos.y, 3.0f, GREEN);
 
-				DrawRectangleLinesEx(endHull, 1.0f / camera.zoom, BLUE);
-				DrawCircle((int)endPos.x, (int)endPos.y, 3.0f, BLUE);
+				Rectangle endHull = Player_GetWorldCollisionHull(&player);
+				DrawRectangleLinesEx(endHull, 1.0f / camera.zoom, player.onGround ? YELLOW : BLUE);
+				DrawCircle(endHull.x + (endHull.width / 2.0f), endHull.y + (endHull.height / 2.0f), 3.0f, player.onGround ? YELLOW : BLUE);
 
-				DrawLineEx(beginPos, endPos, 1.0f / camera.zoom, traceResult.collided ? YELLOW : BLACK);
+				DrawCircle((int)endPos.x, (int)endPos.y, 3.0f, GREEN);
 
-				if ( traceResult.collided )
-				{
-					DrawRectangleLinesEx(contactHull, 1.0f / camera.zoom, YELLOW);
-
-					Vector2 contactMid = RectangleMid(contactHull);
-					DrawCircle((int)contactMid.x, (int)contactMid.y, 3.0f, YELLOW);
-				}
+				DrawLineEx(beginPos, endPos, 1.0f / camera.zoom, BLACK);
 			}
 		}
 
@@ -209,25 +182,10 @@ int main(int argc, char** argv)
 
 		DrawText("Middle mouse: pan level", leftMargin, (int)(50.0f * dpiScale.y), fontSize, BLACK);
 
-		if ( traceResult.collided )
-		{
-			snprintf(buffer, sizeof(buffer), "Collision: (%f, %f)", traceResult.contactPosition.x, traceResult.contactPosition.y);
-		}
-		else
-		{
-			snprintf(buffer, sizeof(buffer), "Collision: None");
-		}
-
-		buffer[sizeof(buffer) - 1] = '\0';
-		DrawText(buffer, leftMargin, (int)(70.0f * dpiScale.y), fontSize, BLACK);
-
-		guiRect.y = 90.0f * dpiScale.y;
+		guiRect.y = 70.0f * dpiScale.y;
 		snprintf(buffer, sizeof(buffer), "%.2f", guiValues.levelScale);
 		buffer[sizeof(buffer) - 1] = '\0';
 		guiValues.levelScale = GuiSlider(guiRect, "Level scale: ", buffer, guiValues.levelScale, 1, 100);
-
-		guiRect.y = 110.0f * dpiScale.y;
-		guiValues.snapToContactPositionClicked = GuiButton(guiRect, "Snap to contact position");
 
 		EndDrawing();
 	}

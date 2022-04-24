@@ -3,6 +3,8 @@
 #include "gamelib/gameutil.h"
 #include "raymath.h"
 
+#define CONTACT_ADJUST_DIST 0.01f
+
 void PlatformMovement_MovePlayer(Player* player, float deltaTime, PlatformerLevel level, uint32_t collisionLayers)
 {
 	if ( !player )
@@ -16,6 +18,7 @@ void PlatformMovement_MovePlayer(Player* player, float deltaTime, PlatformerLeve
 
 	if ( !result.collided )
 	{
+		player->onGround = false;
 		player->position = Vector2Add(player->position, delta);
 		return;
 	}
@@ -23,6 +26,6 @@ void PlatformMovement_MovePlayer(Player* player, float deltaTime, PlatformerLeve
 	hull.x = result.contactPosition.x;
 	hull.y = result.contactPosition.y;
 
-	player->position = RectangleMid(hull);
+	player->position = Vector2Add(RectangleMid(hull), Vector2Scale(result.contactNormal, CONTACT_ADJUST_DIST));
 	player->onGround = result.endedColliding || Vector2DotProduct(result.contactNormal, (Vector2){ 0.0f, -1.0f }) > 0.5f;
 }
