@@ -5,9 +5,17 @@
 
 #define CONTACT_ADJUST_DIST 0.01f
 
+static inline bool CheckIfStandingOnGround(Player* player, World* world, uint32_t collisionLayers)
+{
+	Vector2 delta = (Vector2){ 0.0f, CONTACT_ADJUST_DIST };
+	Rectangle hull = Player_GetWorldCollisionHull(player);
+
+	return TraceRectangleMovementInLevel(hull, delta, world->level, collisionLayers).collided;
+}
+
 void PlatformMovement_MovePlayer(Player* player, float deltaTime, World* world, uint32_t collisionLayers)
 {
-	if ( !player )
+	if ( !player || !world )
 	{
 		return;
 	}
@@ -25,16 +33,22 @@ void PlatformMovement_MovePlayer(Player* player, float deltaTime, World* world, 
 	Rectangle hull = Player_GetWorldCollisionHull(player);
 	TraceResult result = TraceRectangleMovementInLevel(hull, delta, world->level, collisionLayers);
 
-	if ( !result.collided )
+	if ( result.collided )
 	{
-		player->onGround = false;
+		hull.x = result.contactPosition.x;
+		hull.y = result.contactPosition.y;
+
+		player->position = Vector2Add(RectangleMid(hull), Vector2Scale(result.contactNormal, CONTACT_ADJUST_DIST));
+		player->onGround = result.endedColliding || Vector2DotProduct(result.contactNormal, (Vector2){ 0.0f, -1.0f }) > 0.5f;
+	}
+	else
+	{
 		player->position = Vector2Add(player->position, delta);
-		return;
+		player->onGround = false;
 	}
 
-	hull.x = result.contactPosition.x;
-	hull.y = result.contactPosition.y;
-
-	player->position = Vector2Add(RectangleMid(hull), Vector2Scale(result.contactNormal, CONTACT_ADJUST_DIST));
-	player->onGround = result.endedColliding || Vector2DotProduct(result.contactNormal, (Vector2){ 0.0f, -1.0f }) > 0.5f;
+	if ( !player->onGround && CheckIfStandingOnGround(player, world, collisionLayers) )
+	{
+		player->onGround = true;
+	}
 }

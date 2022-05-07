@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 	GuiSetStyle(DEFAULT, TEXT_SIZE, (int)((float)GuiGetStyle(DEFAULT, TEXT_SIZE) * dpiScale.x));
 
 	World world = { 0 };
-	world.gravity = 2.0f;
+	world.gravity = 0.5f;
 	world.level.scale = 10.0f;
 	PlatformerLevel_LoadLayer(&world.level, 0, "res/maps/test.png");
 	Vector2i levelDim = PlatformerLevel_GetLayerDimensions(world.level, 0);
@@ -41,6 +41,8 @@ int main(int argc, char** argv)
 	Player player = { 0 };
 	player.collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
 	player.position = (Vector2){ 1000.0f, 0.0f };
+
+	const Vector2 movementScale = (Vector2){ 5.0f, 10.0f };
 
 	Vector2 startPos = player.position;
 
@@ -91,10 +93,14 @@ int main(int argc, char** argv)
 
 		if ( IsKeyPressed(KEY_UP) && player.onGround )
 		{
-			movement.y -= 5.0f;
+			movement.y -= 1.0f;
 		}
 
-		player.velocity = Vector2Scale(movement, 10.0f);
+		movement = Vector2Multiply(movement, movementScale);
+
+		player.velocity.x = movement.x;
+		player.velocity.y += movement.y;
+
 		PlatformMovement_MovePlayer(&player, 1.0f, &world, 0xFFFFFFFF);
 
 		BeginDrawing();

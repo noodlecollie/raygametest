@@ -9,7 +9,7 @@ typedef struct TraceResult
 {
 	bool collided;
 	bool beganColliding;
-	bool endedColliding;
+	bool endedColliding;	// If the trace ended while still inside a collider
 	float fraction;
 	Vector2 contactPosition;
 	Vector2 contactNormal;

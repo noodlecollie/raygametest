@@ -150,7 +150,7 @@ int main(int argc, char** argv)
 
 				Rectangle endHull = Player_GetWorldCollisionHull(&player);
 				DrawRectangleLinesEx(endHull, 1.0f / camera.zoom, player.onGround ? YELLOW : BLUE);
-				DrawCircle(endHull.x + (endHull.width / 2.0f), endHull.y + (endHull.height / 2.0f), 3.0f, player.onGround ? YELLOW : BLUE);
+				DrawCircle((int)(endHull.x + (endHull.width / 2.0f)), (int)(endHull.y + (endHull.height / 2.0f)), 3.0f, player.onGround ? YELLOW : BLUE);
 
 				DrawCircle((int)endPos.x, (int)endPos.y, 3.0f, GREEN);
 
