@@ -3,7 +3,7 @@
 #include "raymath.h"
 #include "raygui.h"
 
-#include "gamelib/platformerlevel.h"
+#include "gamelib/world.h"
 #include "gamelib/trace.h"
 #include "gamelib/gameutil.h"
 #include "gamelib/player.h"
@@ -41,13 +41,13 @@ int main(int argc, char** argv)
 
 	const Rectangle guiBounds = { 0.0f, 0.0f, 240.0f * dpiScale.x, 140.0f * dpiScale.y };
 
-	PlatformerLevel level = { 0 };
-	level.scale = (float)guiValues.levelScale;
-	PlatformerLevel_LoadLayer(&level, 0, "res/maps/test.png");
-	Vector2i levelDim = PlatformerLevel_GetLayerDimensions(level, 0);
+	World world = { 0 };
+	world.level.scale = (float)guiValues.levelScale;
+	PlatformerLevel_LoadLayer(&world.level, 0, "res/maps/test.png");
+	Vector2i levelDim = PlatformerLevel_GetLayerDimensions(world.level, 0);
 
 	Camera2D camera = { 0 };
-	camera.target = (Vector2){ ((float)levelDim.x / 2.0f) * level.scale, ((float)levelDim.y / 2.0f) * level.scale };
+	camera.target = (Vector2){ ((float)levelDim.x / 2.0f) * world.level.scale, ((float)levelDim.y / 2.0f) * world.level.scale };
 	camera.offset = (Vector2){ (float)screenWidth / 2.0f, (float)screenHeight / 2.0f };
 	camera.rotation = 0.0f;
 	camera.zoom = 1.0f;
@@ -62,7 +62,7 @@ int main(int argc, char** argv)
 
 	while ( !WindowShouldClose() )
 	{
-		level.scale = (float)guiValues.levelScale;
+		world.level.scale = (float)guiValues.levelScale;
 
 		bool mouseIsInGuiArea = CheckCollisionPointRec(GetMousePosition(), guiBounds);
 
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
 
 		Rectangle beginHull = Player_GetWorldCollisionHull(&player);
 
-		PlatformMovement_MovePlayer(&player, 1.0f, level, 0xFFFFFFFF);
+		PlatformMovement_MovePlayer(&player, 1.0f, &world, 0xFFFFFFFF);
 
 		BeginDrawing();
 
@@ -132,14 +132,14 @@ int main(int argc, char** argv)
 
 		BeginMode2D(camera);
 
-		Vector2i dims = PlatformerLevel_GetLayerDimensions(level, 0);
+		Vector2i dims = PlatformerLevel_GetLayerDimensions(world.level, 0);
 
 		for ( int y = 0; y < dims.y; ++y )
 		{
 			for ( int x = 0; x < dims.x; ++x )
 			{
-				Rectangle blockRect = PlatformerLevel_GetBlockWorldRectByCoOrds(level, (Vector2i){ x, y });
-				Color blockColour = PlatformerLevel_GetBlockColourByCoOrds(level, 0, (Vector2i){ x, y });
+				Rectangle blockRect = PlatformerLevel_GetBlockWorldRectByCoOrds(world.level, (Vector2i){ x, y });
+				Color blockColour = PlatformerLevel_GetBlockColourByCoOrds(world.level, 0, (Vector2i){ x, y });
 				DrawRectangleRec(blockRect, blockColour);
 			}
 
@@ -190,7 +190,7 @@ int main(int argc, char** argv)
 		EndDrawing();
 	}
 
-	PlatformerLevel_Unload(level);
+	PlatformerLevel_Unload(world.level);
 	CloseWindow();
 
 	return 0;

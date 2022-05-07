@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "raylib.h"
 #include "raymath.h"
-#include "gamelib/platformerlevel.h"
+#include "gamelib/world.h"
 #include "gamelib/gameutil.h"
 #include "gamelib/player.h"
 #include "gamelib/platformmovement.h"
@@ -23,9 +23,9 @@ int main(int argc, char** argv)
 	camera.rotation = 0.0f;
 	camera.zoom = 1.0f;
 
-	PlatformerLevel level = { 0 };
-	level.scale = 10.0f;
-	PlatformerLevel_LoadLayer(&level, 0, "res/maps/test.png");
+	World world = { 0 };
+	world.level.scale = 10.0f;
+	PlatformerLevel_LoadLayer(&world.level, 0, "res/maps/test.png");
 
 	Player player = { 0 };
 	player.collisionHull = (Rectangle){ -5.0f, -5.0f, 10.0f, 10.0f };
@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 			player.velocity.y = 0;
 		}
 
-		PlatformMovement_MovePlayer(&player, deltaTime, level, 0xFFFFFFFF);
+		PlatformMovement_MovePlayer(&player, deltaTime, &world, 0xFFFFFFFF);
 
 		BeginDrawing();
 
@@ -83,14 +83,14 @@ int main(int argc, char** argv)
 
 		BeginMode2D(camera);
 
-		Vector2i dims = PlatformerLevel_GetLayerDimensions(level, 0);
+		Vector2i dims = PlatformerLevel_GetLayerDimensions(world.level, 0);
 
 		for ( int y = 0; y < dims.y; ++y )
 		{
 			for ( int x = 0; x < dims.x; ++x )
 			{
-				Rectangle blockRect = PlatformerLevel_GetBlockWorldRectByCoOrds(level, (Vector2i){ x, y });
-				Color blockColour = PlatformerLevel_GetBlockColourByCoOrds(level, 0, (Vector2i){ x, y });
+				Rectangle blockRect = PlatformerLevel_GetBlockWorldRectByCoOrds(world.level, (Vector2i){ x, y });
+				Color blockColour = PlatformerLevel_GetBlockColourByCoOrds(world.level, 0, (Vector2i){ x, y });
 				DrawRectangleRec(blockRect, blockColour);
 			}
 		}
@@ -107,7 +107,7 @@ int main(int argc, char** argv)
 		EndDrawing();
 	}
 
-	PlatformerLevel_Unload(level);
+	PlatformerLevel_Unload(world.level);
 	CloseWindow();
 
 	return 0;

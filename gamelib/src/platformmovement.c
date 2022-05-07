@@ -5,16 +5,25 @@
 
 #define CONTACT_ADJUST_DIST 0.01f
 
-void PlatformMovement_MovePlayer(Player* player, float deltaTime, PlatformerLevel level, uint32_t collisionLayers)
+void PlatformMovement_MovePlayer(Player* player, float deltaTime, World* world, uint32_t collisionLayers)
 {
 	if ( !player )
 	{
 		return;
 	}
 
+	if ( !player->onGround )
+	{
+		player->velocity.y += world->gravity * deltaTime;
+	}
+	else if ( player->velocity.y > 0.0f )
+	{
+		player->velocity.y = 0.0f;
+	}
+
 	Vector2 delta = Vector2Scale(player->velocity, deltaTime);
 	Rectangle hull = Player_GetWorldCollisionHull(player);
-	TraceResult result = TraceRectangleMovementInLevel(hull, delta, level, collisionLayers);
+	TraceResult result = TraceRectangleMovementInLevel(hull, delta, world->level, collisionLayers);
 
 	if ( !result.collided )
 	{
