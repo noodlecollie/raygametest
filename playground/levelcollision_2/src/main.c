@@ -149,12 +149,14 @@ int main(int argc, char** argv)
 				DrawCircle((int)beginPos.x, (int)beginPos.y, 3.0f, GREEN);
 
 				Rectangle endHull = Player_GetWorldCollisionHull(&player);
+				Vector2 endHullMid = RectangleMid(endHull);
 				DrawRectangleLinesEx(endHull, 1.0f / camera.zoom, player.onGround ? YELLOW : BLUE);
-				DrawCircle((int)(endHull.x + (endHull.width / 2.0f)), (int)(endHull.y + (endHull.height / 2.0f)), 3.0f, player.onGround ? YELLOW : BLUE);
+				DrawCircle((int)(endHullMid.x), (int)(endHullMid.y), 3.0f, player.onGround ? YELLOW : BLUE);
 
 				DrawCircle((int)endPos.x, (int)endPos.y, 3.0f, GREEN);
 
 				DrawLineEx(beginPos, endPos, 1.0f / camera.zoom, BLACK);
+				DrawLineEx(endHullMid, Vector2Add(endHullMid, player.velocity), 1.0f / camera.zoom, YELLOW);
 			}
 		}
 
