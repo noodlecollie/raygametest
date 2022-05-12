@@ -132,8 +132,8 @@ int main(int argc, char** argv)
 
 			if ( traceResult.collided )
 			{
-				contactHull.x = traceResult.contactPosition.x;
-				contactHull.y = traceResult.contactPosition.y;
+				contactHull.x = traceResult.endPosition.x;
+				contactHull.y = traceResult.endPosition.y;
 			}
 		}
 
@@ -211,7 +211,7 @@ int main(int argc, char** argv)
 
 		if ( traceResult.collided )
 		{
-			snprintf(buffer, sizeof(buffer), "Collision: (%f, %f)", traceResult.contactPosition.x, traceResult.contactPosition.y);
+			snprintf(buffer, sizeof(buffer), "Collision: (%f, %f)", traceResult.endPosition.x, traceResult.endPosition.y);
 		}
 		else
 		{

@@ -11,7 +11,7 @@ typedef struct TraceResult
 	bool beganColliding;
 	bool endedColliding;	// If the trace ended while still inside a collider
 	float fraction;
-	Vector2 contactPosition;
+	Vector2 endPosition;
 	Vector2 contactNormal;
 } TraceResult;
 

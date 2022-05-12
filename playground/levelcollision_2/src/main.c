@@ -121,6 +121,7 @@ int main(int argc, char** argv)
 
 		player.position = beginPos;
 		player.velocity = traceDelta;
+		player.onGround = false;
 
 		Rectangle beginHull = Player_GetWorldCollisionHull(&player);
 

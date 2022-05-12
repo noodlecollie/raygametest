@@ -43,7 +43,7 @@ static void ClipTraceToLevelLayer(const Rectangle* hull, const Vector2* delta, c
 			{
 				result->collided = true;
 				result->contactNormal = contactNormal;
-				result->contactPosition = (Vector2){ contact.x, contact.y };
+				result->endPosition = (Vector2){ contact.x, contact.y };
 				result->fraction = fraction;
 				result->beganColliding = Vector2IsZero(contactNormal) || Vector2DotProduct(contactNormal, *delta) > 0.0f;
 				result->endedColliding = result->beganColliding && result->fraction >= 1.0f;
@@ -56,6 +56,7 @@ TraceResult TraceRectangleMovementInLevel(Rectangle hull, Vector2 delta, Platfor
 {
 	TraceResult result = { 0 };
 	result.fraction = 1.0f;
+	result.endPosition = (Vector2){ hull.x + delta.x, hull.y + delta.y };
 
 	if ( collisionLayers != 0 )
 	{
