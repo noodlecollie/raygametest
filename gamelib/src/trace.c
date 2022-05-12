@@ -52,7 +52,7 @@ static void ClipTraceToLevelLayer(const Rectangle* hull, const Vector2* delta, c
 	}
 }
 
-TraceResult TraceRectangleMovementInLevel(Rectangle hull, Vector2 delta, PlatformerLevel level, uint32_t collisionLayers)
+TraceResult TraceRectangleMovementInLevel(Rectangle hull, Vector2 delta, PlatformerLevel level, Mask32 collisionLayers)
 {
 	TraceResult result = { 0 };
 	result.fraction = 1.0f;

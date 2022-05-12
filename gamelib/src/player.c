@@ -1,18 +1,20 @@
 #include "gamelib/player.h"
 
-Rectangle Player_GetWorldCollisionHull(const Player* player)
+Player Player_Create(void)
 {
-	Rectangle hull = { 0 };
+	Player player = { 0 };
 
+	player.entity = Entity_Create();
+
+	return player;
+}
+
+void Player_Destroy(Player* player)
+{
 	if ( !player )
 	{
-		return hull;
+		return;
 	}
 
-	hull.x = player->position.x + player->collisionHull.x;
-	hull.y = player->position.y + player->collisionHull.y;
-	hull.width = player->collisionHull.width;
-	hull.height = player->collisionHull.height;
-
-	return hull;
+	Entity_Destroy(player->entity);
 }

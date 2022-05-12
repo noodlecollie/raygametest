@@ -1,7 +1,10 @@
 include(compile_options)
 
 add_library(gamelib STATIC
+	src/entity/entity.c
+	src/entity/physicscomponent.c
 	src/gameutil.c
+	src/physics.c
 	src/platformerlevel.c
 	src/platformmovement.c
 	src/player.c

@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 	GuiSetStyle(DEFAULT, TEXT_SIZE, (int)((float)GuiGetStyle(DEFAULT, TEXT_SIZE) * dpiScale.x));
 
 	World world = { 0 };
-	world.gravity = 0.5f;
+	world.gravity = 1000.0f;
 	world.level.scale = 10.0f;
 	PlatformerLevel_LoadLayer(&world.level, 0, "res/maps/test.png");
 	Vector2i levelDim = PlatformerLevel_GetLayerDimensions(world.level, 0);
@@ -38,13 +38,17 @@ int main(int argc, char** argv)
 	camera.rotation = 0.0f;
 	camera.zoom = 1.0f;
 
-	Player player = { 0 };
-	player.collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
-	player.position = (Vector2){ 1000.0f, 0.0f };
+	Player player = Player_Create();
 
-	const Vector2 movementScale = (Vector2){ 5.0f, 10.0f };
+	PhysicsComponent* playerPhys = Entity_PhysicsComponent(player.entity);
+	playerPhys->collisionMask = 0xFFFFFFFF;
+	playerPhys->gravityModifier = 1.0f;
+	playerPhys->position = (Vector2){ 1000.0f, 0.0f };
+	playerPhys->collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
 
-	Vector2 startPos = player.position;
+	const Vector2 movementScale = (Vector2){ 200.0f, 450.0f };
+
+	Vector2 startPos = playerPhys->position;
 
 	SetTargetFPS(60);
 
@@ -72,12 +76,12 @@ int main(int argc, char** argv)
 
 		if ( IsKeyPressed(KEY_R) )
 		{
-			player.position = startPos;
-			player.velocity = Vector2Zero();
+			playerPhys->position = startPos;
+			playerPhys->velocity = Vector2Zero();
 			camera.zoom = 1.0f;
 		}
 
-		camera.target = player.position;
+		camera.target = playerPhys->position;
 
 		Vector2 movement = Vector2Zero();
 
@@ -98,10 +102,10 @@ int main(int argc, char** argv)
 
 		movement = Vector2Multiply(movement, movementScale);
 
-		player.velocity.x = movement.x;
-		player.velocity.y += movement.y;
+		playerPhys->velocity.x = movement.x;
+		playerPhys->velocity.y += movement.y;
 
-		PlatformMovement_MovePlayer(&player, 1.0f, &world, 0xFFFFFFFF);
+		PlatformMovement_MovePlayer(&player, &world);
 
 		BeginDrawing();
 
@@ -120,7 +124,7 @@ int main(int argc, char** argv)
 				DrawRectangleRec(blockRect, blockColour);
 			}
 
-			DrawRectangleRec(Player_GetWorldCollisionHull(&player), player.onGround ? YELLOW : RED);
+			DrawRectangleRec(PhysicsComponent_GetWorldCollisionHull(playerPhys), player.onGround ? YELLOW : RED);
 		}
 
 		EndMode2D();
@@ -130,17 +134,18 @@ int main(int argc, char** argv)
 
 		char buffer[64];
 
-		snprintf(buffer, sizeof(buffer), "Player position: (%.2f, %.2f)", player.position.x, player.position.y);
+		snprintf(buffer, sizeof(buffer), "Player position: (%.2f, %.2f)", playerPhys->position.x, playerPhys->position.y);
 		buffer[sizeof(buffer) - 1] = '\0';
 		DrawText(buffer, leftMargin, (int)(10.0f * dpiScale.y), fontSize, BLUE);
 
-		snprintf(buffer, sizeof(buffer), "Player velocity: (%.2f, %.2f)", player.velocity.x, player.velocity.y);
+		snprintf(buffer, sizeof(buffer), "Player velocity: (%.2f, %.2f)", playerPhys->velocity.x, playerPhys->velocity.y);
 		buffer[sizeof(buffer) - 1] = '\0';
 		DrawText(buffer, leftMargin, (int)(30.0f * dpiScale.y), fontSize, BLUE);
 
 		EndDrawing();
 	}
 
+	Player_Destroy(&player);
 	PlatformerLevel_Unload(world.level);
 	CloseWindow();
 

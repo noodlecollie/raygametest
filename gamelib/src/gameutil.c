@@ -80,6 +80,13 @@ Vector2 Vector2RoundToIntegers(Vector2 vec)
 	return (Vector2){ roundf(vec.x), roundf(vec.y) };
 }
 
+Vector2 Vector2ProjectAlongSurface(Vector2 delta, Vector2 surfaceNormal)
+{
+	const Vector2 parallelDir = Vector2PerpendicularClockwise(surfaceNormal);
+	const float dotProduct = Vector2DotProduct(delta, parallelDir);
+	return Vector2Scale(parallelDir, dotProduct);
+}
+
 Vector2 RectangleMin(Rectangle rect)
 {
 	return (Vector2){ rect.x, rect.y };

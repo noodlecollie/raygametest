@@ -2,16 +2,14 @@
 
 #include <stdbool.h>
 #include "raylib.h"
+#include "gamelib/entity/entity.h"
 
+// TODO: This should be a component on an entity, instead of an entity within a player
 typedef struct Player
 {
-	Vector2 position;
-
-	// Units/sec
-	Vector2 velocity;
-
-	Rectangle collisionHull;
+	Entity entity;
 	bool onGround;
 } Player;
 
-Rectangle Player_GetWorldCollisionHull(const Player* player);
+Player Player_Create(void);
+void Player_Destroy(Player* player);

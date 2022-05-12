@@ -55,8 +55,10 @@ int main(int argc, char** argv)
 	Vector2 beginPos = Vector2Zero();
 	Vector2 endPos = Vector2Zero();
 
-	Player player = { 0 };
-	player.collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
+	Player player = Player_Create();
+	PhysicsComponent* playerPhys = Entity_PhysicsComponent(player.entity);
+	playerPhys->collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
+	playerPhys->collisionMask = 0xFFFFFFFF;
 
 	SetTargetFPS(60);
 
@@ -119,13 +121,20 @@ int main(int argc, char** argv)
 
 		Vector2 traceDelta = Vector2Subtract(endPos, beginPos);
 
-		player.position = beginPos;
-		player.velocity = traceDelta;
+		playerPhys->position = beginPos;
+		playerPhys->velocity = traceDelta;
 		player.onGround = false;
 
-		Rectangle beginHull = Player_GetWorldCollisionHull(&player);
+		Rectangle beginHull = PhysicsComponent_GetWorldCollisionHull(playerPhys);
+		float deltaTime = GetFrameTime();
 
-		PlatformMovement_MovePlayer(&player, 1.0f, &world, 0xFFFFFFFF);
+		if ( deltaTime > 0.0f )
+		{
+			// Scale velocity up so that it'll be scaled down again by the simulation.
+			playerPhys->velocity = Vector2Scale(playerPhys->velocity, 1.0f / deltaTime);
+			PlatformMovement_MovePlayer(&player, &world);
+			playerPhys->velocity = Vector2Scale(playerPhys->velocity, deltaTime);
+		}
 
 		BeginDrawing();
 
@@ -149,7 +158,7 @@ int main(int argc, char** argv)
 				DrawRectangleLinesEx(beginHull, 1.0f / camera.zoom, GREEN);
 				DrawCircle((int)beginPos.x, (int)beginPos.y, 3.0f, GREEN);
 
-				Rectangle endHull = Player_GetWorldCollisionHull(&player);
+				Rectangle endHull = PhysicsComponent_GetWorldCollisionHull(playerPhys);
 				Vector2 endHullMid = RectangleMid(endHull);
 				DrawRectangleLinesEx(endHull, 1.0f / camera.zoom, player.onGround ? YELLOW : BLUE);
 				DrawCircle((int)(endHullMid.x), (int)(endHullMid.y), 3.0f, player.onGround ? YELLOW : BLUE);
@@ -157,7 +166,7 @@ int main(int argc, char** argv)
 				DrawCircle((int)endPos.x, (int)endPos.y, 3.0f, GREEN);
 
 				DrawLineEx(beginPos, endPos, 1.0f / camera.zoom, BLACK);
-				DrawLineEx(endHullMid, Vector2Add(endHullMid, player.velocity), 1.0f / camera.zoom, YELLOW);
+				DrawLineEx(endHullMid, Vector2Add(endHullMid, playerPhys->velocity), 1.0f / camera.zoom, YELLOW);
 			}
 		}
 

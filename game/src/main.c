@@ -25,19 +25,19 @@ int main(int argc, char** argv)
 
 	World world = { 0 };
 	world.level.scale = 10.0f;
+	world.gravity = 100.0f;
 	PlatformerLevel_LoadLayer(&world.level, 0, "res/maps/test.png");
 
-	Player player = { 0 };
-	player.collisionHull = (Rectangle){ -5.0f, -5.0f, 10.0f, 10.0f };
-	const float playerSpeed = 5000.0f;
-	const float gravity = 100.0f;
+	Player player = Player_Create();
+	PhysicsComponent* playerPhys = Entity_PhysicsComponent(player.entity);
+	playerPhys->collisionHull = (Rectangle){ -5.0f, -5.0f, 10.0f, 10.0f };
+	playerPhys->collisionMask = 0xFFFFFFFF;
+	const float playerSpeed = 500.0f;
 
 	SetTargetFPS(60);
 
 	while ( !WindowShouldClose() )
 	{
-		float deltaTime = GetFrameTime();
-
 		camera.zoom += (float)GetMouseWheelMove() * 0.05f;
 
 		if ( camera.zoom > 3.0f )
@@ -54,28 +54,22 @@ int main(int argc, char** argv)
 			camera.zoom = 1.0f;
 		}
 
-		player.velocity.x = 0;
+		playerPhys->velocity.x = 0;
 
 		if ( IsKeyDown(KEY_LEFT) )
 		{
-			player.velocity.x -= playerSpeed * deltaTime;
+			playerPhys->velocity.x = -playerSpeed;
 		}
-
-		if ( IsKeyDown(KEY_RIGHT) )
+		else if ( IsKeyDown(KEY_RIGHT) )
 		{
-			player.velocity.x += playerSpeed * deltaTime;
-		}
-
-		if ( !player.onGround )
-		{
-			player.velocity.y += gravity * deltaTime;
+			playerPhys->velocity.x = playerSpeed;
 		}
 		else
 		{
-			player.velocity.y = 0;
+			playerPhys->velocity.x = 0.0f;
 		}
 
-		PlatformMovement_MovePlayer(&player, deltaTime, &world, 0xFFFFFFFF);
+		PlatformMovement_MovePlayer(&player, &world);
 
 		BeginDrawing();
 
@@ -95,13 +89,13 @@ int main(int argc, char** argv)
 			}
 		}
 
-		Rectangle playerRect = Player_GetWorldCollisionHull(&player);
+		Rectangle playerRect = PhysicsComponent_GetWorldCollisionHull(playerPhys);
 		DrawRectangle((int)playerRect.x, (int)playerRect.y, (int)playerRect.width, (int)playerRect.height, RED);
 
 		EndMode2D();
 
 		char buffer[64];
-		snprintf(buffer, sizeof(buffer), "Player: (%.2f, %.2f) [%.2f, %.2f]", player.position.x, player.position.y, player.velocity.x, player.velocity.y);
+		snprintf(buffer, sizeof(buffer), "Player: (%.2f, %.2f) [%.2f, %.2f]", playerPhys->position.x, playerPhys->position.y, playerPhys->velocity.x, playerPhys->velocity.y);
 		DrawText(buffer, 10, 10, 10, BLACK);
 
 		EndDrawing();

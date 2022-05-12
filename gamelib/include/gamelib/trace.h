@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include "raylib.h"
+#include "gamelib/gametypes.h"
 #include "gamelib/platformerlevel.h"
 #include "gamelib/player.h"
 
@@ -15,4 +16,4 @@ typedef struct TraceResult
 	Vector2 contactNormal;
 } TraceResult;
 
-TraceResult TraceRectangleMovementInLevel(Rectangle hull, Vector2 delta, PlatformerLevel level, uint32_t collisionLayers);
+TraceResult TraceRectangleMovementInLevel(Rectangle hull, Vector2 delta, PlatformerLevel level, Mask32 collisionLayers);

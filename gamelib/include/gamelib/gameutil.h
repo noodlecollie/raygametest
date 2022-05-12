@@ -17,6 +17,7 @@ Vector2 Vector2PerpendicularClockwise(Vector2 vec);
 Vector2 Vector2PerpendicularCounterClockwise(Vector2 vec);
 Vector2 Vector2CollapseEpsilonComponents(Vector2 vec);
 Vector2 Vector2RoundToIntegers(Vector2 vec);
+Vector2 Vector2ProjectAlongSurface(Vector2 delta, Vector2 surfaceNormal);
 
 // Assumes the rect is normalised.
 Vector2 RectangleMin(Rectangle rect);
