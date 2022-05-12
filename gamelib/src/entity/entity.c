@@ -55,7 +55,7 @@ PhysicsComponent* Entity_PhysicsComponent(Entity ent)
 	if ( !(*component) )
 	{
 		*component = MemAlloc(sizeof(PhysicsComponent));
-		**component = PhysicsComponent_Create();
+		**component = PhysicsComponent_Create(ent);
 	}
 
 	return *component;

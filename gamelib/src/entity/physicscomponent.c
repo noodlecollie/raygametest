@@ -17,10 +17,11 @@ Rectangle PhysicsComponent_GetWorldCollisionHull(const PhysicsComponent* compone
 	return hull;
 }
 
-PhysicsComponent PhysicsComponent_Create(void)
+PhysicsComponent PhysicsComponent_Create(struct Entity* ownerEntity)
 {
 	PhysicsComponent component = { 0 };
 
+	component.ownerEntity = ownerEntity;
 	component.gravityModifier = 1.0f;
 
 	return component;

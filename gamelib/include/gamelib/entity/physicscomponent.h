@@ -4,8 +4,11 @@
 #include "raylib.h"
 #include "gamelib/gametypes.h"
 
+struct Entity;
+
 typedef struct PhysicsComponent
 {
+	struct Entity* ownerEntity;
 	Vector2 position;
 	Vector2 velocity;
 	Rectangle collisionHull;
@@ -13,6 +16,6 @@ typedef struct PhysicsComponent
 	Mask32 collisionMask;
 } PhysicsComponent;
 
-PhysicsComponent PhysicsComponent_Create(void);
+PhysicsComponent PhysicsComponent_Create(struct Entity* ownerEntity);
 
 Rectangle PhysicsComponent_GetWorldCollisionHull(const PhysicsComponent* component);
