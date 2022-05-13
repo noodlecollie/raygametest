@@ -24,39 +24,39 @@ void EntityImpl_Destroy(EntityImpl* impl)
 	MemFree(impl);
 }
 
-PhysicsComponent* EntityImpl_GetPhysicsComponent(EntityImpl* impl)
+struct PhysicsComponent* EntityImpl_GetPhysicsComponent(Entity* ent)
 {
-	return impl ? impl->components[COMPONENT_PHYSICS] : NULL;
+	return (ent && ent->impl) ? ent->impl->components[COMPONENT_PHYSICS] : NULL;
 }
 
-PhysicsComponent* EntityImpl_AddPhysicsComponent(EntityImpl* impl)
+struct PhysicsComponent* EntityImpl_AddPhysicsComponent(Entity* ent)
 {
-	if ( !impl )
+	if ( !ent || !ent->impl )
 	{
 		return NULL;
 	}
 
-	PhysicsComponent** component = (PhysicsComponent**)&impl->components[COMPONENT_PHYSICS];
+	PhysicsComponent** component = (PhysicsComponent**)&ent->impl->components[COMPONENT_PHYSICS];
 
 	if ( !*component )
 	{
 		*component = (PhysicsComponent*)MemAlloc(sizeof(PhysicsComponent));
 
-		(*component)->ownerEntity = &impl->entity;
+		(*component)->ownerEntity = &ent->impl->entity;
 		(*component)->gravityModifier = 1.0f;
 	}
 
 	return *component;
 }
 
-void EntityImpl_RemovePhysicsComponent(EntityImpl* impl)
+void EntityImpl_RemovePhysicsComponent(Entity* ent)
 {
-	if ( !impl )
+	if ( !ent || !ent->impl )
 	{
 		return;
 	}
 
-	PhysicsComponent** component = (PhysicsComponent**)&impl->components[COMPONENT_PHYSICS];
+	PhysicsComponent** component = (PhysicsComponent**)&ent->impl->components[COMPONENT_PHYSICS];
 
 	if ( *component )
 	{

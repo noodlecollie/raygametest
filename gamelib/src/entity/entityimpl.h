@@ -17,7 +17,3 @@ typedef struct EntityImpl
 } EntityImpl;
 
 void EntityImpl_Destroy(EntityImpl* impl);
-
-PhysicsComponent* EntityImpl_GetPhysicsComponent(EntityImpl* impl);
-PhysicsComponent* EntityImpl_AddPhysicsComponent(EntityImpl* impl);
-void EntityImpl_RemovePhysicsComponent(EntityImpl* impl);
