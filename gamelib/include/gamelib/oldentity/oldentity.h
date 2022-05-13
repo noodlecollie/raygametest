@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "raylib.h"
+#include "gamelib/external/raylibheaders.h"
 #include "gamelib/oldentity/oldphysicscomponent.h"
 #include "gamelib/gametypes.h"
 #include "gamelib/oldentity/oldcomponenttypes.h"

@@ -2,7 +2,7 @@
 #include "gamelib/oldentity/oldphysicscomponent.h"
 #include "gamelib/trace.h"
 #include "gamelib/gameutil.h"
-#include "raymath.h"
+#include "gamelib/external/raylibheaders.h"
 
 static inline void MoveToPosition(OldEntity* entity, const TraceResult* result)
 {

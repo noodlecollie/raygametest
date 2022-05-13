@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stddef.h>
-#include "raylib.h"
+#include "gamelib/external/raylibheaders.h"
 #include "gamelib/gametypes.h"
 
 #define TERRAIN_MAX_LAYERS 32

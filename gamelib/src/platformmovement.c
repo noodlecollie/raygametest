@@ -1,7 +1,7 @@
 #include "gamelib/platformmovement.h"
 #include "gamelib/trace.h"
 #include "gamelib/gameutil.h"
-#include "raymath.h"
+#include "gamelib/external/raylibheaders.h"
 #include "gamelib/physics.h"
 
 static inline Vector2 ProjectAlongSurface(Vector2 delta, Vector2 surfaceNormal)

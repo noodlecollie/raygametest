@@ -6,6 +6,7 @@ add_library(gamelib STATIC
 	src/oldentity/oldentity.c
 	src/oldentity/oldphysicscomponent.c
 	src/gameutil.c
+	src/memoryallocator.c
 	src/physics.c
 	src/platformmovement.c
 	src/player.c

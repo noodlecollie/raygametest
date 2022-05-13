@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raylib.h"
+#include "gamelib/external/raylibheaders.h"
 
 struct EntityImpl;
 struct PhysicsComponent;

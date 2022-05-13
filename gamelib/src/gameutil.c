@@ -1,7 +1,7 @@
 #include <float.h>
 #include <stdlib.h>
 #include "gamelib/gameutil.h"
-#include "raymath.h"
+#include "gamelib/external/raylibheaders.h"
 
 Rectangle NormaliseRectangle(Rectangle rect)
 {

@@ -1,6 +1,6 @@
 #include "gamelib/oldentity/oldphysicscomponent.h"
 #include "gamelib/oldentity/oldentity.h"
-#include "raymath.h"
+#include "gamelib/external/raylibheaders.h"
 
 OldPhysicsComponent OldPhysicsComponent_Create(struct OldEntity* ownerEntity)
 {

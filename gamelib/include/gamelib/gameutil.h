@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
-#include "raylib.h"
+#include "gamelib/external/raylibheaders.h"
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 

@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "raylib.h"
+#include "gamelib/external/raylibheaders.h"
 #include "gamelib/oldentity/oldentity.h"
 #include "gamelib/oldentity/oldcomponenttypes.h"
 #include "gamelib/gameutil.h"

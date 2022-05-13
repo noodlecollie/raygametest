@@ -1,6 +1,6 @@
 #include "gamelib/trace.h"
 #include "gamelib/gameutil.h"
-#include "raymath.h"
+#include "gamelib/external/raylibheaders.h"
 
 static void ClipTraceToLevelLayer(const Rectangle* hull, const Vector2* delta, const Terrain* level, size_t layer, TraceResult* result)
 {

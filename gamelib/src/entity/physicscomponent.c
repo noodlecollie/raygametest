@@ -1,6 +1,6 @@
 #include "gamelib/entity/physicscomponent.h"
 #include "gamelib/entity/entity.h"
-#include "raymath.h"
+#include "gamelib/external/raylibheaders.h"
 
 Rectangle OldPhysicsComponent_GetWorldCollisionHull(const PhysicsComponent* component)
 {

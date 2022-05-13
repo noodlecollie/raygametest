@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "raylib.h"
+#include "gamelib/external/raylibheaders.h"
 #include "gamelib/gametypes.h"
 #include "gamelib/terrain.h"
 #include "gamelib/player.h"

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
-#include "raylib.h"
+#include "gamelib/external/raylibheaders.h"
 #include "gamelib/oldentity/oldentity.h"
 
 typedef struct Player
