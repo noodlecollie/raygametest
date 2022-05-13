@@ -1,6 +1,5 @@
 #include <stdio.h>
-#include "raylib.h"
-#include "raymath.h"
+#include "gamelib/external/raylibheaders.h"
 #include "raygui.h"
 
 #include "gamelib/oldworld.h"
