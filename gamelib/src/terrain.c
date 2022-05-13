@@ -10,98 +10,107 @@ typedef struct TerrainLayer
 	Image image;
 } TerrainLayer;
 
-static inline bool CoOrdsValid(const Terrain* level, size_t layer, const Vector2i* coOrds)
+static inline bool CoOrdsValid(const Terrain* terrain, size_t layer, const Vector2i* coOrds)
 {
 	return
-		level &&
-		level->layers &&
+		terrain &&
+		terrain->layers &&
 		layer < TERRAIN_MAX_LAYERS &&
 		coOrds->x >= 0 &&
-		coOrds->x < level->layers[layer].image.width &&
+		coOrds->x < terrain->layers[layer].image.width &&
 		coOrds->y >= 0 &&
-		coOrds->y < level->layers[layer].image.height;
+		coOrds->y < terrain->layers[layer].image.height;
 }
 
-static inline void InitLayersIfRequired(Terrain* level)
+static inline void InitLayersIfRequired(Terrain* terrain)
 {
-	if ( !level->layers )
+	if ( !terrain->layers )
 	{
-		level->layers = (TerrainLayer*)MemAlloc(TERRAIN_MAX_LAYERS * sizeof(TerrainLayer));
+		terrain->layers = (TerrainLayer*)MemAlloc(TERRAIN_MAX_LAYERS * sizeof(TerrainLayer));
 	}
 }
 
-void Terrain_LoadLayer(Terrain* level, size_t layer, const char* fileName)
+void Terrain_LoadLayer(Terrain* terrain, size_t layer, const char* fileName)
 {
-	if ( !level || layer >= TERRAIN_MAX_LAYERS || !fileName || !(*fileName) )
+	if ( !terrain || layer >= TERRAIN_MAX_LAYERS || !fileName || !(*fileName) )
 	{
 		return;
 	}
 
-	InitLayersIfRequired(level);
-	Terrain_UnloadLayer(level, layer);
-	level->layers[layer].image = LoadImage(fileName);
+	InitLayersIfRequired(terrain);
+	Terrain_UnloadLayer(terrain, layer);
+	terrain->layers[layer].image = LoadImage(fileName);
 
 	TraceLog(
 		LOG_DEBUG,
 		"TERRAIN: Loaded layer %zu (%dx%d) from %s",
 		layer,
-		level->layers[layer].image.width,
-		level->layers[layer].image.height,
+		terrain->layers[layer].image.width,
+		terrain->layers[layer].image.height,
 		fileName
 	);
 }
 
-void Terrain_UnloadLayer(Terrain* level, size_t layer)
+void Terrain_UnloadLayer(Terrain* terrain, size_t layer)
 {
-	if ( !level || layer >= TERRAIN_MAX_LAYERS || !level->layers || !level->layers[layer].image.data )
+	if ( !terrain || layer >= TERRAIN_MAX_LAYERS || !terrain->layers || !terrain->layers[layer].image.data )
 	{
 		return;
 	}
 
-	UnloadImage(level->layers[layer].image);
-	level->layers[layer].image = (Image){ 0 };
+	UnloadImage(terrain->layers[layer].image);
+	terrain->layers[layer].image = (Image){ 0 };
 }
 
-Vector2i Terrain_GetLayerDimensions(Terrain level, size_t layer)
+Vector2i Terrain_GetLayerDimensions(Terrain terrain, size_t layer)
 {
-	if ( layer >= TERRAIN_MAX_LAYERS || !level.layers )
+	if ( layer >= TERRAIN_MAX_LAYERS || !terrain.layers )
 	{
 		return (Vector2i){ 0, 0 };
 	}
 
-	return (Vector2i){ level.layers[layer].image.width, level.layers[layer].image.height };
+	return (Vector2i){ terrain.layers[layer].image.width, terrain.layers[layer].image.height };
 }
 
-void Terrain_Unload(Terrain level)
+Terrain Terrain_Create(void)
 {
-	if ( !level.layers )
+	Terrain terrain = { 0 };
+
+	terrain.scale = 1.0f;
+
+	return terrain;
+}
+
+void Terrain_Unload(Terrain terrain)
+{
+	if ( !terrain.layers )
 	{
 		return;
 	}
 
 	for ( size_t index = 0; index < TERRAIN_MAX_LAYERS; ++index )
 	{
-		Terrain_UnloadLayer(&level, index);
+		Terrain_UnloadLayer(&terrain, index);
 	}
 
-	MemFree(level.layers);
+	MemFree(terrain.layers);
 }
 
-Color Terrain_GetBlockColourByCoOrds(Terrain level, size_t layer, Vector2i coOrds)
+Color Terrain_GetBlockColourByCoOrds(Terrain terrain, size_t layer, Vector2i coOrds)
 {
-	if ( !CoOrdsValid(&level, layer, &coOrds) )
+	if ( !CoOrdsValid(&terrain, layer, &coOrds) )
 	{
 		return (Color){ 0, 0, 0, 0 };
 	}
 
-	return GetImageColor(level.layers[layer].image, coOrds.x, coOrds.y);
+	return GetImageColor(terrain.layers[layer].image, coOrds.x, coOrds.y);
 }
 
-Rectangle Terrain_GetBlockWorldRectByCoOrds(Terrain level, Vector2i coOrds)
+Rectangle Terrain_GetBlockWorldRectByCoOrds(Terrain terrain, Vector2i coOrds)
 {
 	Rectangle rect = (Rectangle){ 0 };
 
-	if ( level.scale == 0.0f )
+	if ( terrain.scale == 0.0f )
 	{
 		TraceLog(LOG_DEBUG, "TERRAIN: Scale was zero!");
 		return rect;
@@ -112,21 +121,21 @@ Rectangle Terrain_GetBlockWorldRectByCoOrds(Terrain level, Vector2i coOrds)
 		return rect;
 	}
 
-	rect.x = level.scale * (float)coOrds.x;
-	rect.y = level.scale * (float)coOrds.y;
-	rect.width = level.scale;
-	rect.height = level.scale;
+	rect.x = terrain.scale * (float)coOrds.x;
+	rect.y = terrain.scale * (float)coOrds.y;
+	rect.width = terrain.scale;
+	rect.height = terrain.scale;
 
 	return rect;
 }
 
-Vector2i Terrain_PositionToCoOrds(Terrain level, Vector2 world)
+Vector2i Terrain_PositionToCoOrds(Terrain terrain, Vector2 world)
 {
-	if ( level.scale == 0.0f )
+	if ( terrain.scale == 0.0f )
 	{
 		TraceLog(LOG_DEBUG, "TERRAIN: Scale was zero!");
 		return (Vector2i){ -1, -1 };
 	}
 
-	return (Vector2i){ (int)(world.x / level.scale), (int)(world.y / level.scale) };
+	return (Vector2i){ (int)(world.x / terrain.scale), (int)(world.y / terrain.scale) };
 }

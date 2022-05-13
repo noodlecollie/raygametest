@@ -16,13 +16,14 @@ typedef struct Terrain
 	float scale;
 } Terrain;
 
-void Terrain_Unload(Terrain level);
+Terrain Terrain_Create(void);
+void Terrain_Unload(Terrain terrain);
 
-void Terrain_LoadLayer(Terrain* level, size_t layer, const char* fileName);
-void Terrain_UnloadLayer(Terrain* level, size_t layer);
-Vector2i Terrain_GetLayerDimensions(Terrain level, size_t layer);
+void Terrain_LoadLayer(Terrain* terrain, size_t layer, const char* fileName);
+void Terrain_UnloadLayer(Terrain* terrain, size_t layer);
+Vector2i Terrain_GetLayerDimensions(Terrain terrain, size_t layer);
 
-Color Terrain_GetBlockColourByCoOrds(Terrain level, size_t layer, Vector2i coOrds);
-Rectangle Terrain_GetBlockWorldRectByCoOrds(Terrain level, Vector2i coOrds);
+Color Terrain_GetBlockColourByCoOrds(Terrain terrain, size_t layer, Vector2i coOrds);
+Rectangle Terrain_GetBlockWorldRectByCoOrds(Terrain terrain, Vector2i coOrds);
 
-Vector2i Terrain_PositionToCoOrds(Terrain level, Vector2 world);
+Vector2i Terrain_PositionToCoOrds(Terrain terrain, Vector2 world);
