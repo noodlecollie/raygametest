@@ -1,9 +1,9 @@
 #pragma once
 
-#include "platformerlevel.h"
+#include "terrain.h"
 
 typedef struct World
 {
-	PlatformerLevel level;
+	Terrain level;
 	float gravity;
 } World;

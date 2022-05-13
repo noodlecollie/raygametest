@@ -3,7 +3,7 @@
 #include "raymath.h"
 #include "raygui.h"
 
-#include "gamelib/platformerlevel.h"
+#include "gamelib/terrain.h"
 #include "gamelib/trace.h"
 #include "gamelib/gameutil.h"
 
@@ -42,10 +42,10 @@ int main(int argc, char** argv)
 
 	const Rectangle guiBounds = { 0.0f, 0.0f, 240.0f * dpiScale.x, 140.0f * dpiScale.y };
 
-	PlatformerLevel level = { 0 };
+	Terrain level = { 0 };
 	level.scale = (float)guiValues.levelScale;
-	PlatformerLevel_LoadLayer(&level, 0, "res/maps/test.png");
-	Vector2i levelDim = PlatformerLevel_GetLayerDimensions(level, 0);
+	Terrain_LoadLayer(&level, 0, "res/maps/test.png");
+	Vector2i levelDim = Terrain_GetLayerDimensions(level, 0);
 
 	Camera2D camera = { 0 };
 	camera.target = (Vector2){ ((float)levelDim.x / 2.0f) * level.scale, ((float)levelDim.y / 2.0f) * level.scale };
@@ -154,14 +154,14 @@ int main(int argc, char** argv)
 
 		BeginMode2D(camera);
 
-		Vector2i dims = PlatformerLevel_GetLayerDimensions(level, 0);
+		Vector2i dims = Terrain_GetLayerDimensions(level, 0);
 
 		for ( int y = 0; y < dims.y; ++y )
 		{
 			for ( int x = 0; x < dims.x; ++x )
 			{
-				Rectangle blockRect = PlatformerLevel_GetBlockWorldRectByCoOrds(level, (Vector2i){ x, y });
-				Color blockColour = PlatformerLevel_GetBlockColourByCoOrds(level, 0, (Vector2i){ x, y });
+				Rectangle blockRect = Terrain_GetBlockWorldRectByCoOrds(level, (Vector2i){ x, y });
+				Color blockColour = Terrain_GetBlockColourByCoOrds(level, 0, (Vector2i){ x, y });
 				DrawRectangleRec(blockRect, blockColour);
 			}
 
@@ -232,7 +232,7 @@ int main(int argc, char** argv)
 		EndDrawing();
 	}
 
-	PlatformerLevel_Unload(level);
+	Terrain_Unload(level);
 	CloseWindow();
 
 	return 0;

@@ -5,9 +5,9 @@ add_library(gamelib STATIC
 	src/entity/physicscomponent.c
 	src/gameutil.c
 	src/physics.c
-	src/platformerlevel.c
 	src/platformmovement.c
 	src/player.c
+	src/terrain.c
 	src/trace.c
 )
 

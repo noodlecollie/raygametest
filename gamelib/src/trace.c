@@ -2,7 +2,7 @@
 #include "gamelib/gameutil.h"
 #include "raymath.h"
 
-static void ClipTraceToLevelLayer(const Rectangle* hull, const Vector2* delta, const PlatformerLevel* level, size_t layer, TraceResult* result)
+static void ClipTraceToLevelLayer(const Rectangle* hull, const Vector2* delta, const Terrain* level, size_t layer, TraceResult* result)
 {
 	Rectangle movementBounds = ExpandRectangle(*hull, *delta);
 
@@ -12,15 +12,15 @@ static void ClipTraceToLevelLayer(const Rectangle* hull, const Vector2* delta, c
 		return;
 	}
 
-	Vector2i blockMin = PlatformerLevel_PositionToCoOrds(*level, RectangleMin(movementBounds));
-	Vector2i blockMax = PlatformerLevel_PositionToCoOrds(*level, RectangleMax(movementBounds));
+	Vector2i blockMin = Terrain_PositionToCoOrds(*level, RectangleMin(movementBounds));
+	Vector2i blockMax = Terrain_PositionToCoOrds(*level, RectangleMax(movementBounds));
 
 	for ( int y = blockMin.y; y <= blockMax.y; ++y )
 	{
 		for ( int x = blockMin.x; x <= blockMax.x; ++x )
 		{
 			Vector2i blockCoOrds = { x, y };
-			Color blockColour = PlatformerLevel_GetBlockColourByCoOrds(*level, layer, blockCoOrds);
+			Color blockColour = Terrain_GetBlockColourByCoOrds(*level, layer, blockCoOrds);
 
 			if ( blockColour.a == 0 )
 			{
@@ -28,7 +28,7 @@ static void ClipTraceToLevelLayer(const Rectangle* hull, const Vector2* delta, c
 				continue;
 			}
 
-			Rectangle blockHull = PlatformerLevel_GetBlockWorldRectByCoOrds(*level, blockCoOrds);
+			Rectangle blockHull = Terrain_GetBlockWorldRectByCoOrds(*level, blockCoOrds);
 			Rectangle contact = { 0 };
 			Vector2 contactNormal = { 0.0f, 0.0f };
 			float fraction = 0.0f;
@@ -52,7 +52,7 @@ static void ClipTraceToLevelLayer(const Rectangle* hull, const Vector2* delta, c
 	}
 }
 
-TraceResult TraceRectangleMovementInLevel(Rectangle hull, Vector2 delta, PlatformerLevel level, Mask32 collisionLayers)
+TraceResult TraceRectangleMovementInLevel(Rectangle hull, Vector2 delta, Terrain level, Mask32 collisionLayers)
 {
 	TraceResult result = { 0 };
 	result.fraction = 1.0f;
@@ -60,7 +60,7 @@ TraceResult TraceRectangleMovementInLevel(Rectangle hull, Vector2 delta, Platfor
 
 	if ( collisionLayers != 0 )
 	{
-		for ( size_t layer = 0; layer < PLATFORMERLEVEL_MAX_LAYERS; ++layer )
+		for ( size_t layer = 0; layer < TERRAIN_MAX_LAYERS; ++layer )
 		{
 			if ( !(collisionLayers & (1 << layer)) )
 			{

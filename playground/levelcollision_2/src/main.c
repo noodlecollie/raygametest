@@ -43,8 +43,8 @@ int main(int argc, char** argv)
 
 	World world = { 0 };
 	world.level.scale = (float)guiValues.levelScale;
-	PlatformerLevel_LoadLayer(&world.level, 0, "res/maps/test.png");
-	Vector2i levelDim = PlatformerLevel_GetLayerDimensions(world.level, 0);
+	Terrain_LoadLayer(&world.level, 0, "res/maps/test.png");
+	Vector2i levelDim = Terrain_GetLayerDimensions(world.level, 0);
 
 	Camera2D camera = { 0 };
 	camera.target = (Vector2){ ((float)levelDim.x / 2.0f) * world.level.scale, ((float)levelDim.y / 2.0f) * world.level.scale };
@@ -142,14 +142,14 @@ int main(int argc, char** argv)
 
 		BeginMode2D(camera);
 
-		Vector2i dims = PlatformerLevel_GetLayerDimensions(world.level, 0);
+		Vector2i dims = Terrain_GetLayerDimensions(world.level, 0);
 
 		for ( int y = 0; y < dims.y; ++y )
 		{
 			for ( int x = 0; x < dims.x; ++x )
 			{
-				Rectangle blockRect = PlatformerLevel_GetBlockWorldRectByCoOrds(world.level, (Vector2i){ x, y });
-				Color blockColour = PlatformerLevel_GetBlockColourByCoOrds(world.level, 0, (Vector2i){ x, y });
+				Rectangle blockRect = Terrain_GetBlockWorldRectByCoOrds(world.level, (Vector2i){ x, y });
+				Color blockColour = Terrain_GetBlockColourByCoOrds(world.level, 0, (Vector2i){ x, y });
 				DrawRectangleRec(blockRect, blockColour);
 			}
 
@@ -202,7 +202,7 @@ int main(int argc, char** argv)
 		EndDrawing();
 	}
 
-	PlatformerLevel_Unload(world.level);
+	Terrain_Unload(world.level);
 	CloseWindow();
 
 	return 0;

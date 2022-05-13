@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 	World world = { 0 };
 	world.level.scale = 10.0f;
 	world.gravity = 100.0f;
-	PlatformerLevel_LoadLayer(&world.level, 0, "res/maps/test.png");
+	Terrain_LoadLayer(&world.level, 0, "res/maps/test.png");
 
 	Player player = Player_Create();
 	PhysicsComponent* playerPhys = Entity_PhysicsComponent(player.entity);
@@ -77,14 +77,14 @@ int main(int argc, char** argv)
 
 		BeginMode2D(camera);
 
-		Vector2i dims = PlatformerLevel_GetLayerDimensions(world.level, 0);
+		Vector2i dims = Terrain_GetLayerDimensions(world.level, 0);
 
 		for ( int y = 0; y < dims.y; ++y )
 		{
 			for ( int x = 0; x < dims.x; ++x )
 			{
-				Rectangle blockRect = PlatformerLevel_GetBlockWorldRectByCoOrds(world.level, (Vector2i){ x, y });
-				Color blockColour = PlatformerLevel_GetBlockColourByCoOrds(world.level, 0, (Vector2i){ x, y });
+				Rectangle blockRect = Terrain_GetBlockWorldRectByCoOrds(world.level, (Vector2i){ x, y });
+				Color blockColour = Terrain_GetBlockColourByCoOrds(world.level, 0, (Vector2i){ x, y });
 				DrawRectangleRec(blockRect, blockColour);
 			}
 		}
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 		EndDrawing();
 	}
 
-	PlatformerLevel_Unload(world.level);
+	Terrain_Unload(world.level);
 	CloseWindow();
 
 	return 0;
