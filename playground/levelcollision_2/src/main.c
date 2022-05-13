@@ -125,7 +125,7 @@ int main(int argc, char** argv)
 		playerPhys->velocity = traceDelta;
 		player.onGround = false;
 
-		Rectangle beginHull = PhysicsComponent_GetWorldCollisionHull(playerPhys);
+		Rectangle beginHull = OldPhysicsComponent_GetWorldCollisionHull(playerPhys);
 		float deltaTime = GetFrameTime();
 
 		if ( deltaTime > 0.0f )
@@ -158,7 +158,7 @@ int main(int argc, char** argv)
 				DrawRectangleLinesEx(beginHull, 1.0f / camera.zoom, GREEN);
 				DrawCircle((int)beginPos.x, (int)beginPos.y, 3.0f, GREEN);
 
-				Rectangle endHull = PhysicsComponent_GetWorldCollisionHull(playerPhys);
+				Rectangle endHull = OldPhysicsComponent_GetWorldCollisionHull(playerPhys);
 				Vector2 endHullMid = RectangleMid(endHull);
 				DrawRectangleLinesEx(endHull, 1.0f / camera.zoom, player.onGround ? YELLOW : BLUE);
 				DrawCircle((int)(endHullMid.x), (int)(endHullMid.y), 3.0f, player.onGround ? YELLOW : BLUE);

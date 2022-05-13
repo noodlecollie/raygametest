@@ -1,6 +1,8 @@
 include(compile_options)
 
 add_library(gamelib STATIC
+	src/entity/entity.c
+	src/entity/entityimpl.c
 	src/oldentity/oldentity.c
 	src/oldentity/oldphysicscomponent.c
 	src/gameutil.c

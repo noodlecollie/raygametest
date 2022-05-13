@@ -7,7 +7,7 @@
 static inline void MoveToPosition(OldEntity* entity, const TraceResult* result)
 {
 	OldPhysicsComponent* physComp = OldEntity_PhysicsComponent(entity);
-	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(physComp);
+	Rectangle hull = OldPhysicsComponent_GetWorldCollisionHull(physComp);
 
 	entity->position.x += result->endPosition.x - hull.x;
 	entity->position.y += result->endPosition.y - hull.y;
@@ -42,7 +42,7 @@ void Physics_Simulate(OldWorld* world, OldEntity* entity)
 	Vector2 delta = Vector2Scale(physComp->velocity, deltaTime);
 
 	TraceResult result = TraceRectangleMovementInLevel(
-		PhysicsComponent_GetWorldCollisionHull(physComp),
+		OldPhysicsComponent_GetWorldCollisionHull(physComp),
 		delta,
 		world->level,
 		physComp->collisionMask
@@ -57,7 +57,7 @@ void Physics_Simulate(OldWorld* world, OldEntity* entity)
 		remainderDelta = Vector2ProjectAlongSurface(remainderDelta, result.contactNormal);
 
 		TraceResult result2 = TraceRectangleMovementInLevel(
-			PhysicsComponent_GetWorldCollisionHull(physComp),
+			OldPhysicsComponent_GetWorldCollisionHull(physComp),
 			remainderDelta,
 			world->level,
 			physComp->collisionMask

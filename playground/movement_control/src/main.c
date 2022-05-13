@@ -124,7 +124,7 @@ int main(int argc, char** argv)
 				DrawRectangleRec(blockRect, blockColour);
 			}
 
-			DrawRectangleRec(PhysicsComponent_GetWorldCollisionHull(playerPhys), player.onGround ? YELLOW : RED);
+			DrawRectangleRec(OldPhysicsComponent_GetWorldCollisionHull(playerPhys), player.onGround ? YELLOW : RED);
 		}
 
 		EndMode2D();

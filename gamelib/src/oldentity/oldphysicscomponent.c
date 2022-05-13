@@ -2,7 +2,7 @@
 #include "gamelib/oldentity/oldentity.h"
 #include "raymath.h"
 
-OldPhysicsComponent PhysicsComponent_Create(struct OldEntity* ownerEntity)
+OldPhysicsComponent OldPhysicsComponent_Create(struct OldEntity* ownerEntity)
 {
 	OldPhysicsComponent component = { 0 };
 
@@ -12,7 +12,7 @@ OldPhysicsComponent PhysicsComponent_Create(struct OldEntity* ownerEntity)
 	return component;
 }
 
-Rectangle PhysicsComponent_GetWorldCollisionHull(const OldPhysicsComponent* component)
+Rectangle OldPhysicsComponent_GetWorldCollisionHull(const OldPhysicsComponent* component)
 {
 	Rectangle hull = { 0, 0, 0, 0 };
 
@@ -21,7 +21,7 @@ Rectangle PhysicsComponent_GetWorldCollisionHull(const OldPhysicsComponent* comp
 		return hull;
 	}
 
-	Vector2 pos = PhysicsComponent_GetPosition(component);
+	Vector2 pos = OldPhysicsComponent_GetPosition(component);
 
 	hull.x = pos.x + component->collisionHull.x;
 	hull.y = pos.y + component->collisionHull.y;
@@ -31,7 +31,7 @@ Rectangle PhysicsComponent_GetWorldCollisionHull(const OldPhysicsComponent* comp
 	return hull;
 }
 
-Vector2 PhysicsComponent_GetPosition(const OldPhysicsComponent* component)
+Vector2 OldPhysicsComponent_GetPosition(const OldPhysicsComponent* component)
 {
 	return (component && component->ownerEntity) ? component->ownerEntity->position : Vector2Zero();
 }

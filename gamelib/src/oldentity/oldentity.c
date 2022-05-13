@@ -75,7 +75,7 @@ OldPhysicsComponent* OldEntity_AddPhysicsComponent(OldEntity* ent)
 
 		if ( *component )
 		{
-			**component = PhysicsComponent_Create(ent);
+			**component = OldPhysicsComponent_Create(ent);
 		}
 	}
 

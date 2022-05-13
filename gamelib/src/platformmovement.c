@@ -20,7 +20,7 @@ static inline bool CheckIfStandingOnGround(Player* player, OldWorld* world)
 {
 	OldPhysicsComponent* component = OldEntity_PhysicsComponent(player->entity);
 	Vector2 delta = (Vector2){ 0.0f, 2.0f * PHYSICS_CONTACT_ADJUST_DIST };
-	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(component);
+	Rectangle hull = OldPhysicsComponent_GetWorldCollisionHull(component);
 	TraceResult result = TraceRectangleMovementInLevel(hull, delta, world->level, component->collisionMask);
 
 	return result.collided && SurfaceNormalIsGround(result.contactNormal);

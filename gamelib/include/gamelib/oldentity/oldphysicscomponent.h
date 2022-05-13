@@ -15,7 +15,7 @@ typedef struct OldPhysicsComponent
 	Mask32 collisionMask;
 } OldPhysicsComponent;
 
-OldPhysicsComponent PhysicsComponent_Create(struct OldEntity* ownerEntity);
+OldPhysicsComponent OldPhysicsComponent_Create(struct OldEntity* ownerEntity);
 
-Rectangle PhysicsComponent_GetWorldCollisionHull(const OldPhysicsComponent* component);
-Vector2 PhysicsComponent_GetPosition(const OldPhysicsComponent* component);
+Rectangle OldPhysicsComponent_GetWorldCollisionHull(const OldPhysicsComponent* component);
+Vector2 OldPhysicsComponent_GetPosition(const OldPhysicsComponent* component);

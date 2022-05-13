@@ -1,34 +1,26 @@
-#include "gamelib/world.h"
-#include "gamelib/oldentity/oldentity.h"
 #include "raylib.h"
-
-typedef struct EntitySlot
-{
-	struct EntitySlot* next;
-	struct EntitySlot* prev;
-	OldEntity* entity;
-} EntitySlot;
+#include "gamelib/world.h"
+#include "entity/entityimpl.h"
 
 struct World
 {
 	size_t entityCount;
-	EntitySlot* entities;
+	EntityImpl* entitiesHead;
+	EntityImpl* entitiesTail;
 };
 
 static void DestroyAllEntities(World* world)
 {
-	EntitySlot* slot = world->entities;
+	EntityImpl* slot = world->entitiesHead;
 
-	world->entities = NULL;
+	world->entitiesHead = NULL;
+	world->entitiesTail = NULL;
 	world->entityCount = 0;
 
 	while ( slot )
 	{
-		EntitySlot* next = slot->next;
-
-		OldEntity_Destroy(slot->entity);
-		MemFree(slot);
-
+		EntityImpl* next = slot->next;
+		EntityImpl_Destroy(slot);
 		slot = next;
 	}
 }
@@ -49,4 +41,66 @@ void World_Destroy(World* world)
 
 	DestroyAllEntities(world);
 	MemFree(world);
+}
+
+struct Entity* World_CreateEntity(World* world)
+{
+	if ( !world || world->entityCount >= WORLD_MAX_ENTITIES )
+	{
+		return NULL;
+	}
+
+	EntityImpl* slot = (EntityImpl*)MemAlloc(sizeof(EntityImpl));
+
+	if ( !slot )
+	{
+		return NULL;
+	}
+
+	slot->ownerWorld = world;
+	slot->prev = world->entitiesTail;
+
+	if ( world->entitiesTail )
+	{
+		world->entitiesTail->next = slot;
+	}
+
+	slot->entity.impl = slot;
+
+	return &slot->entity;
+}
+
+void World_DestroyEntity(struct Entity* ent)
+{
+	if ( !ent )
+	{
+		return;
+	}
+
+	EntityImpl* slot = ent->impl;
+
+	if ( slot->prev )
+	{
+		slot->prev->next = slot->next;
+	}
+	else if ( slot->ownerWorld )
+	{
+		slot->ownerWorld->entitiesHead = slot->next;
+	}
+
+	if ( slot->next )
+	{
+		slot->next->prev = slot->prev;
+	}
+	else if ( slot->ownerWorld )
+	{
+		slot->ownerWorld->entitiesTail = slot->prev;
+	}
+
+	if ( slot->ownerWorld && slot->ownerWorld->entityCount > 0 )
+	{
+		--slot->ownerWorld->entityCount;
+	}
+
+	EntityImpl_Destroy(slot);
 }

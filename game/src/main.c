@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 			}
 		}
 
-		Rectangle playerRect = PhysicsComponent_GetWorldCollisionHull(playerPhys);
+		Rectangle playerRect = OldPhysicsComponent_GetWorldCollisionHull(playerPhys);
 		DrawRectangle((int)playerRect.x, (int)playerRect.y, (int)playerRect.width, (int)playerRect.height, RED);
 
 		EndMode2D();
