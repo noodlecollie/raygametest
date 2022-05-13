@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "raylib.h"
 #include "raymath.h"
-#include "gamelib/world.h"
+#include "gamelib/oldworld.h"
 #include "gamelib/gameutil.h"
 #include "gamelib/player.h"
 #include "gamelib/platformmovement.h"
@@ -23,13 +23,13 @@ int main(int argc, char** argv)
 	camera.rotation = 0.0f;
 	camera.zoom = 1.0f;
 
-	World world = { 0 };
+	OldWorld world = { 0 };
 	world.level.scale = 10.0f;
 	world.gravity = 100.0f;
 	Terrain_LoadLayer(&world.level, 0, "res/maps/test.png");
 
 	Player player = Player_Create();
-	PhysicsComponent* playerPhys = Entity_AddPhysicsComponent(player.entity);
+	OldPhysicsComponent* playerPhys = OldEntity_AddPhysicsComponent(player.entity);
 	playerPhys->collisionHull = (Rectangle){ -5.0f, -5.0f, 10.0f, 10.0f };
 	playerPhys->collisionMask = 0xFFFFFFFF;
 	const float playerSpeed = 500.0f;

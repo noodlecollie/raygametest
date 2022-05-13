@@ -3,7 +3,7 @@
 #include "raymath.h"
 #include "raygui.h"
 
-#include "gamelib/world.h"
+#include "gamelib/oldworld.h"
 #include "gamelib/trace.h"
 #include "gamelib/gameutil.h"
 #include "gamelib/player.h"
@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 	SetWindowSize(screenWidth, screenHeight);
 	GuiSetStyle(DEFAULT, TEXT_SIZE, (int)((float)GuiGetStyle(DEFAULT, TEXT_SIZE) * dpiScale.x));
 
-	World world = { 0 };
+	OldWorld world = { 0 };
 	world.gravity = 1000.0f;
 	world.level.scale = 10.0f;
 	Terrain_LoadLayer(&world.level, 0, "res/maps/test.png");
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 
 	Player player = Player_Create();
 
-	PhysicsComponent* playerPhys = Entity_AddPhysicsComponent(player.entity);
+	OldPhysicsComponent* playerPhys = OldEntity_AddPhysicsComponent(player.entity);
 	playerPhys->collisionMask = 0xFFFFFFFF;
 	playerPhys->gravityModifier = 1.0f;
 	playerPhys->ownerEntity->position = (Vector2){ 1000.0f, 0.0f };

@@ -16,9 +16,9 @@ static inline bool SurfaceNormalIsGround(Vector2 normal)
 	return Vector2DotProduct(normal, (Vector2){ 0.0f, -1.0f }) > 0.5f;
 }
 
-static inline bool CheckIfStandingOnGround(Player* player, World* world)
+static inline bool CheckIfStandingOnGround(Player* player, OldWorld* world)
 {
-	PhysicsComponent* component = Entity_PhysicsComponent(player->entity);
+	OldPhysicsComponent* component = OldEntity_PhysicsComponent(player->entity);
 	Vector2 delta = (Vector2){ 0.0f, 2.0f * PHYSICS_CONTACT_ADJUST_DIST };
 	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(component);
 	TraceResult result = TraceRectangleMovementInLevel(hull, delta, world->level, component->collisionMask);
@@ -26,9 +26,9 @@ static inline bool CheckIfStandingOnGround(Player* player, World* world)
 	return result.collided && SurfaceNormalIsGround(result.contactNormal);
 }
 
-void PlatformMovement_MovePlayer(Player* player, World* world)
+void PlatformMovement_MovePlayer(Player* player, OldWorld* world)
 {
-	if ( !player || !world || !Entity_PhysicsComponent(player->entity) )
+	if ( !player || !world || !OldEntity_PhysicsComponent(player->entity) )
 	{
 		return;
 	}

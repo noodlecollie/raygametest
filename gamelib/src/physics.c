@@ -1,12 +1,12 @@
 #include "gamelib/physics.h"
-#include "gamelib/entity/physicscomponent.h"
+#include "gamelib/oldentity/oldphysicscomponent.h"
 #include "gamelib/trace.h"
 #include "gamelib/gameutil.h"
 #include "raymath.h"
 
-static inline void MoveToPosition(Entity* entity, const TraceResult* result)
+static inline void MoveToPosition(OldEntity* entity, const TraceResult* result)
 {
-	PhysicsComponent* physComp = Entity_PhysicsComponent(entity);
+	OldPhysicsComponent* physComp = OldEntity_PhysicsComponent(entity);
 	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(physComp);
 
 	entity->position.x += result->endPosition.x - hull.x;
@@ -19,14 +19,14 @@ static inline void MoveToPosition(Entity* entity, const TraceResult* result)
 	}
 }
 
-void Physics_Simulate(World* world, Entity* entity)
+void Physics_Simulate(OldWorld* world, OldEntity* entity)
 {
 	if ( !world || !entity )
 	{
 		return;
 	}
 
-	PhysicsComponent* physComp = Entity_PhysicsComponent(entity);
+	OldPhysicsComponent* physComp = OldEntity_PhysicsComponent(entity);
 
 	if ( !physComp )
 	{

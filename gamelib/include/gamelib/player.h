@@ -2,11 +2,11 @@
 
 #include <stdbool.h>
 #include "raylib.h"
-#include "gamelib/entity/entity.h"
+#include "gamelib/oldentity/oldentity.h"
 
 typedef struct Player
 {
-	Entity* entity;
+	OldEntity* entity;
 	bool onGround;
 } Player;
 

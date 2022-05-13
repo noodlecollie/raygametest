@@ -4,7 +4,7 @@ Player Player_Create(void)
 {
 	Player player = { 0 };
 
-	player.entity = Entity_Create();
+	player.entity = OldEntity_Create();
 
 	return player;
 }
@@ -16,5 +16,5 @@ void Player_Destroy(Player* player)
 		return;
 	}
 
-	Entity_Destroy(player->entity);
+	OldEntity_Destroy(player->entity);
 }

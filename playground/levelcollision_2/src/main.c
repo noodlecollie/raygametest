@@ -3,7 +3,7 @@
 #include "raymath.h"
 #include "raygui.h"
 
-#include "gamelib/world.h"
+#include "gamelib/oldworld.h"
 #include "gamelib/trace.h"
 #include "gamelib/gameutil.h"
 #include "gamelib/player.h"
@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 
 	const Rectangle guiBounds = { 0.0f, 0.0f, 240.0f * dpiScale.x, 140.0f * dpiScale.y };
 
-	World world = { 0 };
+	OldWorld world = { 0 };
 	world.level.scale = (float)guiValues.levelScale;
 	Terrain_LoadLayer(&world.level, 0, "res/maps/test.png");
 	Vector2i levelDim = Terrain_GetLayerDimensions(world.level, 0);
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 	Vector2 endPos = Vector2Zero();
 
 	Player player = Player_Create();
-	PhysicsComponent* playerPhys = Entity_AddPhysicsComponent(player.entity);
+	OldPhysicsComponent* playerPhys = OldEntity_AddPhysicsComponent(player.entity);
 	playerPhys->collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
 	playerPhys->collisionMask = 0xFFFFFFFF;
 

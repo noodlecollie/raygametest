@@ -1,10 +1,10 @@
-#include "gamelib/entity/physicscomponent.h"
-#include "gamelib/entity/entity.h"
+#include "gamelib/oldentity/oldphysicscomponent.h"
+#include "gamelib/oldentity/oldentity.h"
 #include "raymath.h"
 
-PhysicsComponent PhysicsComponent_Create(struct Entity* ownerEntity)
+OldPhysicsComponent PhysicsComponent_Create(struct OldEntity* ownerEntity)
 {
-	PhysicsComponent component = { 0 };
+	OldPhysicsComponent component = { 0 };
 
 	component.ownerEntity = ownerEntity;
 	component.gravityModifier = 1.0f;
@@ -12,7 +12,7 @@ PhysicsComponent PhysicsComponent_Create(struct Entity* ownerEntity)
 	return component;
 }
 
-Rectangle PhysicsComponent_GetWorldCollisionHull(const PhysicsComponent* component)
+Rectangle PhysicsComponent_GetWorldCollisionHull(const OldPhysicsComponent* component)
 {
 	Rectangle hull = { 0, 0, 0, 0 };
 
@@ -31,7 +31,7 @@ Rectangle PhysicsComponent_GetWorldCollisionHull(const PhysicsComponent* compone
 	return hull;
 }
 
-Vector2 PhysicsComponent_GetPosition(const PhysicsComponent* component)
+Vector2 PhysicsComponent_GetPosition(const OldPhysicsComponent* component)
 {
 	return (component && component->ownerEntity) ? component->ownerEntity->position : Vector2Zero();
 }

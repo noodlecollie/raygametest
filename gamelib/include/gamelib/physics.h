@@ -2,7 +2,7 @@
 
 #define PHYSICS_CONTACT_ADJUST_DIST 0.01f
 
-#include "gamelib/world.h"
-#include "entity/entity.h"
+#include "gamelib/oldworld.h"
+#include "gamelib/oldentity/oldentity.h"
 
-void Physics_Simulate(World* world, Entity* entity);
+void Physics_Simulate(OldWorld* world, OldEntity* entity);
