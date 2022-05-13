@@ -28,7 +28,6 @@ static void DestroyAllEntities(World* world)
 World* World_Create(void)
 {
 	World* world = (World*)MemAlloc(sizeof(World));
-
 	return world;
 }
 
@@ -51,11 +50,6 @@ struct Entity* World_CreateEntity(World* world)
 	}
 
 	EntityImpl* slot = (EntityImpl*)MemAlloc(sizeof(EntityImpl));
-
-	if ( !slot )
-	{
-		return NULL;
-	}
 
 	slot->ownerWorld = world;
 	slot->prev = world->entitiesTail;

@@ -42,13 +42,8 @@ PhysicsComponent* EntityImpl_AddPhysicsComponent(EntityImpl* impl)
 	{
 		*component = (PhysicsComponent*)MemAlloc(sizeof(PhysicsComponent));
 
-		// TODO: Assertions would be better. Define RL_MALLOC etc to be
-		// routed to functions that we control.
-		if ( *component )
-		{
-			(*component)->ownerEntity = &impl->entity;
-			(*component)->gravityModifier = 1.0f;
-		}
+		(*component)->ownerEntity = &impl->entity;
+		(*component)->gravityModifier = 1.0f;
 	}
 
 	return *component;

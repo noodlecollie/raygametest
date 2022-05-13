@@ -23,18 +23,7 @@ static inline void FreeComponent(OldEntity* ent, OldComponentType componentType)
 OldEntity* OldEntity_Create(void)
 {
 	OldEntity* ent = MemAlloc(sizeof(struct OldEntity));
-
-	if ( ent )
-	{
-		ent->components = MemAlloc(sizeof(OldEntityComponentList));
-
-		if ( !ent->components )
-		{
-			MemFree(ent);
-			ent = NULL;
-		}
-	}
-
+	ent->components = MemAlloc(sizeof(OldEntityComponentList));
 	return ent;
 }
 
@@ -72,11 +61,7 @@ OldPhysicsComponent* OldEntity_AddPhysicsComponent(OldEntity* ent)
 	if ( !(*component) )
 	{
 		*component = MemAlloc(sizeof(OldPhysicsComponent));
-
-		if ( *component )
-		{
-			**component = OldPhysicsComponent_Create(ent);
-		}
+		**component = OldPhysicsComponent_Create(ent);
 	}
 
 	return *component;
