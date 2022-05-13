@@ -4,10 +4,9 @@
 #include "raylib.h"
 #include "gamelib/entity/entity.h"
 
-// TODO: This should be a component on an entity, instead of an entity within a player
 typedef struct Player
 {
-	Entity entity;
+	Entity* entity;
 	bool onGround;
 } Player;
 

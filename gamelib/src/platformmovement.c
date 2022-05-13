@@ -28,7 +28,7 @@ static inline bool CheckIfStandingOnGround(Player* player, World* world)
 
 void PlatformMovement_MovePlayer(Player* player, World* world)
 {
-	if ( !player || !world )
+	if ( !player || !world || !Entity_PhysicsComponent(player->entity) )
 	{
 		return;
 	}
@@ -36,7 +36,7 @@ void PlatformMovement_MovePlayer(Player* player, World* world)
 	// Begin assuming the player will not be on the ground.
 	player->onGround = false;
 
-	Physics_Simulate(world, Entity_PhysicsComponent(player->entity));
+	Physics_Simulate(world, player->entity);
 
 	if ( !player->onGround && CheckIfStandingOnGround(player, world) )
 	{

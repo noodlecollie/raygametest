@@ -40,15 +40,15 @@ int main(int argc, char** argv)
 
 	Player player = Player_Create();
 
-	PhysicsComponent* playerPhys = Entity_PhysicsComponent(player.entity);
+	PhysicsComponent* playerPhys = Entity_AddPhysicsComponent(player.entity);
 	playerPhys->collisionMask = 0xFFFFFFFF;
 	playerPhys->gravityModifier = 1.0f;
-	playerPhys->position = (Vector2){ 1000.0f, 0.0f };
+	playerPhys->ownerEntity->position = (Vector2){ 1000.0f, 0.0f };
 	playerPhys->collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
 
 	const Vector2 movementScale = (Vector2){ 200.0f, 450.0f };
 
-	Vector2 startPos = playerPhys->position;
+	Vector2 startPos = playerPhys->ownerEntity->position;
 
 	SetTargetFPS(60);
 
@@ -76,12 +76,12 @@ int main(int argc, char** argv)
 
 		if ( IsKeyPressed(KEY_R) )
 		{
-			playerPhys->position = startPos;
+			playerPhys->ownerEntity->position = startPos;
 			playerPhys->velocity = Vector2Zero();
 			camera.zoom = 1.0f;
 		}
 
-		camera.target = playerPhys->position;
+		camera.target = playerPhys->ownerEntity->position;
 
 		Vector2 movement = Vector2Zero();
 
@@ -134,7 +134,7 @@ int main(int argc, char** argv)
 
 		char buffer[64];
 
-		snprintf(buffer, sizeof(buffer), "Player position: (%.2f, %.2f)", playerPhys->position.x, playerPhys->position.y);
+		snprintf(buffer, sizeof(buffer), "Player position: (%.2f, %.2f)", playerPhys->ownerEntity->position.x, playerPhys->ownerEntity->position.y);
 		buffer[sizeof(buffer) - 1] = '\0';
 		DrawText(buffer, leftMargin, (int)(10.0f * dpiScale.y), fontSize, BLUE);
 

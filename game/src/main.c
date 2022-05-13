@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 	Terrain_LoadLayer(&world.level, 0, "res/maps/test.png");
 
 	Player player = Player_Create();
-	PhysicsComponent* playerPhys = Entity_PhysicsComponent(player.entity);
+	PhysicsComponent* playerPhys = Entity_AddPhysicsComponent(player.entity);
 	playerPhys->collisionHull = (Rectangle){ -5.0f, -5.0f, 10.0f, 10.0f };
 	playerPhys->collisionMask = 0xFFFFFFFF;
 	const float playerSpeed = 500.0f;
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
 		EndMode2D();
 
 		char buffer[64];
-		snprintf(buffer, sizeof(buffer), "Player: (%.2f, %.2f) [%.2f, %.2f]", playerPhys->position.x, playerPhys->position.y, playerPhys->velocity.x, playerPhys->velocity.y);
+		snprintf(buffer, sizeof(buffer), "Player: (%.2f, %.2f) [%.2f, %.2f]", player.entity->position.x, player.entity->position.y, playerPhys->velocity.x, playerPhys->velocity.y);
 		DrawText(buffer, 10, 10, 10, BLACK);
 
 		EndDrawing();

@@ -4,23 +4,31 @@
 #include "gamelib/gameutil.h"
 #include "raymath.h"
 
-static inline void MoveToPosition(PhysicsComponent* component, const TraceResult* result)
+static inline void MoveToPosition(Entity* entity, const TraceResult* result)
 {
-	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(component);
+	PhysicsComponent* physComp = Entity_PhysicsComponent(entity);
+	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(physComp);
 
-	component->position.x += result->endPosition.x - hull.x;
-	component->position.y += result->endPosition.y - hull.y;
+	entity->position.x += result->endPosition.x - hull.x;
+	entity->position.y += result->endPosition.y - hull.y;
 
 	if ( result->collided )
 	{
-		component->position = Vector2Add(component->position, Vector2Scale(result->contactNormal, PHYSICS_CONTACT_ADJUST_DIST));
-		component->velocity = (!result->endedColliding) ? Vector2ProjectAlongSurface(component->velocity, result->contactNormal) : Vector2Zero();
+		entity->position = Vector2Add(entity->position, Vector2Scale(result->contactNormal, PHYSICS_CONTACT_ADJUST_DIST));
+		physComp->velocity = (!result->endedColliding) ? Vector2ProjectAlongSurface(physComp->velocity, result->contactNormal) : Vector2Zero();
 	}
 }
 
-void Physics_Simulate(World* world, PhysicsComponent* component)
+void Physics_Simulate(World* world, Entity* entity)
 {
-	if ( !world || !component )
+	if ( !world || !entity )
+	{
+		return;
+	}
+
+	PhysicsComponent* physComp = Entity_PhysicsComponent(entity);
+
+	if ( !physComp )
 	{
 		return;
 	}
@@ -28,19 +36,19 @@ void Physics_Simulate(World* world, PhysicsComponent* component)
 	float deltaTime = GetFrameTime();
 
 	// Add in gravity applied over this time delta.
-	component->velocity.y += world->gravity * component->gravityModifier * deltaTime;
+	physComp->velocity.y += world->gravity * physComp->gravityModifier * deltaTime;
 
 	// Get how far we need to now move in this time delta.
-	Vector2 delta = Vector2Scale(component->velocity, deltaTime);
+	Vector2 delta = Vector2Scale(physComp->velocity, deltaTime);
 
 	TraceResult result = TraceRectangleMovementInLevel(
-		PhysicsComponent_GetWorldCollisionHull(component),
+		PhysicsComponent_GetWorldCollisionHull(physComp),
 		delta,
 		world->level,
-		component->collisionMask
+		physComp->collisionMask
 	);
 
-	MoveToPosition(component, &result);
+	MoveToPosition(entity, &result);
 
 	if ( result.collided && !result.endedColliding )
 	{
@@ -49,12 +57,12 @@ void Physics_Simulate(World* world, PhysicsComponent* component)
 		remainderDelta = Vector2ProjectAlongSurface(remainderDelta, result.contactNormal);
 
 		TraceResult result2 = TraceRectangleMovementInLevel(
-			PhysicsComponent_GetWorldCollisionHull(component),
+			PhysicsComponent_GetWorldCollisionHull(physComp),
 			remainderDelta,
 			world->level,
-			component->collisionMask
+			physComp->collisionMask
 		);
 
-		MoveToPosition(component, &result2);
+		MoveToPosition(entity, &result2);
 	}
 }

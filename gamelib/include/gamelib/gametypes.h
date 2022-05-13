@@ -9,3 +9,4 @@ typedef struct Vector2i
 } Vector2i;
 
 typedef uint32_t Mask32;
+typedef uint32_t EntityIndex;

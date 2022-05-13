@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 	Vector2 endPos = Vector2Zero();
 
 	Player player = Player_Create();
-	PhysicsComponent* playerPhys = Entity_PhysicsComponent(player.entity);
+	PhysicsComponent* playerPhys = Entity_AddPhysicsComponent(player.entity);
 	playerPhys->collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
 	playerPhys->collisionMask = 0xFFFFFFFF;
 
@@ -121,7 +121,7 @@ int main(int argc, char** argv)
 
 		Vector2 traceDelta = Vector2Subtract(endPos, beginPos);
 
-		playerPhys->position = beginPos;
+		playerPhys->ownerEntity->position = beginPos;
 		playerPhys->velocity = traceDelta;
 		player.onGround = false;
 

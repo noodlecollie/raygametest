@@ -9,7 +9,6 @@ struct Entity;
 typedef struct PhysicsComponent
 {
 	struct Entity* ownerEntity;
-	Vector2 position;
 	Vector2 velocity;
 	Rectangle collisionHull;
 	float gravityModifier;
@@ -19,3 +18,4 @@ typedef struct PhysicsComponent
 PhysicsComponent PhysicsComponent_Create(struct Entity* ownerEntity);
 
 Rectangle PhysicsComponent_GetWorldCollisionHull(const PhysicsComponent* component);
+Vector2 PhysicsComponent_GetPosition(const PhysicsComponent* component);
