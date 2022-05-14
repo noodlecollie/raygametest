@@ -53,12 +53,12 @@ void EntityImpl_Destroy(EntityImpl* impl)
 
 struct PhysicsComponent* EntityImpl_GetPhysicsComponent(Entity* ent)
 {
-	return (ent && ent->impl) ? (PhysicsComponent*)ent->impl->components[COMPONENT_PHYSICS] : NULL;
+	return ent ? (PhysicsComponent*)ent->impl->components[COMPONENT_PHYSICS] : NULL;
 }
 
 struct PhysicsComponent* EntityImpl_AddPhysicsComponent(Entity* ent)
 {
-	if ( !ent || !ent->impl )
+	if ( !ent )
 	{
 		return NULL;
 	}
@@ -73,7 +73,7 @@ struct PhysicsComponent* EntityImpl_AddPhysicsComponent(Entity* ent)
 
 void EntityImpl_RemovePhysicsComponent(Entity* ent)
 {
-	if ( !ent || !ent->impl )
+	if ( !ent )
 	{
 		return;
 	}
@@ -83,7 +83,7 @@ void EntityImpl_RemovePhysicsComponent(Entity* ent)
 
 struct TerrainComponent* Entity_GetTerraimComponent(Entity* ent)
 {
-	return (ent && ent->impl) ? (TerrainComponent*)ent->impl->components[COMPONENT_TERRAIN] : NULL;
+	return ent ? (TerrainComponent*)ent->impl->components[COMPONENT_TERRAIN] : NULL;
 }
 
 struct TerrainComponent* Entity_AddTerrainComponent(Entity* ent)
@@ -103,7 +103,7 @@ struct TerrainComponent* Entity_AddTerrainComponent(Entity* ent)
 
 void Entity_RemoveTerrainComponent(Entity* ent)
 {
-	if ( !ent || !ent->impl )
+	if ( !ent )
 	{
 		return;
 	}

@@ -9,7 +9,6 @@ struct TerrainComponent;
 typedef struct Entity
 {
 	Vector2 position;
-
 	struct EntityImpl* impl;
 } Entity;
 

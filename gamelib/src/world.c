@@ -2,20 +2,20 @@
 #include "gamelib/world.h"
 #include "entity/entityimpl.h"
 
-struct World
+typedef struct WorldImpl
 {
 	size_t entityCount;
 	EntityImpl* entitiesHead;
 	EntityImpl* entitiesTail;
-};
+} WorldImpl;
 
-static void DestroyAllEntities(World* world)
+static void DestroyAllEntities(WorldImpl* impl)
 {
-	EntityImpl* slot = world->entitiesHead;
+	EntityImpl* slot = impl->entitiesHead;
 
-	world->entitiesHead = NULL;
-	world->entitiesTail = NULL;
-	world->entityCount = 0;
+	impl->entitiesHead = NULL;
+	impl->entitiesTail = NULL;
+	impl->entityCount = 0;
 
 	while ( slot )
 	{
@@ -28,6 +28,10 @@ static void DestroyAllEntities(World* world)
 World* World_Create(void)
 {
 	World* world = (World*)MemAlloc(sizeof(World));
+	world->impl = (WorldImpl*)MemAlloc(sizeof(WorldImpl));
+
+	world->gravity = 800.0f;
+
 	return world;
 }
 
@@ -38,13 +42,21 @@ void World_Destroy(World* world)
 		return;
 	}
 
-	DestroyAllEntities(world);
+	DestroyAllEntities(world->impl);
+	MemFree(world->impl);
 	MemFree(world);
 }
 
 struct Entity* World_CreateEntity(World* world)
 {
-	if ( !world || world->entityCount >= WORLD_MAX_ENTITIES )
+	if ( !world )
+	{
+		return NULL;
+	}
+
+	WorldImpl* impl = world->impl;
+
+	if ( impl->entityCount >= WORLD_MAX_ENTITIES )
 	{
 		return NULL;
 	}
@@ -52,11 +64,11 @@ struct Entity* World_CreateEntity(World* world)
 	EntityImpl* slot = (EntityImpl*)MemAlloc(sizeof(EntityImpl));
 
 	slot->ownerWorld = world;
-	slot->prev = world->entitiesTail;
+	slot->prev = impl->entitiesTail;
 
-	if ( world->entitiesTail )
+	if ( impl->entitiesTail )
 	{
-		world->entitiesTail->next = slot;
+		impl->entitiesTail->next = slot;
 	}
 
 	slot->entity.impl = slot;
@@ -79,7 +91,7 @@ void World_DestroyEntity(struct Entity* ent)
 	}
 	else if ( slot->ownerWorld )
 	{
-		slot->ownerWorld->entitiesHead = slot->next;
+		slot->ownerWorld->impl->entitiesHead = slot->next;
 	}
 
 	if ( slot->next )
@@ -88,13 +100,38 @@ void World_DestroyEntity(struct Entity* ent)
 	}
 	else if ( slot->ownerWorld )
 	{
-		slot->ownerWorld->entitiesTail = slot->prev;
+		slot->ownerWorld->impl->entitiesTail = slot->prev;
 	}
 
-	if ( slot->ownerWorld && slot->ownerWorld->entityCount > 0 )
+	if ( slot->ownerWorld && slot->ownerWorld->impl->entityCount > 0 )
 	{
-		--slot->ownerWorld->entityCount;
+		--slot->ownerWorld->impl->entityCount;
 	}
 
 	EntityImpl_Destroy(slot);
+}
+
+struct Entity* World_GetEntityListHead(World* world)
+{
+	return (world && world->impl->entitiesHead) ? &world->impl->entitiesHead->entity : NULL;
+}
+
+struct Entity* World_GetPreviousEntity(struct Entity* ent)
+{
+	if ( !ent )
+	{
+		return NULL;
+	}
+
+	return (ent && ent->impl->prev) ? &ent->impl->prev->entity : NULL;
+}
+
+struct Entity* World_GetNextEntity(struct Entity* ent)
+{
+	if ( !ent )
+	{
+		return NULL;
+	}
+
+	return (ent && ent->impl->next) ? &ent->impl->next->entity : NULL;
 }
