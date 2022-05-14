@@ -2,7 +2,9 @@
 #include "gamelib/external/raylibheaders.h"
 #include "raygui.h"
 
-#include "gamelib/terrain.h"
+#include "gamelib/world.h"
+#include "gamelib/entity/entity.h"
+#include "gamelib/entity/terraincomponent.h"
 #include "gamelib/trace.h"
 #include "gamelib/gameutil.h"
 
@@ -39,15 +41,18 @@ int main(int argc, char** argv)
 	GuiValues guiValues = { 0 };
 	guiValues.levelScale = 30;
 
-	const Rectangle guiBounds = { 0.0f, 0.0f, 240.0f * dpiScale.x, 140.0f * dpiScale.y };
+	const Rectangle guiBounds = { 0.0f, 0.0f, 260.0f * dpiScale.x, 140.0f * dpiScale.y };
 
-	Terrain level = { 0 };
-	level.scale = (float)guiValues.levelScale;
-	Terrain_LoadLayer(&level, 0, "res/maps/test.png");
-	Vector2i levelDim = Terrain_GetLayerDimensions(level, 0);
+	World* world = World_Create();
+	Entity* terrainEnt = World_CreateEntity(world);
+	TerrainComponent* terrainComponent = Entity_AddTerrainComponent(terrainEnt);
+
+	terrainComponent->scale = (float)guiValues.levelScale;
+	TerrainComponent_LoadLayer(terrainComponent, 0, "res/maps/test.png");
+	Vector2i levelDim = TerrainComponent_GetLayerDimensions(terrainComponent, 0);
 
 	Camera2D camera = { 0 };
-	camera.target = (Vector2){ ((float)levelDim.x / 2.0f) * level.scale, ((float)levelDim.y / 2.0f) * level.scale };
+	camera.target = (Vector2){ ((float)levelDim.x / 2.0f) * terrainComponent->scale, ((float)levelDim.y / 2.0f) * terrainComponent->scale };
 	camera.offset = (Vector2){ (float)screenWidth / 2.0f, (float)screenHeight / 2.0f };
 	camera.rotation = 0.0f;
 	camera.zoom = 1.0f;
@@ -59,7 +64,7 @@ int main(int argc, char** argv)
 
 	while ( !WindowShouldClose() )
 	{
-		level.scale = (float)guiValues.levelScale;
+		terrainComponent->scale = (float)guiValues.levelScale;
 
 		bool mouseIsInGuiArea = CheckCollisionPointRec(GetMousePosition(), guiBounds);
 
@@ -127,7 +132,7 @@ int main(int argc, char** argv)
 
 		if ( Vector2Length(traceDelta) > 0.0f )
 		{
-			traceResult = TraceRectangleMovementInLevel(beginHull, traceDelta, level, 1 << 0);
+			traceResult = TraceRectangleMovementAgainstTerrain(beginHull, traceDelta, terrainComponent, 1 << 0);
 
 			if ( traceResult.collided )
 			{
@@ -153,14 +158,14 @@ int main(int argc, char** argv)
 
 		BeginMode2D(camera);
 
-		Vector2i dims = Terrain_GetLayerDimensions(level, 0);
+		Vector2i dims = TerrainComponent_GetLayerDimensions(terrainComponent, 0);
 
 		for ( int y = 0; y < dims.y; ++y )
 		{
 			for ( int x = 0; x < dims.x; ++x )
 			{
-				Rectangle blockRect = Terrain_GetBlockWorldRectByCoOrds(level, (Vector2i){ x, y });
-				Color blockColour = Terrain_GetBlockColourByCoOrds(level, 0, (Vector2i){ x, y });
+				Rectangle blockRect = TerrainComponent_GetBlockWorldRectByCoOrds(terrainComponent, (Vector2i){ x, y });
+				Color blockColour = TerrainComponent_GetBlockColourByCoOrds(terrainComponent, 0, (Vector2i){ x, y });
 				DrawRectangleRec(blockRect, blockColour);
 			}
 
@@ -200,13 +205,13 @@ int main(int argc, char** argv)
 
 		snprintf(buffer, sizeof(buffer), "Left mouse: start point (%d, %d)", (int)beginPos.x, (int)beginPos.y);
 		buffer[sizeof(buffer) - 1] = '\0';
-		DrawText(buffer, leftMargin, (int)(10.0f * dpiScale.y), fontSize, BLACK);
+		DrawText(buffer, leftMargin, (int)(10.0f * dpiScale.y), fontSize, BLUE);
 
 		snprintf(buffer, sizeof(buffer), "Right mouse: end point (%d, %d)", (int)endPos.x, (int)endPos.y);
 		buffer[sizeof(buffer) - 1] = '\0';
-		DrawText(buffer, leftMargin, (int)(30.0f * dpiScale.y), fontSize, BLACK);
+		DrawText(buffer, leftMargin, (int)(30.0f * dpiScale.y), fontSize, BLUE);
 
-		DrawText("Middle mouse: pan level", leftMargin, (int)(50.0f * dpiScale.y), fontSize, BLACK);
+		DrawText("Middle mouse, or space + left mouse: pan level", leftMargin, (int)(50.0f * dpiScale.y), fontSize, BLUE);
 
 		if ( traceResult.collided )
 		{
@@ -218,7 +223,7 @@ int main(int argc, char** argv)
 		}
 
 		buffer[sizeof(buffer) - 1] = '\0';
-		DrawText(buffer, leftMargin, (int)(70.0f * dpiScale.y), fontSize, BLACK);
+		DrawText(buffer, leftMargin, (int)(70.0f * dpiScale.y), fontSize, BLUE);
 
 		guiRect.y = 90.0f * dpiScale.y;
 		snprintf(buffer, sizeof(buffer), "%.2f", guiValues.levelScale);
@@ -231,7 +236,7 @@ int main(int argc, char** argv)
 		EndDrawing();
 	}
 
-	Terrain_Unload(level);
+	World_Destroy(world);
 	CloseWindow();
 
 	return 0;
