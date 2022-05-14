@@ -15,7 +15,7 @@ static inline bool CoOrdsValid(const Terrain* terrain, size_t layer, const Vecto
 	return
 		terrain &&
 		terrain->layers &&
-		layer < TERRAIN_MAX_LAYERS &&
+		layer < OLDTERRAIN_MAX_LAYERS &&
 		coOrds->x >= 0 &&
 		coOrds->x < terrain->layers[layer].image.width &&
 		coOrds->y >= 0 &&
@@ -26,13 +26,13 @@ static inline void InitLayersIfRequired(Terrain* terrain)
 {
 	if ( !terrain->layers )
 	{
-		terrain->layers = (TerrainLayer*)MemAlloc(TERRAIN_MAX_LAYERS * sizeof(TerrainLayer));
+		terrain->layers = (TerrainLayer*)MemAlloc(OLDTERRAIN_MAX_LAYERS * sizeof(TerrainLayer));
 	}
 }
 
 void Terrain_LoadLayer(Terrain* terrain, size_t layer, const char* fileName)
 {
-	if ( !terrain || layer >= TERRAIN_MAX_LAYERS || !fileName || !(*fileName) )
+	if ( !terrain || layer >= OLDTERRAIN_MAX_LAYERS || !fileName || !(*fileName) )
 	{
 		return;
 	}
@@ -53,7 +53,7 @@ void Terrain_LoadLayer(Terrain* terrain, size_t layer, const char* fileName)
 
 void Terrain_UnloadLayer(Terrain* terrain, size_t layer)
 {
-	if ( !terrain || layer >= TERRAIN_MAX_LAYERS || !terrain->layers || !terrain->layers[layer].image.data )
+	if ( !terrain || layer >= OLDTERRAIN_MAX_LAYERS || !terrain->layers || !terrain->layers[layer].image.data )
 	{
 		return;
 	}
@@ -64,7 +64,7 @@ void Terrain_UnloadLayer(Terrain* terrain, size_t layer)
 
 Vector2i Terrain_GetLayerDimensions(Terrain terrain, size_t layer)
 {
-	if ( layer >= TERRAIN_MAX_LAYERS || !terrain.layers )
+	if ( layer >= OLDTERRAIN_MAX_LAYERS || !terrain.layers )
 	{
 		return (Vector2i){ 0, 0 };
 	}
@@ -88,7 +88,7 @@ void Terrain_Unload(Terrain terrain)
 		return;
 	}
 
-	for ( size_t index = 0; index < TERRAIN_MAX_LAYERS; ++index )
+	for ( size_t index = 0; index < OLDTERRAIN_MAX_LAYERS; ++index )
 	{
 		Terrain_UnloadLayer(&terrain, index);
 	}

@@ -5,4 +5,9 @@
 #include "gamelib/oldworld.h"
 #include "gamelib/oldentity/oldentity.h"
 
+struct World;
+struct PhysicsComponent;
+
 void Physics_SimulateOld(OldWorld* world, OldEntity* entity);
+
+void Physics_SimulateInWorld(struct World* world, struct PhysicsComponent* physComp);

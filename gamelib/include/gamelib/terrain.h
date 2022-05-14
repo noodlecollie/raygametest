@@ -4,7 +4,7 @@
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/gametypes.h"
 
-#define TERRAIN_MAX_LAYERS 32
+#define OLDTERRAIN_MAX_LAYERS 32
 
 struct TerrainLayer;
 

@@ -6,6 +6,8 @@
 #include "gamelib/terrain.h"
 #include "gamelib/player.h"
 
+struct TerrainComponent;
+
 typedef struct TraceResult
 {
 	bool collided;
@@ -16,4 +18,7 @@ typedef struct TraceResult
 	Vector2 contactNormal;
 } TraceResult;
 
+TraceResult TraceResultNoCollision(Vector2 hullEndPos);
+
 TraceResult TraceRectangleMovementInLevel(Rectangle hull, Vector2 delta, Terrain level, Mask32 collisionLayers);
+TraceResult TraceRectangleMovementAgainstTerrain(Rectangle hull, Vector2 delta, struct TerrainComponent* terrain, Mask32 collisionLayers);

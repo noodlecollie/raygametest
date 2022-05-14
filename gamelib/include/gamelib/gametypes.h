@@ -10,3 +10,5 @@ typedef struct Vector2i
 
 typedef uint32_t Mask32;
 typedef uint32_t EntityIndex;
+
+#define MASK32_BITS (sizeof(Mask32) * 8)

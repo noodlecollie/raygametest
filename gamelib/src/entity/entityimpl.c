@@ -81,7 +81,7 @@ void EntityImpl_RemovePhysicsComponent(Entity* ent)
 	DestroyComponent(ent->impl, COMPONENT_PHYSICS);
 }
 
-struct TerrainComponent* Entity_GetTerraimComponent(Entity* ent)
+struct TerrainComponent* Entity_GetTerrainComponent(Entity* ent)
 {
 	return ent ? (TerrainComponent*)ent->impl->components[COMPONENT_TERRAIN] : NULL;
 }

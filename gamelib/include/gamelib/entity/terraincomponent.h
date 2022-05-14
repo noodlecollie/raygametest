@@ -3,7 +3,7 @@
 #include "gamelib/gametypes.h"
 #include "gamelib/external/raylibheaders.h"
 
-#define TERRAIN_MAX_LAYERS 32
+#define TERRAIN_MAX_LAYERS MASK32_BITS
 
 struct TerrainLayer;
 struct Entity;

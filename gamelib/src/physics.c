@@ -1,10 +1,15 @@
+#include <float.h>
 #include "gamelib/physics.h"
 #include "gamelib/oldentity/oldphysicscomponent.h"
 #include "gamelib/trace.h"
 #include "gamelib/gameutil.h"
 #include "gamelib/external/raylibheaders.h"
+#include "gamelib/entity/entity.h"
+#include "gamelib/entity/physicscomponent.h"
+#include "gamelib/entity/terraincomponent.h"
+#include "gamelib/world.h"
 
-static inline void MoveToPosition(OldEntity* entity, const TraceResult* result)
+static inline void MoveToPositionOld(OldEntity* entity, const TraceResult* result)
 {
 	OldPhysicsComponent* physComp = OldEntity_PhysicsComponent(entity);
 	Rectangle hull = OldPhysicsComponent_GetWorldCollisionHull(physComp);
@@ -48,7 +53,7 @@ void Physics_SimulateOld(OldWorld* world, OldEntity* entity)
 		physComp->collisionMask
 	);
 
-	MoveToPosition(entity, &result);
+	MoveToPositionOld(entity, &result);
 
 	if ( result.collided && !result.endedColliding )
 	{
@@ -63,6 +68,94 @@ void Physics_SimulateOld(OldWorld* world, OldEntity* entity)
 			physComp->collisionMask
 		);
 
-		MoveToPosition(entity, &result2);
+		MoveToPositionOld(entity, &result2);
 	}
+}
+
+static float SimulateAgainstTerrain(PhysicsComponent* physComp, TerrainComponent* terrain, Vector2 delta, TraceResult* outResult)
+{
+	*outResult = TraceRectangleMovementAgainstTerrain(
+		PhysicsComponent_GetWorldCollisionHull(physComp),
+		delta,
+		terrain,
+		physComp->collisionMask
+	);
+
+	float traceFraction = outResult->fraction;
+
+	if ( outResult->collided && !outResult->endedColliding )
+	{
+		// For the remainder of the movement, slide along the surface.
+		Vector2 remainderDelta = Vector2Scale(delta, fmaxf(1.0f - outResult->fraction, 0.0f));
+		remainderDelta = Vector2ProjectAlongSurface(remainderDelta, outResult->contactNormal);
+
+		*outResult = TraceRectangleMovementAgainstTerrain(
+			PhysicsComponent_GetWorldCollisionHull(physComp),
+			remainderDelta,
+			terrain,
+			physComp->collisionMask
+		);
+	}
+
+	return traceFraction;
+}
+
+static void ApplyPerFrameDeltas(const World* world, PhysicsComponent* physComp)
+{
+	float deltaTime = GetFrameTime();
+
+	// Add in gravity applied over this time delta.
+	physComp->velocity.y += world->gravity * physComp->gravityModifier * deltaTime;
+}
+
+static void MoveToPosition(PhysicsComponent* physComp, const TraceResult* result)
+{
+	Entity* ent = physComp->ownerEntity;
+	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(physComp);
+
+	ent->position.x += result->endPosition.x - hull.x;
+	ent->position.y += result->endPosition.y - hull.y;
+
+	if ( result->collided )
+	{
+		ent->position = Vector2Add(ent->position, Vector2Scale(result->contactNormal, PHYSICS_CONTACT_ADJUST_DIST));
+		physComp->velocity = (!result->endedColliding) ? Vector2ProjectAlongSurface(physComp->velocity, result->contactNormal) : Vector2Zero();
+	}
+}
+
+void Physics_SimulateInWorld(struct World* world, struct PhysicsComponent* physComp)
+{
+	if ( !physComp || !world )
+	{
+		return;
+	}
+
+	ApplyPerFrameDeltas(world, physComp);
+
+	// Get how far we need to now move in this time delta.
+	Vector2 origDelta = Vector2Scale(physComp->velocity, GetFrameTime());
+	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(physComp);
+	Vector2 hullPos = (Vector2){ hull.x, hull.y };
+
+	// Find the final contact position from the collision with the nearest component.
+	float shortestFraction = FLT_MAX;
+	TraceResult shortestTraceResult = TraceResultNoCollision(Vector2Add(hullPos, origDelta));
+
+	// TODO: This is a naive search. It should be optimised with use of a quadtree.
+	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
+	{
+		if ( Entity_GetTerrainComponent(ent) )
+		{
+			TraceResult workingResult = TraceResultNoCollision(Vector2Add(hullPos, origDelta));
+			float fraction = SimulateAgainstTerrain(physComp, Entity_GetTerrainComponent(ent), origDelta, &workingResult);
+
+			if ( fraction < shortestFraction )
+			{
+				shortestFraction = fraction;
+				shortestTraceResult = workingResult;
+			}
+		}
+	}
+
+	MoveToPosition(physComp, &shortestTraceResult);
 }

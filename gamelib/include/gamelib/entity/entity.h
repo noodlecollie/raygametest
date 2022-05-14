@@ -16,6 +16,6 @@ struct PhysicsComponent* Entity_GetPhysicsComponent(Entity* ent);
 struct PhysicsComponent* Entity_AddPhysicsComponent(Entity* ent);
 void Entity_RemovePhysicsComponent(Entity* ent);
 
-struct TerrainComponent* Entity_GetTerraimComponent(Entity* ent);
+struct TerrainComponent* Entity_GetTerrainComponent(Entity* ent);
 struct TerrainComponent* Entity_AddTerrainComponent(Entity* ent);
 void Entity_RemoveTerrainComponent(Entity* ent);
