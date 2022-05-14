@@ -36,7 +36,7 @@ void PlatformMovement_MovePlayer(Player* player, OldWorld* world)
 	// Begin assuming the player will not be on the ground.
 	player->onGround = false;
 
-	Physics_Simulate(world, player->entity);
+	Physics_SimulateOld(world, player->entity);
 
 	if ( !player->onGround && CheckIfStandingOnGround(player, world) )
 	{

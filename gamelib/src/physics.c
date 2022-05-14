@@ -19,7 +19,7 @@ static inline void MoveToPosition(OldEntity* entity, const TraceResult* result)
 	}
 }
 
-void Physics_Simulate(OldWorld* world, OldEntity* entity)
+void Physics_SimulateOld(OldWorld* world, OldEntity* entity)
 {
 	if ( !world || !entity )
 	{

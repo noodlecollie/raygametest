@@ -1,7 +1,6 @@
 #pragma once
 
 #include "gamelib/entity/entity.h"
-#include "gamelib/entity/physicscomponent.h"
 #include "entity/componenttypes.h"
 
 struct World;

@@ -12,7 +12,7 @@ typedef struct Terrain
 {
 	struct TerrainLayer* layers;
 
-	// OldWorld units per block
+	// World units per block
 	float scale;
 } Terrain;
 

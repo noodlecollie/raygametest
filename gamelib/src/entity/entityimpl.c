@@ -1,5 +1,32 @@
 #include "entity/entityimpl.h"
 #include "gamelib/gameutil.h"
+#include "gamelib/entity/physicscomponent.h"
+#include "gamelib/entity/terraincomponent.h"
+
+#define ALLOCATE_COMPONENT(impl, type, componentType) ((type*)AllocateComponent(impl, componentType, sizeof(type)))
+
+static inline void DestroyComponent(EntityImpl* impl, ComponentType componentType)
+{
+	if ( impl->components[componentType] )
+	{
+		MemFree(impl->components[componentType]);
+		impl->components[componentType] = NULL;
+	}
+}
+
+static inline void* AllocateComponent(EntityImpl* impl, ComponentType componentType, size_t structSize)
+{
+	void** component = &impl->components[componentType];
+
+	if ( *component )
+	{
+		DestroyComponent(impl, componentType);
+	}
+
+	*component = MemAlloc((int)structSize);
+
+	return *component;
+}
 
 static void DestroyAllComponents(EntityImpl* impl)
 {
@@ -26,7 +53,7 @@ void EntityImpl_Destroy(EntityImpl* impl)
 
 struct PhysicsComponent* EntityImpl_GetPhysicsComponent(Entity* ent)
 {
-	return (ent && ent->impl) ? ent->impl->components[COMPONENT_PHYSICS] : NULL;
+	return (ent && ent->impl) ? (PhysicsComponent*)ent->impl->components[COMPONENT_PHYSICS] : NULL;
 }
 
 struct PhysicsComponent* EntityImpl_AddPhysicsComponent(Entity* ent)
@@ -36,17 +63,12 @@ struct PhysicsComponent* EntityImpl_AddPhysicsComponent(Entity* ent)
 		return NULL;
 	}
 
-	PhysicsComponent** component = (PhysicsComponent**)&ent->impl->components[COMPONENT_PHYSICS];
+	PhysicsComponent* component = ALLOCATE_COMPONENT(ent->impl, PhysicsComponent, COMPONENT_PHYSICS);
 
-	if ( !*component )
-	{
-		*component = (PhysicsComponent*)MemAlloc(sizeof(PhysicsComponent));
+	component->ownerEntity = &ent->impl->entity;
+	component->gravityModifier = 1.0f;
 
-		(*component)->ownerEntity = &ent->impl->entity;
-		(*component)->gravityModifier = 1.0f;
-	}
-
-	return *component;
+	return component;
 }
 
 void EntityImpl_RemovePhysicsComponent(Entity* ent)
@@ -56,11 +78,35 @@ void EntityImpl_RemovePhysicsComponent(Entity* ent)
 		return;
 	}
 
-	PhysicsComponent** component = (PhysicsComponent**)&ent->impl->components[COMPONENT_PHYSICS];
+	DestroyComponent(ent->impl, COMPONENT_PHYSICS);
+}
 
-	if ( *component )
+struct TerrainComponent* Entity_GetTerraimComponent(Entity* ent)
+{
+	return (ent && ent->impl) ? (TerrainComponent*)ent->impl->components[COMPONENT_TERRAIN] : NULL;
+}
+
+struct TerrainComponent* Entity_AddTerrainComponent(Entity* ent)
+{
+	if ( !ent || !ent->impl )
 	{
-		MemFree(*component);
-		*component = NULL;
+		return NULL;
 	}
+
+	TerrainComponent* component = ALLOCATE_COMPONENT(ent->impl, TerrainComponent, COMPONENT_TERRAIN);
+
+	component->ownerEntity = &ent->impl->entity;
+	component->scale = 1.0f;
+
+	return component;
+}
+
+void Entity_RemoveTerrainComponent(Entity* ent)
+{
+	if ( !ent || !ent->impl )
+	{
+		return;
+	}
+
+	DestroyComponent(ent->impl, COMPONENT_TERRAIN);
 }
