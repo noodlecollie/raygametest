@@ -19,3 +19,5 @@ void World_DestroyEntity(struct Entity* ent);
 struct Entity* World_GetEntityListHead(World* world);
 struct Entity* World_GetPreviousEntity(struct Entity* ent);
 struct Entity* World_GetNextEntity(struct Entity* ent);
+
+void World_Simulate(World* world);

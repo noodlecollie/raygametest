@@ -1,5 +1,6 @@
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/world.h"
+#include "gamelib/physics.h"
 #include "entity/entityimpl.h"
 
 typedef struct WorldImpl
@@ -134,4 +135,20 @@ struct Entity* World_GetNextEntity(struct Entity* ent)
 	}
 
 	return (ent && ent->impl->next) ? &ent->impl->next->entity : NULL;
+}
+
+void World_Simulate(World* world)
+{
+	if ( !world )
+	{
+		return;
+	}
+
+	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
+	{
+		if ( Entity_GetPhysicsComponent(ent) )
+		{
+			Physics_SimulateInWorld(world, Entity_GetPhysicsComponent(ent));
+		}
+	}
 }

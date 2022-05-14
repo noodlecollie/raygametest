@@ -51,12 +51,12 @@ void EntityImpl_Destroy(EntityImpl* impl)
 	MemFree(impl);
 }
 
-struct PhysicsComponent* EntityImpl_GetPhysicsComponent(Entity* ent)
+struct PhysicsComponent* Entity_GetPhysicsComponent(Entity* ent)
 {
 	return ent ? (PhysicsComponent*)ent->impl->components[COMPONENT_PHYSICS] : NULL;
 }
 
-struct PhysicsComponent* EntityImpl_AddPhysicsComponent(Entity* ent)
+struct PhysicsComponent* Entity_AddPhysicsComponent(Entity* ent)
 {
 	if ( !ent )
 	{
@@ -71,7 +71,7 @@ struct PhysicsComponent* EntityImpl_AddPhysicsComponent(Entity* ent)
 	return component;
 }
 
-void EntityImpl_RemovePhysicsComponent(Entity* ent)
+void Entity_RemovePhysicsComponent(Entity* ent)
 {
 	if ( !ent )
 	{
