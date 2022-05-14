@@ -123,9 +123,9 @@ static void MoveToPosition(PhysicsComponent* physComp, const TraceResult* result
 	}
 }
 
-void Physics_SimulateInWorld(struct World* world, struct PhysicsComponent* physComp)
+void Physics_SimulateObjectInWorld(struct World* world, struct PhysicsComponent* physComp)
 {
-	if ( !physComp || !world )
+	if ( !physComp || !world || !physComp->enabled )
 	{
 		return;
 	}

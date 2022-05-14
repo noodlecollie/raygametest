@@ -10,4 +10,4 @@ struct PhysicsComponent;
 
 void Physics_SimulateOld(OldWorld* world, OldEntity* entity);
 
-void Physics_SimulateInWorld(struct World* world, struct PhysicsComponent* physComp);
+void Physics_SimulateObjectInWorld(struct World* world, struct PhysicsComponent* physComp);

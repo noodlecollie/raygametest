@@ -148,7 +148,7 @@ void World_Simulate(World* world)
 	{
 		if ( Entity_GetPhysicsComponent(ent) )
 		{
-			Physics_SimulateInWorld(world, Entity_GetPhysicsComponent(ent));
+			Physics_SimulateObjectInWorld(world, Entity_GetPhysicsComponent(ent));
 		}
 	}
 }
