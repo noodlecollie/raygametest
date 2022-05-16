@@ -14,13 +14,13 @@ typedef struct Entity
 } Entity;
 
 struct PhysicsComponent* Entity_GetPhysicsComponent(Entity* ent);
-struct PhysicsComponent* Entity_AddPhysicsComponent(Entity* ent);
-void Entity_RemovePhysicsComponent(Entity* ent);
+struct PhysicsComponent* Entity_CreatePhysicsComponent(Entity* ent);
+void Entity_DestroyPhysicsComponent(Entity* ent);
 
 struct TerrainComponent* Entity_GetTerrainComponent(Entity* ent);
-struct TerrainComponent* Entity_AddTerrainComponent(Entity* ent);
-void Entity_RemoveTerrainComponent(Entity* ent);
+struct TerrainComponent* Entity_CreateTerrainComponent(Entity* ent);
+void Entity_DestroyTerrainComponent(Entity* ent);
 
 struct LogicComponent* Entity_GetLogicComponent(Entity* ent);
-struct LogicComponent* Entity_AddLogicComponent(Entity* ent);
-void Entity_RemoveLogicComponent(Entity* ent);
+struct LogicComponent* Entity_CreateLogicComponent(Entity* ent);
+void Entity_DestroyLogicComponent(Entity* ent);

@@ -111,7 +111,7 @@ static void ApplyPerFrameDeltas(const World* world, PhysicsComponent* physComp)
 
 static void MoveToPosition(PhysicsComponent* physComp, const TraceResult* result)
 {
-	Entity* ent = physComp->ownerEntity;
+	Entity* ent = PhysicsComponent_GetOwnerEntity(physComp);
 	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(physComp);
 
 	ent->position.x += result->endPosition.x - hull.x;
@@ -164,18 +164,19 @@ void Physics_SimulateObjectInWorld(struct World* world, struct PhysicsComponent*
 
 	if ( collisionEnt )
 	{
-		LogicComponent* logic = Entity_GetLogicComponent(physComp->ownerEntity);
+		Entity* physCompOwner = PhysicsComponent_GetOwnerEntity(physComp);
+		LogicComponent* logic = Entity_GetLogicComponent(physCompOwner);
 
 		if ( logic && logic->onPhysicsCollided )
 		{
-			logic->onPhysicsCollided(physComp->ownerEntity, collisionEnt);
+			logic->onPhysicsCollided(physCompOwner, collisionEnt);
 		}
 
 		logic = Entity_GetLogicComponent(collisionEnt);
 
 		if ( logic && logic->onPhysicsCollided )
 		{
-			logic->onPhysicsCollided(collisionEnt, physComp->ownerEntity);
+			logic->onPhysicsCollided(collisionEnt, physCompOwner);
 		}
 	}
 }

@@ -6,10 +6,12 @@
 #include "gamelib/gametypes.h"
 
 struct Entity;
+struct PhysicsComponentImpl;
 
 typedef struct PhysicsComponent
 {
-	struct Entity* ownerEntity;
+	struct PhysicsComponentImpl* impl;
+
 	bool enabled;
 	Vector2 velocity;
 	Rectangle collisionHull;
@@ -17,5 +19,6 @@ typedef struct PhysicsComponent
 	Mask32 collisionMask;
 } PhysicsComponent;
 
+struct Entity* PhysicsComponent_GetOwnerEntity(const PhysicsComponent* component);
 Rectangle PhysicsComponent_GetWorldCollisionHull(const PhysicsComponent* component);
 Vector2 PhysicsComponent_GetPosition(const PhysicsComponent* component);

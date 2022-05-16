@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 
 	World* world = World_Create();
 	Entity* terrainEnt = World_CreateEntity(world);
-	TerrainComponent* terrainComponent = Entity_AddTerrainComponent(terrainEnt);
+	TerrainComponent* terrainComponent = Entity_CreateTerrainComponent(terrainEnt);
 
 	terrainComponent->scale = (float)guiValues.levelScale;
 	TerrainComponent_LoadLayer(terrainComponent, 0, "res/maps/test.png");

@@ -1,44 +1,14 @@
 #include "entity/entityimpl.h"
 #include "gamelib/gameutil.h"
-#include "gamelib/entity/physicscomponent.h"
+#include "entity/physicscomponentimpl.h"
 #include "gamelib/entity/terraincomponent.h"
 #include "gamelib/entity/logiccomponent.h"
 
-#define ALLOCATE_COMPONENT(impl, type, componentType) ((type*)AllocateComponent(impl, componentType, sizeof(type)))
-
-static inline void DestroyComponent(EntityImpl* impl, ComponentType componentType)
-{
-	if ( impl->components[componentType] )
-	{
-		MemFree(impl->components[componentType]);
-		impl->components[componentType] = NULL;
-	}
-}
-
-static inline void* AllocateComponent(EntityImpl* impl, ComponentType componentType, size_t structSize)
-{
-	void** component = &impl->components[componentType];
-
-	if ( *component )
-	{
-		DestroyComponent(impl, componentType);
-	}
-
-	*component = MemAlloc((int)structSize);
-
-	return *component;
-}
-
 static void DestroyAllComponents(EntityImpl* impl)
 {
-	for ( size_t index = 0; index < ARRAY_SIZE(impl->components); ++index )
-	{
-		if ( impl->components[index] )
-		{
-			MemFree(impl->components[index]);
-			impl->components[index] = NULL;
-		}
-	}
+	Entity_DestroyPhysicsComponent(&impl->entity);
+	Entity_DestroyTerrainComponent(&impl->entity);
+	Entity_DestroyLogicComponent(&impl->entity);
 }
 
 void EntityImpl_Destroy(EntityImpl* impl)
@@ -61,32 +31,35 @@ void EntityImpl_Destroy(EntityImpl* impl)
 
 struct PhysicsComponent* Entity_GetPhysicsComponent(Entity* ent)
 {
-	return ent ? (PhysicsComponent*)ent->impl->components[COMPONENT_PHYSICS] : NULL;
+	return (ent && ent->impl->components[COMPONENT_PHYSICS])
+		? &((PhysicsComponentImpl*)ent->impl->components[COMPONENT_PHYSICS])->component
+		: NULL;
 }
 
-struct PhysicsComponent* Entity_AddPhysicsComponent(Entity* ent)
+struct PhysicsComponent* Entity_CreatePhysicsComponent(Entity* ent)
 {
 	if ( !ent )
 	{
 		return NULL;
 	}
 
-	PhysicsComponent* component = ALLOCATE_COMPONENT(ent->impl, PhysicsComponent, COMPONENT_PHYSICS);
+	Entity_DestroyPhysicsComponent(ent);
 
-	component->ownerEntity = &ent->impl->entity;
-	component->gravityModifier = 1.0f;
+	PhysicsComponentImpl* impl = PhysicsComponentImpl_Create(ent);
+	ent->impl->components[COMPONENT_PHYSICS] = impl;
 
-	return component;
+	return &impl->component;
 }
 
-void Entity_RemovePhysicsComponent(Entity* ent)
+void Entity_DestroyPhysicsComponent(Entity* ent)
 {
 	if ( !ent )
 	{
 		return;
 	}
 
-	DestroyComponent(ent->impl, COMPONENT_PHYSICS);
+	PhysicsComponentImpl_Destroy(ent->impl->components[COMPONENT_PHYSICS]);
+	ent->impl->components[COMPONENT_PHYSICS] = NULL;
 }
 
 struct TerrainComponent* Entity_GetTerrainComponent(Entity* ent)
@@ -94,14 +67,17 @@ struct TerrainComponent* Entity_GetTerrainComponent(Entity* ent)
 	return ent ? (TerrainComponent*)ent->impl->components[COMPONENT_TERRAIN] : NULL;
 }
 
-struct TerrainComponent* Entity_AddTerrainComponent(Entity* ent)
+struct TerrainComponent* Entity_CreateTerrainComponent(Entity* ent)
 {
-	if ( !ent || !ent->impl )
+	if ( !ent )
 	{
 		return NULL;
 	}
 
-	TerrainComponent* component = ALLOCATE_COMPONENT(ent->impl, TerrainComponent, COMPONENT_TERRAIN);
+	Entity_DestroyTerrainComponent(ent);
+
+	TerrainComponent* component = (TerrainComponent*)MemAlloc(sizeof(TerrainComponent));
+	ent->impl->components[COMPONENT_TERRAIN] = component;
 
 	component->ownerEntity = &ent->impl->entity;
 	component->scale = 1.0f;
@@ -109,14 +85,18 @@ struct TerrainComponent* Entity_AddTerrainComponent(Entity* ent)
 	return component;
 }
 
-void Entity_RemoveTerrainComponent(Entity* ent)
+void Entity_DestroyTerrainComponent(Entity* ent)
 {
 	if ( !ent )
 	{
 		return;
 	}
 
-	DestroyComponent(ent->impl, COMPONENT_TERRAIN);
+	if ( ent->impl->components[COMPONENT_TERRAIN] )
+	{
+		MemFree(ent->impl->components[COMPONENT_TERRAIN]);
+		ent->impl->components[COMPONENT_TERRAIN] = NULL;
+	}
 }
 
 struct LogicComponent* Entity_GetLogicComponent(Entity* ent)
@@ -124,21 +104,24 @@ struct LogicComponent* Entity_GetLogicComponent(Entity* ent)
 	return ent ? (LogicComponent*)ent->impl->components[COMPONENT_LOGIC] : NULL;
 }
 
-struct LogicComponent* Entity_AddLogicComponent(Entity* ent)
+struct LogicComponent* Entity_CreateLogicComponent(Entity* ent)
 {
-	if ( !ent || !ent->impl )
+	if ( !ent )
 	{
 		return NULL;
 	}
 
-	LogicComponent* component = ALLOCATE_COMPONENT(ent->impl, LogicComponent, COMPONENT_LOGIC);
+	Entity_DestroyLogicComponent(ent);
+
+	LogicComponent* component = (LogicComponent*)MemAlloc(sizeof(LogicComponent));
+	ent->impl->components[COMPONENT_LOGIC] = component;
 
 	component->ownerEntity = &ent->impl->entity;
 
 	return component;
 }
 
-void Entity_RemoveLogicComponent(Entity* ent)
+void Entity_DestroyLogicComponent(Entity* ent)
 {
 	if ( !ent )
 	{
@@ -147,10 +130,14 @@ void Entity_RemoveLogicComponent(Entity* ent)
 
 	LogicComponent* component = (LogicComponent*)ent->impl->components[COMPONENT_LOGIC];
 
-	if ( component && component->onComponentRemoved )
+	if ( component )
 	{
-		component->onComponentRemoved(component);
-	}
+		if ( component->onComponentRemoved )
+		{
+			component->onComponentRemoved(component);
+		}
 
-	DestroyComponent(ent->impl, COMPONENT_LOGIC);
+		MemFree(component);
+		ent->impl->components[COMPONENT_LOGIC] = NULL;
+	}
 }
