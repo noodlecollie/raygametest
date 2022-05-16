@@ -4,11 +4,11 @@
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/oldentity/oldentity.h"
 
-typedef struct Player
+typedef struct OldPlayer
 {
 	OldEntity* entity;
 	bool onGround;
-} Player;
+} OldPlayer;
 
-Player Player_Create(void);
-void Player_Destroy(Player* player);
+OldPlayer OldPlayer_Create(void);
+void OldPlayer_Destroy(OldPlayer* player);

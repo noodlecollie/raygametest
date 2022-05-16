@@ -32,10 +32,15 @@ void EntityImpl_Destroy(EntityImpl* impl)
 
 	for ( LogicComponentImpl* logic = impl->logicImplHead; logic; logic = logic->next )
 	{
-		if ( logic->component.onEntityDestroyed )
+		if ( logic->component.callbacks.onEntityDestroyed )
 		{
-			logic->component.onEntityDestroyed(&impl->entity);
+			logic->component.callbacks.onEntityDestroyed(&impl->entity);
 		}
+	}
+
+	for ( LogicComponentImpl* logic = impl->logicImplHead; logic; logic = logic->next )
+	{
+		LogicComponent_PerformCleanup(&logic->component);
 	}
 
 	DestroyAllComponents(impl);
@@ -136,10 +141,7 @@ void Entity_RemoveLogicComponent(struct LogicComponent* component)
 		return;
 	}
 
-	if ( component->onComponentRemoved )
-	{
-		component->onComponentRemoved(component);
-	}
+	LogicComponent_PerformCleanup(component);
 
 	LogicComponentImpl* impl = component->impl;
 	Entity* ownerEnt = impl->ownerEntity;
@@ -156,10 +158,7 @@ void Entity_RemoveAllLogicComponents(Entity* ent)
 
 	for ( LogicComponentImpl* logic = ent->impl->logicImplHead; logic; logic = logic->next )
 	{
-		if ( logic->component.onComponentRemoved )
-		{
-			logic->component.onComponentRemoved(&logic->component);
-		}
+		LogicComponent_PerformCleanup(&logic->component);
 	}
 
 	DestroyAllLogicComponents(ent->impl);

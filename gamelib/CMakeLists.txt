@@ -5,13 +5,14 @@ add_library(gamelib STATIC
 	src/entity/logiccomponentimpl.c
 	src/entity/physicscomponentimpl.c
 	src/entity/terraincomponentimpl.c
+	src/logic/playerlogic.c
 	src/oldentity/oldentity.c
 	src/oldentity/oldphysicscomponent.c
 	src/gameutil.c
 	src/memoryallocator.c
+	src/oldplayer.c
 	src/physics.c
 	src/platformmovement.c
-	src/player.c
 	src/terrain.c
 	src/trace.c
 	src/world.c

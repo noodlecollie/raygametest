@@ -146,9 +146,9 @@ void World_Think(World* world)
 	{
 		for ( LogicComponent* logic = Entity_GetLogicComponentListHead(ent); logic; logic = Entity_GetNextLogicComponent(logic) )
 		{
-			if ( logic->onPreThink )
+			if ( logic->callbacks.onPreThink )
 			{
-				logic->onPreThink(ent);
+				logic->callbacks.onPreThink(ent);
 			}
 		}
 

@@ -30,3 +30,19 @@ struct Entity* LogicComponent_GetOwnerEntity(LogicComponent* component)
 {
 	return component ? component->impl->ownerEntity : NULL;
 }
+
+void LogicComponent_PerformCleanup(LogicComponent* component)
+{
+	if ( !component )
+	{
+		return;
+	}
+
+	if ( component->callbacks.onComponentCleanup )
+	{
+		component->callbacks.onComponentCleanup(component);
+	}
+
+	component->callbacks = (LogicComponentCallbacks){ 0 };
+	component->userData = NULL;
+}

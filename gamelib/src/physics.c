@@ -168,17 +168,17 @@ void Physics_SimulateObjectInWorld(struct World* world, struct PhysicsComponent*
 
 		for ( LogicComponent* logic = Entity_GetLogicComponentListHead(physCompOwner); logic; logic = Entity_GetNextLogicComponent(logic) )
 		{
-			if ( logic->onPhysicsCollided )
+			if ( logic->callbacks.onPhysicsCollided )
 			{
-				logic->onPhysicsCollided(physCompOwner, collisionEnt);
+				logic->callbacks.onPhysicsCollided(physCompOwner, collisionEnt);
 			}
 		}
 
 		for ( LogicComponent* logic = Entity_GetLogicComponentListHead(collisionEnt); logic; logic = Entity_GetNextLogicComponent(logic) )
 		{
-			if ( logic->onPhysicsCollided )
+			if ( logic->callbacks.onPhysicsCollided )
 			{
-				logic->onPhysicsCollided(collisionEnt, physCompOwner);
+				logic->callbacks.onPhysicsCollided(collisionEnt, physCompOwner);
 			}
 		}
 	}

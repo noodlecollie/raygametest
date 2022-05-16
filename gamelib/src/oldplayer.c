@@ -1,15 +1,15 @@
-#include "gamelib/player.h"
+#include "gamelib/oldplayer.h"
 
-Player Player_Create(void)
+OldPlayer OldPlayer_Create(void)
 {
-	Player player = { 0 };
+	OldPlayer player = { 0 };
 
 	player.entity = OldEntity_Create();
 
 	return player;
 }
 
-void Player_Destroy(Player* player)
+void OldPlayer_Destroy(OldPlayer* player)
 {
 	if ( !player )
 	{

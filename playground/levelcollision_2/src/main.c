@@ -5,7 +5,7 @@
 #include "gamelib/oldworld.h"
 #include "gamelib/trace.h"
 #include "gamelib/gameutil.h"
-#include "gamelib/player.h"
+#include "gamelib/oldplayer.h"
 #include "gamelib/platformmovement.h"
 
 typedef struct GuiValues
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 	Vector2 beginPos = Vector2Zero();
 	Vector2 endPos = Vector2Zero();
 
-	Player player = Player_Create();
+	OldPlayer player = OldPlayer_Create();
 	OldPhysicsComponent* playerPhys = OldEntity_AddPhysicsComponent(player.entity);
 	playerPhys->collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
 	playerPhys->collisionMask = 0xFFFFFFFF;
