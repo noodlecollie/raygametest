@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include "gamelib/external/raylibheaders.h"
 #include "raygui.h"
-
-#include "gamelib/oldworld.h"
-#include "gamelib/trace.h"
-#include "gamelib/gameutil.h"
-#include "gamelib/oldplayer.h"
-#include "gamelib/platformmovement.h"
+#include "gamelib/world.h"
+#include "gamelib/entity/entity.h"
+#include "gamelib/entity/terraincomponent.h"
+#include "gamelib/entity/physicscomponent.h"
+#include "gamelib/logic/playerlogic.h"
 
 int main(int argc, char** argv)
 {
@@ -25,29 +24,34 @@ int main(int argc, char** argv)
 	SetWindowSize(screenWidth, screenHeight);
 	GuiSetStyle(DEFAULT, TEXT_SIZE, (int)((float)GuiGetStyle(DEFAULT, TEXT_SIZE) * dpiScale.x));
 
-	OldWorld world = { 0 };
-	world.gravity = 1000.0f;
-	world.level.scale = 10.0f;
-	Terrain_LoadLayer(&world.level, 0, "res/maps/test.png");
-	Vector2i levelDim = Terrain_GetLayerDimensions(world.level, 0);
+	World* world = World_Create();
+	world->gravity = 1000.0f;
+
+	Entity* terrainEnt = World_CreateEntity(world);
+	TerrainComponent* terrain = Entity_CreateTerrainComponent(terrainEnt);
+	terrain->scale = 10.0f;
+
+	TerrainComponent_LoadLayer(terrain, 0, "res/maps/test.png");
+	Vector2i levelDim = TerrainComponent_GetLayerDimensions(terrain, 0);
 
 	Camera2D camera = { 0 };
-	camera.target = (Vector2){ ((float)levelDim.x / 2.0f) * world.level.scale, ((float)levelDim.y / 2.0f) * world.level.scale };
+	camera.target = (Vector2){ ((float)levelDim.x / 2.0f) * terrain->scale, ((float)levelDim.y / 2.0f) * terrain->scale };
 	camera.offset = (Vector2){ (float)screenWidth / 2.0f, (float)screenHeight / 2.0f };
 	camera.rotation = 0.0f;
 	camera.zoom = 1.0f;
 
-	OldPlayer player = OldPlayer_Create();
+	const Vector2 playerStartPos = (Vector2){ 1000.0f, 0.0f };
 
-	OldPhysicsComponent* playerPhys = OldEntity_AddPhysicsComponent(player.entity);
+	Entity* playerEnt = World_CreateEntity(world);
+	playerEnt->position = playerStartPos;
+
+	PhysicsComponent* playerPhys = Entity_CreatePhysicsComponent(playerEnt);
 	playerPhys->collisionMask = 0xFFFFFFFF;
-	playerPhys->gravityModifier = 1.0f;
-	playerPhys->ownerEntity->position = (Vector2){ 1000.0f, 0.0f };
 	playerPhys->collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
+	playerPhys->enabled = true;
 
-	const Vector2 movementScale = (Vector2){ 200.0f, 450.0f };
-
-	Vector2 startPos = playerPhys->ownerEntity->position;
+	LogicComponent* playerLogic = Entity_AddLogicComponent(playerEnt);
+	PlayerLogic_SetOnComponent(playerLogic);
 
 	SetTargetFPS(60);
 
@@ -75,36 +79,14 @@ int main(int argc, char** argv)
 
 		if ( IsKeyPressed(KEY_R) )
 		{
-			playerPhys->ownerEntity->position = startPos;
+			playerEnt->position = playerStartPos;
 			playerPhys->velocity = Vector2Zero();
 			camera.zoom = 1.0f;
 		}
 
-		camera.target = playerPhys->ownerEntity->position;
+		World_Think(world);
 
-		Vector2 movement = Vector2Zero();
-
-		if ( IsKeyDown(KEY_RIGHT) )
-		{
-			movement.x += 1.0f;
-		}
-
-		if ( IsKeyDown(KEY_LEFT) )
-		{
-			movement.x -= 1.0f;
-		}
-
-		if ( IsKeyPressed(KEY_UP) && player.onGround )
-		{
-			movement.y -= 1.0f;
-		}
-
-		movement = Vector2Multiply(movement, movementScale);
-
-		playerPhys->velocity.x = movement.x;
-		playerPhys->velocity.y += movement.y;
-
-		PlatformMovement_MovePlayer(&player, &world);
+		camera.target = playerEnt->position;
 
 		BeginDrawing();
 
@@ -112,18 +94,18 @@ int main(int argc, char** argv)
 
 		BeginMode2D(camera);
 
-		Vector2i dims = Terrain_GetLayerDimensions(world.level, 0);
+		Vector2i dims = TerrainComponent_GetLayerDimensions(terrain, 0);
 
 		for ( int y = 0; y < dims.y; ++y )
 		{
 			for ( int x = 0; x < dims.x; ++x )
 			{
-				Rectangle blockRect = Terrain_GetBlockWorldRectByCoOrds(world.level, (Vector2i){ x, y });
-				Color blockColour = Terrain_GetBlockColourByCoOrds(world.level, 0, (Vector2i){ x, y });
+				Rectangle blockRect = TerrainComponent_GetBlockWorldRectByCoOrds(terrain, (Vector2i){ x, y });
+				Color blockColour = TerrainComponent_GetBlockColourByCoOrds(terrain, 0, (Vector2i){ x, y });
 				DrawRectangleRec(blockRect, blockColour);
 			}
 
-			DrawRectangleRec(OldPhysicsComponent_GetWorldCollisionHull(playerPhys), player.onGround ? YELLOW : RED);
+			DrawRectangleRec(PhysicsComponent_GetWorldCollisionHull(playerPhys), PlayerLogic_GetDataFromComponent(playerLogic)->onGround ? YELLOW : RED);
 		}
 
 		EndMode2D();
@@ -133,7 +115,7 @@ int main(int argc, char** argv)
 
 		char buffer[64];
 
-		snprintf(buffer, sizeof(buffer), "Player position: (%.2f, %.2f)", playerPhys->ownerEntity->position.x, playerPhys->ownerEntity->position.y);
+		snprintf(buffer, sizeof(buffer), "Player position: (%.2f, %.2f)", playerEnt->position.x, playerEnt->position.y);
 		buffer[sizeof(buffer) - 1] = '\0';
 		DrawText(buffer, leftMargin, (int)(10.0f * dpiScale.y), fontSize, BLUE);
 
@@ -144,8 +126,7 @@ int main(int argc, char** argv)
 		EndDrawing();
 	}
 
-	OldPlayer_Destroy(&player);
-	Terrain_Unload(world.level);
+	World_Destroy(world);
 	CloseWindow();
 
 	return 0;

@@ -6,7 +6,7 @@
 #include "gamelib/entity/terraincomponent.h"
 #include "gamelib/physics.h"
 
-#define PLAYER_COLLISION_MASK 0xFFFFFFFF
+#define PLAYER_LOGIC_DATA_TYPE_ID 12345
 #define PLAYER_MOVEMENT_VEL_SCALE (Vector2){ 200.0f, 450.0f }
 
 static inline bool SurfaceNormalIsGround(Vector2 normal)
@@ -23,7 +23,7 @@ static inline bool CheckIfStandingOnGround(PhysicsComponent* physComp, TerrainCo
 
 	Vector2 delta = (Vector2){ 0.0f, 2.0f * PHYSICS_CONTACT_ADJUST_DIST };
 	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(physComp);
-	TraceResult result = TraceRectangleMovementAgainstTerrain(hull, delta, terrain, PLAYER_COLLISION_MASK);
+	TraceResult result = TraceRectangleMovementAgainstTerrain(hull, delta, terrain, physComp->collisionMask);
 
 	return result.collided && SurfaceNormalIsGround(result.contactNormal);
 }
@@ -39,7 +39,7 @@ static void OnComponentCleanup(LogicComponent* component)
 
 static void OnPreThink(LogicComponent* component)
 {
-	PlayerLogic* data = (PlayerLogic*)component->userData;
+	PlayerLogicData* data = (PlayerLogicData*)component->userData;
 	Entity* ownerEnt = LogicComponent_GetOwnerEntity(component);
 	PhysicsComponent* playerPhys = Entity_GetPhysicsComponent(ownerEnt);
 
@@ -74,13 +74,13 @@ static void OnPreThink(LogicComponent* component)
 
 static void OnPhysicsCollided(LogicComponent* component, Entity* otherEntity)
 {
-	PlayerLogic* data = (PlayerLogic*)component->userData;
+	PlayerLogicData* data = (PlayerLogicData*)component->userData;
 	Entity* thisEntity = LogicComponent_GetOwnerEntity(component);
 
 	data->onGround = CheckIfStandingOnGround(Entity_GetPhysicsComponent(thisEntity), Entity_GetTerrainComponent(otherEntity));
 }
 
-void PlayerLogic_InitComponent(LogicComponent* component)
+void PlayerLogic_SetOnComponent(LogicComponent* component)
 {
 	if ( !component )
 	{
@@ -93,5 +93,11 @@ void PlayerLogic_InitComponent(LogicComponent* component)
 	component->callbacks.onPreThink = &OnPreThink;
 	component->callbacks.onPhysicsCollided = &OnPhysicsCollided;
 
-	component->userData = MemAlloc(sizeof(PlayerLogic));
+	component->userData = MemAlloc(sizeof(PlayerLogicData));
+	component->userDataType = PLAYER_LOGIC_DATA_TYPE_ID;
+}
+
+PlayerLogicData* PlayerLogic_GetDataFromComponent(LogicComponent* component)
+{
+	return (component && component->userDataType == PLAYER_LOGIC_DATA_TYPE_ID) ? (PlayerLogicData*)component->userData : NULL;
 }

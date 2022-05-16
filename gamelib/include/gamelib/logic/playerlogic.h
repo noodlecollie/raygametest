@@ -2,9 +2,10 @@
 
 #include "gamelib/entity/logiccomponent.h"
 
-typedef struct PlayerLogic
+typedef struct PlayerLogicData
 {
 	bool onGround;
-} PlayerLogic;
+} PlayerLogicData;
 
-void PlayerLogic_InitComponent(LogicComponent* component);
+void PlayerLogic_SetOnComponent(LogicComponent* component);
+PlayerLogicData* PlayerLogic_GetDataFromComponent(LogicComponent* component);

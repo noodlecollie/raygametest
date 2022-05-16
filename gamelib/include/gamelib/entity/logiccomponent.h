@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
 
 struct Entity;
 struct LogicComponent;
@@ -20,6 +21,7 @@ typedef struct LogicComponent
 	struct LogicComponentImpl* impl;
 
 	LogicComponentCallbacks callbacks;
+	uint32_t userDataType;
 	void* userData;
 } LogicComponent;
 

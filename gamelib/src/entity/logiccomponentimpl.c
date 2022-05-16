@@ -45,4 +45,5 @@ void LogicComponent_PerformCleanup(LogicComponent* component)
 
 	component->callbacks = (LogicComponentCallbacks){ 0 };
 	component->userData = NULL;
+	component->userDataType = 0;
 }
