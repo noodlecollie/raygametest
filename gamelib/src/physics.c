@@ -170,7 +170,7 @@ void Physics_SimulateObjectInWorld(struct World* world, struct PhysicsComponent*
 		{
 			if ( logic->callbacks.onPhysicsCollided )
 			{
-				logic->callbacks.onPhysicsCollided(physCompOwner, collisionEnt);
+				logic->callbacks.onPhysicsCollided(logic, collisionEnt);
 			}
 		}
 
@@ -178,7 +178,7 @@ void Physics_SimulateObjectInWorld(struct World* world, struct PhysicsComponent*
 		{
 			if ( logic->callbacks.onPhysicsCollided )
 			{
-				logic->callbacks.onPhysicsCollided(collisionEnt, physCompOwner);
+				logic->callbacks.onPhysicsCollided(logic, physCompOwner);
 			}
 		}
 	}

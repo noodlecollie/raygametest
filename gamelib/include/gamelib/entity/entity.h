@@ -6,12 +6,15 @@ struct EntityImpl;
 struct PhysicsComponent;
 struct TerrainComponent;
 struct LogicComponent;
+struct World;
 
 typedef struct Entity
 {
 	Vector2 position;
 	struct EntityImpl* impl;
 } Entity;
+
+struct World* Entity_GetWorld(Entity* ent);
 
 struct PhysicsComponent* Entity_GetPhysicsComponent(Entity* ent);
 struct PhysicsComponent* Entity_CreatePhysicsComponent(Entity* ent);

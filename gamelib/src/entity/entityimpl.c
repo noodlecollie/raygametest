@@ -34,7 +34,7 @@ void EntityImpl_Destroy(EntityImpl* impl)
 	{
 		if ( logic->component.callbacks.onEntityDestroyed )
 		{
-			logic->component.callbacks.onEntityDestroyed(&impl->entity);
+			logic->component.callbacks.onEntityDestroyed(&logic->component);
 		}
 	}
 
@@ -45,6 +45,11 @@ void EntityImpl_Destroy(EntityImpl* impl)
 
 	DestroyAllComponents(impl);
 	MemFree(impl);
+}
+
+struct World* Entity_GetWorld(Entity* ent)
+{
+	return ent ? ent->impl->ownerWorld : NULL;
 }
 
 struct PhysicsComponent* Entity_GetPhysicsComponent(Entity* ent)

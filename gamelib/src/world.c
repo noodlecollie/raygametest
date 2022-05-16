@@ -72,6 +72,8 @@ struct Entity* World_CreateEntity(World* world)
 
 	DBL_LL_ADD_TO_TAIL(slot, prev, next, impl, entitiesHead, entitiesTail);
 
+	++impl->entityCount;
+
 	return &slot->entity;
 }
 
@@ -148,7 +150,7 @@ void World_Think(World* world)
 		{
 			if ( logic->callbacks.onPreThink )
 			{
-				logic->callbacks.onPreThink(ent);
+				logic->callbacks.onPreThink(logic);
 			}
 		}
 
@@ -156,5 +158,18 @@ void World_Think(World* world)
 		{
 			Physics_SimulateObjectInWorld(world, Entity_GetPhysicsComponent(ent));
 		}
+
+		for ( LogicComponent* logic = Entity_GetLogicComponentListHead(ent); logic; logic = Entity_GetNextLogicComponent(logic) )
+		{
+			if ( logic->callbacks.onPostThink )
+			{
+				logic->callbacks.onPostThink(logic);
+			}
+		}
 	}
+}
+
+size_t World_GetEntityCount(const World* world)
+{
+	return world ? world->impl->entityCount : 0;
 }

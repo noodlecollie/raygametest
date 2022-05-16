@@ -9,9 +9,10 @@ struct LogicComponentImpl;
 typedef struct LogicComponentCallbacks
 {
 	void (*onComponentCleanup)(struct LogicComponent* component);
-	void (*onEntityDestroyed)(struct Entity* thisEntity);
-	void (*onPreThink)(struct Entity* thisEntity);
-	void (*onPhysicsCollided)(struct Entity* thisEntity, struct Entity* otherEntity);
+	void (*onEntityDestroyed)(struct LogicComponent* component);
+	void (*onPreThink)(struct LogicComponent* component);
+	void (*onPostThink)(struct LogicComponent* component);
+	void (*onPhysicsCollided)(struct LogicComponent* component, struct Entity* otherEntity);
 } LogicComponentCallbacks;
 
 typedef struct LogicComponent

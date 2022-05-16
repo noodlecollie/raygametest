@@ -4,13 +4,6 @@
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/physics.h"
 
-static inline Vector2 ProjectAlongSurface(Vector2 delta, Vector2 surfaceNormal)
-{
-	const Vector2 parallelDir = Vector2PerpendicularClockwise(surfaceNormal);
-	const float dotProduct = Vector2DotProduct(delta, parallelDir);
-	return Vector2Scale(parallelDir, dotProduct);
-}
-
 static inline bool SurfaceNormalIsGround(Vector2 normal)
 {
 	return Vector2DotProduct(normal, (Vector2){ 0.0f, -1.0f }) > 0.5f;
