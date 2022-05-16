@@ -2,6 +2,7 @@
 #include "gamelib/gameutil.h"
 #include "gamelib/entity/physicscomponent.h"
 #include "gamelib/entity/terraincomponent.h"
+#include "gamelib/entity/logiccomponent.h"
 
 #define ALLOCATE_COMPONENT(impl, type, componentType) ((type*)AllocateComponent(impl, componentType, sizeof(type)))
 
@@ -45,6 +46,13 @@ void EntityImpl_Destroy(EntityImpl* impl)
 	if ( !impl )
 	{
 		return;
+	}
+
+	LogicComponent* component = (LogicComponent*)impl->components[COMPONENT_LOGIC];
+
+	if ( component && component->onEntityDestroyed )
+	{
+		component->onEntityDestroyed(component);
 	}
 
 	DestroyAllComponents(impl);
@@ -109,4 +117,40 @@ void Entity_RemoveTerrainComponent(Entity* ent)
 	}
 
 	DestroyComponent(ent->impl, COMPONENT_TERRAIN);
+}
+
+struct LogicComponent* Entity_GetLogicComponent(Entity* ent)
+{
+	return ent ? (LogicComponent*)ent->impl->components[COMPONENT_LOGIC] : NULL;
+}
+
+struct LogicComponent* Entity_AddLogicComponent(Entity* ent)
+{
+	if ( !ent || !ent->impl )
+	{
+		return NULL;
+	}
+
+	LogicComponent* component = ALLOCATE_COMPONENT(ent->impl, LogicComponent, COMPONENT_LOGIC);
+
+	component->ownerEntity = &ent->impl->entity;
+
+	return component;
+}
+
+void Entity_RemoveLogicComponent(Entity* ent)
+{
+	if ( !ent )
+	{
+		return;
+	}
+
+	LogicComponent* component = (LogicComponent*)ent->impl->components[COMPONENT_LOGIC];
+
+	if ( component && component->onComponentRemoved )
+	{
+		component->onComponentRemoved(component);
+	}
+
+	DestroyComponent(ent->impl, COMPONENT_LOGIC);
 }
