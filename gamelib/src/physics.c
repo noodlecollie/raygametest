@@ -7,6 +7,7 @@
 #include "gamelib/entity/entity.h"
 #include "gamelib/entity/physicscomponent.h"
 #include "gamelib/entity/terraincomponent.h"
+#include "gamelib/entity/logiccomponent.h"
 #include "gamelib/world.h"
 
 static inline void MoveToPositionOld(OldEntity* entity, const TraceResult* result)
@@ -140,6 +141,7 @@ void Physics_SimulateObjectInWorld(struct World* world, struct PhysicsComponent*
 	// Find the final contact position from the collision with the nearest component.
 	float shortestFraction = FLT_MAX;
 	TraceResult shortestTraceResult = TraceResultNoCollision(Vector2Add(hullPos, origDelta));
+	Entity* collisionEnt = NULL;
 
 	// TODO: This is a naive search. It should be optimised with use of a quadtree.
 	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
@@ -153,9 +155,27 @@ void Physics_SimulateObjectInWorld(struct World* world, struct PhysicsComponent*
 			{
 				shortestFraction = fraction;
 				shortestTraceResult = workingResult;
+				collisionEnt = ent;
 			}
 		}
 	}
 
 	MoveToPosition(physComp, &shortestTraceResult);
+
+	if ( collisionEnt )
+	{
+		LogicComponent* logic = Entity_GetLogicComponent(physComp->ownerEntity);
+
+		if ( logic && logic->onPhysicsCollided )
+		{
+			logic->onPhysicsCollided(physComp->ownerEntity, collisionEnt);
+		}
+
+		logic = Entity_GetLogicComponent(collisionEnt);
+
+		if ( logic && logic->onPhysicsCollided )
+		{
+			logic->onPhysicsCollided(collisionEnt, physComp->ownerEntity);
+		}
+	}
 }

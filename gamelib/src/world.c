@@ -2,6 +2,7 @@
 #include "gamelib/world.h"
 #include "gamelib/physics.h"
 #include "entity/entityimpl.h"
+#include "gamelib/entity/logiccomponent.h"
 
 typedef struct WorldImpl
 {
@@ -137,7 +138,7 @@ struct Entity* World_GetNextEntity(struct Entity* ent)
 	return (ent && ent->impl->next) ? &ent->impl->next->entity : NULL;
 }
 
-void World_Simulate(World* world)
+void World_Think(World* world)
 {
 	if ( !world )
 	{
@@ -146,6 +147,13 @@ void World_Simulate(World* world)
 
 	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
 	{
+		LogicComponent* logic = Entity_GetLogicComponent(ent);
+
+		if ( logic && logic->onPreThink )
+		{
+			logic->onPreThink(ent);
+		}
+
 		if ( Entity_GetPhysicsComponent(ent) )
 		{
 			Physics_SimulateObjectInWorld(world, Entity_GetPhysicsComponent(ent));

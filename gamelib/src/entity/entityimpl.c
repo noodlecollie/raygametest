@@ -52,7 +52,7 @@ void EntityImpl_Destroy(EntityImpl* impl)
 
 	if ( component && component->onEntityDestroyed )
 	{
-		component->onEntityDestroyed(component);
+		component->onEntityDestroyed(&impl->entity);
 	}
 
 	DestroyAllComponents(impl);
