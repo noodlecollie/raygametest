@@ -5,18 +5,18 @@
 
 #define TERRAIN_MAX_LAYERS MASK32_BITS
 
-struct TerrainLayer;
 struct Entity;
+struct TerrainComponentImpl;
 
 typedef struct TerrainComponent
 {
-	struct Entity* ownerEntity;
-	struct TerrainLayer* layers;
+	struct TerrainComponentImpl* impl;
 
 	// World units per block
 	float scale;
 } TerrainComponent;
 
+struct Entity* TerrainComponent_GetOwnerEntity(TerrainComponent* component);
 void TerrainComponent_Unload(TerrainComponent* component);
 
 void TerrainComponent_LoadLayer(TerrainComponent* component, size_t layer, const char* fileName);

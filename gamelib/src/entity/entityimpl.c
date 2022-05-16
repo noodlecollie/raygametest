@@ -1,7 +1,7 @@
 #include "entity/entityimpl.h"
 #include "gamelib/gameutil.h"
 #include "entity/physicscomponentimpl.h"
-#include "gamelib/entity/terraincomponent.h"
+#include "entity/terraincomponentimpl.h"
 #include "gamelib/entity/logiccomponent.h"
 
 static void DestroyAllComponents(EntityImpl* impl)
@@ -76,13 +76,10 @@ struct TerrainComponent* Entity_CreateTerrainComponent(Entity* ent)
 
 	Entity_DestroyTerrainComponent(ent);
 
-	TerrainComponent* component = (TerrainComponent*)MemAlloc(sizeof(TerrainComponent));
-	ent->impl->components[COMPONENT_TERRAIN] = component;
+	TerrainComponentImpl* impl = TerrainComponentImpl_Create(ent);
+	ent->impl->components[COMPONENT_TERRAIN] = impl;
 
-	component->ownerEntity = &ent->impl->entity;
-	component->scale = 1.0f;
-
-	return component;
+	return &impl->component;
 }
 
 void Entity_DestroyTerrainComponent(Entity* ent)
@@ -92,11 +89,8 @@ void Entity_DestroyTerrainComponent(Entity* ent)
 		return;
 	}
 
-	if ( ent->impl->components[COMPONENT_TERRAIN] )
-	{
-		MemFree(ent->impl->components[COMPONENT_TERRAIN]);
-		ent->impl->components[COMPONENT_TERRAIN] = NULL;
-	}
+	TerrainComponentImpl_Destroy(ent->impl->components[COMPONENT_TERRAIN]);
+	ent->impl->components[COMPONENT_TERRAIN] = NULL;
 }
 
 struct LogicComponent* Entity_GetLogicComponent(Entity* ent)

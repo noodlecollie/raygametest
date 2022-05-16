@@ -11,6 +11,7 @@ PhysicsComponentImpl* PhysicsComponentImpl_Create(struct Entity* ownerEntity)
 
 	PhysicsComponentImpl* impl = (PhysicsComponentImpl*)MemAlloc(sizeof(PhysicsComponentImpl));
 
+	impl->component.impl = impl;
 	impl->ownerEntity = ownerEntity;
 	impl->component.gravityModifier = 1.0f;
 
