@@ -7,6 +7,7 @@
 #include "gamelib/physics.h"
 
 #define PLAYER_COLLISION_MASK 0xFFFFFFFF
+#define PLAYER_MOVEMENT_VEL_SCALE (Vector2){ 200.0f, 450.0f }
 
 static inline bool SurfaceNormalIsGround(Vector2 normal)
 {
@@ -38,18 +39,45 @@ static void OnComponentCleanup(LogicComponent* component)
 
 static void OnPreThink(LogicComponent* component)
 {
-	PlayerLogic* player = (PlayerLogic*)component->userData;
+	PlayerLogic* data = (PlayerLogic*)component->userData;
+	Entity* ownerEnt = LogicComponent_GetOwnerEntity(component);
+	PhysicsComponent* playerPhys = Entity_GetPhysicsComponent(ownerEnt);
 
-	// Begin assuming the player will not be on the ground.
-	player->onGround = false;
+	if ( playerPhys )
+	{
+		Vector2 movement = Vector2Zero();
+
+		if ( IsKeyDown(KEY_RIGHT) )
+		{
+			movement.x += 1.0f;
+		}
+
+		if ( IsKeyDown(KEY_LEFT) )
+		{
+			movement.x -= 1.0f;
+		}
+
+		if ( IsKeyPressed(KEY_UP) && data->onGround )
+		{
+			movement.y -= 1.0f;
+		}
+
+		movement = Vector2Multiply(movement, PLAYER_MOVEMENT_VEL_SCALE);
+
+		playerPhys->velocity.x = movement.x;
+		playerPhys->velocity.y += movement.y;
+	}
+
+	// Before physics sim, assume the player will not be on the ground.
+	data->onGround = false;
 }
 
 static void OnPhysicsCollided(LogicComponent* component, Entity* otherEntity)
 {
-	PlayerLogic* player = (PlayerLogic*)component->userData;
+	PlayerLogic* data = (PlayerLogic*)component->userData;
 	Entity* thisEntity = LogicComponent_GetOwnerEntity(component);
 
-	player->onGround = CheckIfStandingOnGround(Entity_GetPhysicsComponent(thisEntity), Entity_GetTerrainComponent(otherEntity));
+	data->onGround = CheckIfStandingOnGround(Entity_GetPhysicsComponent(thisEntity), Entity_GetTerrainComponent(otherEntity));
 }
 
 void PlayerLogic_InitComponent(LogicComponent* component)
