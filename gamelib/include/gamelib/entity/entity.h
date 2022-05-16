@@ -21,6 +21,9 @@ struct TerrainComponent* Entity_GetTerrainComponent(Entity* ent);
 struct TerrainComponent* Entity_CreateTerrainComponent(Entity* ent);
 void Entity_DestroyTerrainComponent(Entity* ent);
 
-struct LogicComponent* Entity_GetLogicComponent(Entity* ent);
-struct LogicComponent* Entity_CreateLogicComponent(Entity* ent);
-void Entity_DestroyLogicComponent(Entity* ent);
+struct LogicComponent* Entity_GetLogicComponentListHead(Entity* ent);
+struct LogicComponent* Entity_AddLogicComponent(Entity* ent);
+void Entity_RemoveLogicComponent(struct LogicComponent* component);
+void Entity_RemoveAllLogicComponents(Entity* ent);
+struct LogicComponent* Entity_GetPreviousLogicComponent(struct LogicComponent* component);
+struct LogicComponent* Entity_GetNextLogicComponent(struct LogicComponent* component);

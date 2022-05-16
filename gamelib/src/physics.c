@@ -165,18 +165,21 @@ void Physics_SimulateObjectInWorld(struct World* world, struct PhysicsComponent*
 	if ( collisionEnt )
 	{
 		Entity* physCompOwner = PhysicsComponent_GetOwnerEntity(physComp);
-		LogicComponent* logic = Entity_GetLogicComponent(physCompOwner);
 
-		if ( logic && logic->onPhysicsCollided )
+		for ( LogicComponent* logic = Entity_GetLogicComponentListHead(physCompOwner); logic; logic = Entity_GetNextLogicComponent(logic) )
 		{
-			logic->onPhysicsCollided(physCompOwner, collisionEnt);
+			if ( logic->onPhysicsCollided )
+			{
+				logic->onPhysicsCollided(physCompOwner, collisionEnt);
+			}
 		}
 
-		logic = Entity_GetLogicComponent(collisionEnt);
-
-		if ( logic && logic->onPhysicsCollided )
+		for ( LogicComponent* logic = Entity_GetLogicComponentListHead(collisionEnt); logic; logic = Entity_GetNextLogicComponent(logic) )
 		{
-			logic->onPhysicsCollided(collisionEnt, physCompOwner);
+			if ( logic->onPhysicsCollided )
+			{
+				logic->onPhysicsCollided(collisionEnt, physCompOwner);
+			}
 		}
 	}
 }

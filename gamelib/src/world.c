@@ -1,8 +1,10 @@
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/world.h"
 #include "gamelib/physics.h"
+#include "gamelib/entity/entity.h"
 #include "entity/entityimpl.h"
 #include "gamelib/entity/logiccomponent.h"
+#include "listmacros.h"
 
 typedef struct WorldImpl
 {
@@ -66,14 +68,9 @@ struct Entity* World_CreateEntity(World* world)
 	EntityImpl* slot = (EntityImpl*)MemAlloc(sizeof(EntityImpl));
 
 	slot->ownerWorld = world;
-	slot->prev = impl->entitiesTail;
-
-	if ( impl->entitiesTail )
-	{
-		impl->entitiesTail->next = slot;
-	}
-
 	slot->entity.impl = slot;
+
+	DBL_LL_ADD_TO_TAIL(slot, prev, next, impl, entitiesHead, entitiesTail);
 
 	return &slot->entity;
 }
@@ -147,11 +144,12 @@ void World_Think(World* world)
 
 	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
 	{
-		LogicComponent* logic = Entity_GetLogicComponent(ent);
-
-		if ( logic && logic->onPreThink )
+		for ( LogicComponent* logic = Entity_GetLogicComponentListHead(ent); logic; logic = Entity_GetNextLogicComponent(logic) )
 		{
-			logic->onPreThink(ent);
+			if ( logic->onPreThink )
+			{
+				logic->onPreThink(ent);
+			}
 		}
 
 		if ( Entity_GetPhysicsComponent(ent) )

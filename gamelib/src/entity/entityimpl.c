@@ -1,11 +1,26 @@
 #include "entity/entityimpl.h"
 #include "gamelib/gameutil.h"
+#include "listmacros.h"
+
+static void DestroyAllLogicComponents(EntityImpl* impl)
+{
+	LogicComponentImpl* logic = impl->logicImplHead;
+	impl->logicImplHead = NULL;
+	impl->logicImplTail = NULL;
+
+	while ( logic )
+	{
+		LogicComponentImpl* next = logic->next;
+		LogicComponentImpl_Destroy(logic);
+		logic = next;
+	}
+}
 
 static void DestroyAllComponents(EntityImpl* impl)
 {
 	Entity_DestroyPhysicsComponent(&impl->entity);
 	Entity_DestroyTerrainComponent(&impl->entity);
-	Entity_DestroyLogicComponent(&impl->entity);
+	DestroyAllLogicComponents(impl);
 }
 
 void EntityImpl_Destroy(EntityImpl* impl)
@@ -15,9 +30,12 @@ void EntityImpl_Destroy(EntityImpl* impl)
 		return;
 	}
 
-	if ( impl->logicImpl && impl->logicImpl->component.onEntityDestroyed )
+	for ( LogicComponentImpl* logic = impl->logicImplHead; logic; logic = logic->next )
 	{
-		impl->logicImpl->component.onEntityDestroyed(&impl->entity);
+		if ( logic->component.onEntityDestroyed )
+		{
+			logic->component.onEntityDestroyed(&impl->entity);
+		}
 	}
 
 	DestroyAllComponents(impl);
@@ -90,43 +108,73 @@ void Entity_DestroyTerrainComponent(Entity* ent)
 	ent->impl->terrainImpl = NULL;
 }
 
-struct LogicComponent* Entity_GetLogicComponent(Entity* ent)
+struct LogicComponent* Entity_GetLogicComponentListHead(Entity* ent)
 {
-	return (ent && ent->impl->logicImpl)
-		? &((LogicComponentImpl*)ent->impl->logicImpl)->component
+	return (ent && ent->impl->logicImplHead)
+		? &ent->impl->logicImplHead->component
 		: NULL;
 }
 
-struct LogicComponent* Entity_CreateLogicComponent(Entity* ent)
+struct LogicComponent* Entity_AddLogicComponent(Entity* ent)
 {
 	if ( !ent )
 	{
 		return NULL;
 	}
 
-	Entity_DestroyLogicComponent(ent);
-
 	LogicComponentImpl* impl = LogicComponentImpl_Create(ent);
-	ent->impl->logicImpl = impl;
+
+	DBL_LL_ADD_TO_TAIL(impl, prev, next, ent->impl, logicImplHead, logicImplTail);
 
 	return &impl->component;
 }
 
-void Entity_DestroyLogicComponent(Entity* ent)
+void Entity_RemoveLogicComponent(struct LogicComponent* component)
+{
+	if ( !component )
+	{
+		return;
+	}
+
+	if ( component->onComponentRemoved )
+	{
+		component->onComponentRemoved(component);
+	}
+
+	LogicComponentImpl* impl = component->impl;
+	Entity* ownerEnt = impl->ownerEntity;
+
+	DBL_LL_REMOVE(impl, prev, next, ownerEnt->impl, logicImplHead, logicImplTail);
+}
+
+void Entity_RemoveAllLogicComponents(Entity* ent)
 {
 	if ( !ent )
 	{
 		return;
 	}
 
-	if ( ent->impl->logicImpl )
+	for ( LogicComponentImpl* logic = ent->impl->logicImplHead; logic; logic = logic->next )
 	{
-		if ( ent->impl->logicImpl->component.onComponentRemoved )
+		if ( logic->component.onComponentRemoved )
 		{
-			ent->impl->logicImpl->component.onComponentRemoved(&ent->impl->logicImpl->component);
+			logic->component.onComponentRemoved(&logic->component);
 		}
-
-		LogicComponentImpl_Destroy(ent->impl->logicImpl);
-		ent->impl->logicImpl = NULL;
 	}
+
+	DestroyAllLogicComponents(ent->impl);
+}
+
+struct LogicComponent* Entity_GetPreviousLogicComponent(struct LogicComponent* component)
+{
+	return (component && component->impl->prev)
+		? &component->impl->prev->component
+		: NULL;
+}
+
+struct LogicComponent* Entity_GetNextLogicComponent(struct LogicComponent* component)
+{
+	return (component && component->impl->next)
+		? &component->impl->next->component
+		: NULL;
 }

@@ -17,7 +17,9 @@ typedef struct EntityImpl
 
 	PhysicsComponentImpl* physicsImpl;
 	TerrainComponentImpl* terrainImpl;
-	LogicComponentImpl* logicImpl;
+
+	LogicComponentImpl* logicImplHead;
+	LogicComponentImpl* logicImplTail;
 } EntityImpl;
 
 void EntityImpl_Destroy(EntityImpl* impl);

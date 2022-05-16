@@ -7,6 +7,9 @@ struct Entity;
 typedef struct LogicComponentImpl
 {
 	struct Entity* ownerEntity;
+	struct LogicComponentImpl* prev;
+	struct LogicComponentImpl* next;
+
 	LogicComponent component;
 } LogicComponentImpl;
 
