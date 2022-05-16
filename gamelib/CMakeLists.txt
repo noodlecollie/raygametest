@@ -2,6 +2,7 @@ include(compile_options)
 
 add_library(gamelib STATIC
 	src/entity/entityimpl.c
+	src/entity/logiccomponentimpl.c
 	src/entity/physicscomponentimpl.c
 	src/entity/terraincomponentimpl.c
 	src/oldentity/oldentity.c

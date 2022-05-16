@@ -1,18 +1,23 @@
 #pragma once
 
 #include "gamelib/entity/entity.h"
-#include "entity/componenttypes.h"
+#include "entity/physicscomponentimpl.h"
+#include "entity/terraincomponentimpl.h"
+#include "entity/logiccomponentimpl.h"
 
 struct World;
 
 typedef struct EntityImpl
 {
 	struct World* ownerWorld;
+
+	Entity entity;
 	struct EntityImpl* prev;
 	struct EntityImpl* next;
 
-	Entity entity;
-	void* components[COMPONENT_TOTAL_TYPES];
+	PhysicsComponentImpl* physicsImpl;
+	TerrainComponentImpl* terrainImpl;
+	LogicComponentImpl* logicImpl;
 } EntityImpl;
 
 void EntityImpl_Destroy(EntityImpl* impl);

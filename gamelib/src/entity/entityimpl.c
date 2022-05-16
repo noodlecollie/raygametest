@@ -1,8 +1,5 @@
 #include "entity/entityimpl.h"
 #include "gamelib/gameutil.h"
-#include "entity/physicscomponentimpl.h"
-#include "entity/terraincomponentimpl.h"
-#include "gamelib/entity/logiccomponent.h"
 
 static void DestroyAllComponents(EntityImpl* impl)
 {
@@ -18,11 +15,9 @@ void EntityImpl_Destroy(EntityImpl* impl)
 		return;
 	}
 
-	LogicComponent* component = (LogicComponent*)impl->components[COMPONENT_LOGIC];
-
-	if ( component && component->onEntityDestroyed )
+	if ( impl->logicImpl && impl->logicImpl->component.onEntityDestroyed )
 	{
-		component->onEntityDestroyed(&impl->entity);
+		impl->logicImpl->component.onEntityDestroyed(&impl->entity);
 	}
 
 	DestroyAllComponents(impl);
@@ -31,8 +26,8 @@ void EntityImpl_Destroy(EntityImpl* impl)
 
 struct PhysicsComponent* Entity_GetPhysicsComponent(Entity* ent)
 {
-	return (ent && ent->impl->components[COMPONENT_PHYSICS])
-		? &((PhysicsComponentImpl*)ent->impl->components[COMPONENT_PHYSICS])->component
+	return (ent && ent->impl->physicsImpl)
+		? &((PhysicsComponentImpl*)ent->impl->physicsImpl)->component
 		: NULL;
 }
 
@@ -46,7 +41,7 @@ struct PhysicsComponent* Entity_CreatePhysicsComponent(Entity* ent)
 	Entity_DestroyPhysicsComponent(ent);
 
 	PhysicsComponentImpl* impl = PhysicsComponentImpl_Create(ent);
-	ent->impl->components[COMPONENT_PHYSICS] = impl;
+	ent->impl->physicsImpl = impl;
 
 	return &impl->component;
 }
@@ -58,13 +53,15 @@ void Entity_DestroyPhysicsComponent(Entity* ent)
 		return;
 	}
 
-	PhysicsComponentImpl_Destroy(ent->impl->components[COMPONENT_PHYSICS]);
-	ent->impl->components[COMPONENT_PHYSICS] = NULL;
+	PhysicsComponentImpl_Destroy(ent->impl->physicsImpl);
+	ent->impl->physicsImpl = NULL;
 }
 
 struct TerrainComponent* Entity_GetTerrainComponent(Entity* ent)
 {
-	return ent ? (TerrainComponent*)ent->impl->components[COMPONENT_TERRAIN] : NULL;
+	return (ent && ent->impl->terrainImpl)
+		? &((TerrainComponentImpl*)ent->impl->terrainImpl)->component
+		: NULL;
 }
 
 struct TerrainComponent* Entity_CreateTerrainComponent(Entity* ent)
@@ -77,7 +74,7 @@ struct TerrainComponent* Entity_CreateTerrainComponent(Entity* ent)
 	Entity_DestroyTerrainComponent(ent);
 
 	TerrainComponentImpl* impl = TerrainComponentImpl_Create(ent);
-	ent->impl->components[COMPONENT_TERRAIN] = impl;
+	ent->impl->terrainImpl = impl;
 
 	return &impl->component;
 }
@@ -89,13 +86,15 @@ void Entity_DestroyTerrainComponent(Entity* ent)
 		return;
 	}
 
-	TerrainComponentImpl_Destroy(ent->impl->components[COMPONENT_TERRAIN]);
-	ent->impl->components[COMPONENT_TERRAIN] = NULL;
+	TerrainComponentImpl_Destroy(ent->impl->terrainImpl);
+	ent->impl->terrainImpl = NULL;
 }
 
 struct LogicComponent* Entity_GetLogicComponent(Entity* ent)
 {
-	return ent ? (LogicComponent*)ent->impl->components[COMPONENT_LOGIC] : NULL;
+	return (ent && ent->impl->logicImpl)
+		? &((LogicComponentImpl*)ent->impl->logicImpl)->component
+		: NULL;
 }
 
 struct LogicComponent* Entity_CreateLogicComponent(Entity* ent)
@@ -107,12 +106,10 @@ struct LogicComponent* Entity_CreateLogicComponent(Entity* ent)
 
 	Entity_DestroyLogicComponent(ent);
 
-	LogicComponent* component = (LogicComponent*)MemAlloc(sizeof(LogicComponent));
-	ent->impl->components[COMPONENT_LOGIC] = component;
+	LogicComponentImpl* impl = LogicComponentImpl_Create(ent);
+	ent->impl->logicImpl = impl;
 
-	component->ownerEntity = &ent->impl->entity;
-
-	return component;
+	return &impl->component;
 }
 
 void Entity_DestroyLogicComponent(Entity* ent)
@@ -122,16 +119,14 @@ void Entity_DestroyLogicComponent(Entity* ent)
 		return;
 	}
 
-	LogicComponent* component = (LogicComponent*)ent->impl->components[COMPONENT_LOGIC];
-
-	if ( component )
+	if ( ent->impl->logicImpl )
 	{
-		if ( component->onComponentRemoved )
+		if ( ent->impl->logicImpl->component.onComponentRemoved )
 		{
-			component->onComponentRemoved(component);
+			ent->impl->logicImpl->component.onComponentRemoved(&ent->impl->logicImpl->component);
 		}
 
-		MemFree(component);
-		ent->impl->components[COMPONENT_LOGIC] = NULL;
+		LogicComponentImpl_Destroy(ent->impl->logicImpl);
+		ent->impl->logicImpl = NULL;
 	}
 }
