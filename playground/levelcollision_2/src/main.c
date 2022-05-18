@@ -53,12 +53,15 @@ static void PlayerPreThink(LogicComponent* component)
 	data->onGround = false;
 }
 
-static void PlayerPhysicsCollided(LogicComponent* component, Entity* otherEntity)
+static void PlayerPhysicsCollided(LogicComponent* component, const OnPhysicsCollidedArgs* args)
 {
 	PlayerData* data = (PlayerData*)component->userData;
 	Entity* thisEntity = LogicComponent_GetOwnerEntity(component);
 
-	data->onGround = CheckIfStandingOnGround(Entity_GetPhysicsComponent(thisEntity), Entity_GetTerrainComponent(otherEntity));
+	if ( thisEntity == args->initiator )
+	{
+		data->onGround = CheckIfStandingOnGround(Entity_GetPhysicsComponent(thisEntity), Entity_GetTerrainComponent(args->recipient));
+	}
 }
 
 int main(int argc, char** argv)

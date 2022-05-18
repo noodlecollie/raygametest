@@ -78,52 +78,20 @@ void Physics_SimulateOld(OldWorld* world, OldEntity* entity)
 	}
 }
 
-static float SimulateAgainstTerrain(
-	Rectangle hull,
-	Vector2 delta,
-	Mask32 collisionMask,
-	TerrainComponent* terrain,
-	TraceResult* outResult
-)
+static inline size_t MaxMovementIterations(PhysicsMovementType movementType)
 {
-	*outResult = TraceRectangleMovementAgainstTerrain(
-		hull,
-		delta,
-		terrain,
-		collisionMask
-	);
-
-	float traceFraction = outResult->fraction;
-
-	if ( outResult->collided && !outResult->endedColliding )
+	switch ( movementType )
 	{
-		// For the remainder of the movement, slide along the surface.
-		Vector2 remainderDelta = Vector2Scale(delta, fmaxf(1.0f - outResult->fraction, 0.0f));
-		remainderDelta = Vector2ProjectAlongSurface(remainderDelta, outResult->contactNormal);
-
-		Vector2 contactPos = ContactPosition(outResult->endPosition, outResult->contactNormal);
-
-		hull.x = contactPos.x;
-		hull.y = contactPos.y;
-
-		TraceResult intermediateResult = TraceRectangleMovementAgainstTerrain(
-			hull,
-			remainderDelta,
-			terrain,
-			collisionMask
-		);
-
-		if ( intermediateResult.collided )
+		case PHYSMOVE_SLIDE:
 		{
-			outResult->endPosition = ContactPosition(intermediateResult.endPosition, intermediateResult.contactNormal);
+			return 2;
 		}
-		else
+
+		default:
 		{
-			outResult->endPosition = intermediateResult.endPosition;
+			return 0;
 		}
 	}
-
-	return traceFraction;
 }
 
 static void ApplyPerFrameDeltas(const World* world, PhysicsComponent* physComp)
@@ -147,47 +115,74 @@ static void MoveToPosition(PhysicsComponent* physComp, const TraceResult* result
 
 	if ( result->collided )
 	{
+		ent->position = ContactPosition(ent->position, result->contactNormal);
 		physComp->velocity = (!result->endedColliding) ? Vector2ProjectAlongSurface(physComp->velocity, result->contactNormal) : Vector2Zero();
+	}
+}
+
+static void FireCollisionCallbacks(PhysicsComponent* physComp, const TraceResult* result, size_t iteration)
+{
+	if ( !result->collided || !result->collisionEnt )
+	{
+		return;
+	}
+
+	OnPhysicsCollidedArgs callbackArgs = { 0 };
+
+	callbackArgs.initiator = PhysicsComponent_GetOwnerEntity(physComp);
+	callbackArgs.initiatorComponentType = COMPONENT_PHYSICS;
+	callbackArgs.recipient = result->collisionEnt;
+	callbackArgs.recipientComponentType = result->collisionComponentType;
+	callbackArgs.simIteration = iteration;
+
+	for ( LogicComponent* logic = Entity_GetLogicComponentListHead(callbackArgs.initiator); logic; logic = Entity_GetNextLogicComponent(logic) )
+	{
+		if ( logic->callbacks.onPhysicsCollided )
+		{
+			logic->callbacks.onPhysicsCollided(logic, &callbackArgs);
+		}
+	}
+
+	for ( LogicComponent* logic = Entity_GetLogicComponentListHead(callbackArgs.recipient); logic; logic = Entity_GetNextLogicComponent(logic) )
+	{
+		if ( logic->callbacks.onPhysicsCollided )
+		{
+			logic->callbacks.onPhysicsCollided(logic, &callbackArgs);
+		}
 	}
 }
 
 void Physics_SimulateObjectInWorld(struct World* world, struct PhysicsComponent* physComp)
 {
-	if ( !physComp || !world || !physComp->enabled || GetFrameTime() == 0.0f )
+	if ( !physComp ||
+	     !world ||
+	     !physComp->enabled ||
+	     physComp->movementType == PHYSMOVE_NONE ||
+	     GetFrameTime() == 0.0f )
 	{
 		return;
 	}
 
 	ApplyPerFrameDeltas(world, physComp);
 
-	TraceResult result = Physics_TraceHullInWorld(
-		world,
-		PhysicsComponent_GetWorldCollisionHull(physComp),
-		Vector2Scale(physComp->velocity, GetFrameTime()),
-		physComp->collisionMask,
-		PhysicsComponent_GetOwnerEntity(physComp)
-	);
+	const size_t maxIterations = MaxMovementIterations(physComp->movementType);
 
-	MoveToPosition(physComp, &result);
-
-	if ( result.collisionEnt )
+	for ( size_t iteration = 0; iteration < maxIterations; ++iteration )
 	{
-		Entity* physCompOwner = PhysicsComponent_GetOwnerEntity(physComp);
+		TraceResult result = Physics_TraceHullInWorld(
+			world,
+			PhysicsComponent_GetWorldCollisionHull(physComp),
+			Vector2Scale(physComp->velocity, GetFrameTime()),
+			physComp->collisionMask,
+			PhysicsComponent_GetOwnerEntity(physComp)
+		);
 
-		for ( LogicComponent* logic = Entity_GetLogicComponentListHead(physCompOwner); logic; logic = Entity_GetNextLogicComponent(logic) )
-		{
-			if ( logic->callbacks.onPhysicsCollided )
-			{
-				logic->callbacks.onPhysicsCollided(logic, result.collisionEnt);
-			}
-		}
+		MoveToPosition(physComp, &result);
+		FireCollisionCallbacks(physComp, &result, iteration);
 
-		for ( LogicComponent* logic = Entity_GetLogicComponentListHead(result.collisionEnt); logic; logic = Entity_GetNextLogicComponent(logic) )
+		if ( !result.collided )
 		{
-			if ( logic->callbacks.onPhysicsCollided )
-			{
-				logic->callbacks.onPhysicsCollided(logic, physCompOwner);
-			}
+			break;
 		}
 	}
 }
@@ -222,19 +217,16 @@ TraceResult Physics_TraceHullInWorld(
 
 		if ( Entity_GetTerrainComponent(ent) )
 		{
-			TraceResult workingResult = TraceResultNoCollision(Vector2Add(hullPos, delta));
-
-			float fraction = SimulateAgainstTerrain(
+			TraceResult workingResult = TraceRectangleMovementAgainstTerrain(
 				hull,
 				delta,
-				collisionMask,
 				Entity_GetTerrainComponent(ent),
-				&workingResult
+				collisionMask
 			);
 
-			if ( fraction < shortestFraction )
+			if ( workingResult.fraction < shortestFraction )
 			{
-				shortestFraction = fraction;
+				shortestFraction = workingResult.fraction;
 				shortestTraceResult = workingResult;
 			}
 		}

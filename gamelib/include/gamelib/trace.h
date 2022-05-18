@@ -4,6 +4,7 @@
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/gametypes.h"
 #include "gamelib/terrain.h"
+#include "gamelib/entity/componenttypes.h"
 #include "gamelib/oldplayer.h"
 
 struct TerrainComponent;
@@ -18,6 +19,7 @@ typedef struct TraceResult
 	Vector2 endPosition;
 	Vector2 contactNormal;
 	struct Entity* collisionEnt;
+	ComponentType collisionComponentType;
 } TraceResult;
 
 TraceResult TraceResultNull(void);

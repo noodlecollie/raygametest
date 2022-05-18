@@ -7,6 +7,12 @@
 struct Entity;
 struct PhysicsComponentImpl;
 
+typedef enum PhysicsMovementType
+{
+	PHYSMOVE_NONE = 0,
+	PHYSMOVE_SLIDE
+} PhysicsMovementType;
+
 typedef struct PhysicsComponent
 {
 	struct PhysicsComponentImpl* impl;
@@ -16,6 +22,7 @@ typedef struct PhysicsComponent
 	Rectangle collisionHull;
 	float gravityModifier;
 	Mask32 collisionMask;
+	PhysicsMovementType movementType;
 } PhysicsComponent;
 
 struct Entity* PhysicsComponent_GetOwnerEntity(const PhysicsComponent* component);

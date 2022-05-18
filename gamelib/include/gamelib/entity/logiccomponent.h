@@ -2,10 +2,23 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
+#include "gamelib/entity/componenttypes.h"
 
 struct Entity;
 struct LogicComponent;
 struct LogicComponentImpl;
+
+typedef struct OnPhysicsCollidedArgs
+{
+	struct Entity* initiator;
+	ComponentType initiatorComponentType;
+
+	struct Entity* recipient;
+	ComponentType recipientComponentType;
+
+	size_t simIteration;
+} OnPhysicsCollidedArgs;
 
 typedef struct LogicComponentCallbacks
 {
@@ -13,7 +26,7 @@ typedef struct LogicComponentCallbacks
 	void (*onEntityDestroyed)(struct LogicComponent* component);
 	void (*onPreThink)(struct LogicComponent* component);
 	void (*onPostThink)(struct LogicComponent* component);
-	void (*onPhysicsCollided)(struct LogicComponent* component, struct Entity* otherEntity);
+	void (*onPhysicsCollided)(struct LogicComponent* component, const OnPhysicsCollidedArgs* args);
 } LogicComponentCallbacks;
 
 typedef struct LogicComponent
