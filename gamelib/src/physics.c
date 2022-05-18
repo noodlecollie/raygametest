@@ -113,7 +113,14 @@ static float SimulateAgainstTerrain(
 			collisionMask
 		);
 
-		outResult->endPosition = intermediateResult.endPosition;
+		if ( intermediateResult.collided )
+		{
+			outResult->endPosition = ContactPosition(intermediateResult.endPosition, intermediateResult.contactNormal);
+		}
+		else
+		{
+			outResult->endPosition = intermediateResult.endPosition;
+		}
 	}
 
 	return traceFraction;
