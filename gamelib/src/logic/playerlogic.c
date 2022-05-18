@@ -5,6 +5,7 @@
 #include "gamelib/entity/physicscomponent.h"
 #include "gamelib/entity/terraincomponent.h"
 #include "gamelib/physics.h"
+#include "gamelib/world.h"
 
 #define PLAYER_LOGIC_DATA_TYPE_ID 12345
 #define PLAYER_MOVEMENT_VEL_SCALE (Vector2){ 200.0f, 450.0f }
@@ -14,16 +15,30 @@ static inline bool SurfaceNormalIsGround(Vector2 normal)
 	return Vector2DotProduct(normal, (Vector2){ 0.0f, -1.0f }) > 0.5f;
 }
 
-static inline bool CheckIfStandingOnGround(PhysicsComponent* physComp, TerrainComponent* terrain)
+static inline bool CheckIfStandingOnGround(Entity* entity)
 {
-	if ( !physComp || !terrain )
+	if ( !entity )
+	{
+		return false;
+	}
+
+	PhysicsComponent* physComp = Entity_GetPhysicsComponent(entity);
+	World* world = Entity_GetWorld(entity);
+
+	if ( !physComp || !world )
 	{
 		return false;
 	}
 
 	Vector2 delta = (Vector2){ 0.0f, 2.0f * PHYSICS_CONTACT_ADJUST_DIST };
-	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(physComp);
-	TraceResult result = TraceRectangleMovementAgainstTerrain(hull, delta, terrain, physComp->collisionMask);
+
+	TraceResult result = Physics_TraceHullInWorld(
+		world,
+		PhysicsComponent_GetWorldCollisionHull(physComp),
+		delta,
+		physComp->collisionMask,
+		entity
+	);
 
 	return result.collided && SurfaceNormalIsGround(result.contactNormal);
 }
@@ -72,12 +87,12 @@ static void OnPreThink(LogicComponent* component)
 	data->onGround = false;
 }
 
-static void OnPhysicsCollided(LogicComponent* component, Entity* otherEntity)
+static void OnPostThink(LogicComponent* component)
 {
 	PlayerLogicData* data = (PlayerLogicData*)component->userData;
 	Entity* thisEntity = LogicComponent_GetOwnerEntity(component);
 
-	data->onGround = CheckIfStandingOnGround(Entity_GetPhysicsComponent(thisEntity), Entity_GetTerrainComponent(otherEntity));
+	data->onGround = CheckIfStandingOnGround(thisEntity);
 }
 
 void PlayerLogic_SetOnComponent(LogicComponent* component)
@@ -91,7 +106,7 @@ void PlayerLogic_SetOnComponent(LogicComponent* component)
 
 	component->callbacks.onComponentCleanup = &OnComponentCleanup;
 	component->callbacks.onPreThink = &OnPreThink;
-	component->callbacks.onPhysicsCollided = &OnPhysicsCollided;
+	component->callbacks.onPostThink = &OnPostThink;
 
 	component->userData = MemAlloc(sizeof(PlayerLogicData));
 	component->userDataType = PLAYER_LOGIC_DATA_TYPE_ID;

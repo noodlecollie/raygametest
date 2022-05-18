@@ -10,6 +10,11 @@
 #include "gamelib/entity/logiccomponent.h"
 #include "gamelib/world.h"
 
+static inline Vector2 ContactPosition(Vector2 pos, Vector2 normal)
+{
+	return Vector2Add(pos, Vector2Scale(normal, PHYSICS_CONTACT_ADJUST_DIST));
+}
+
 static inline void MoveToPositionOld(OldEntity* entity, const TraceResult* result)
 {
 	OldPhysicsComponent* physComp = OldEntity_PhysicsComponent(entity);
@@ -20,7 +25,7 @@ static inline void MoveToPositionOld(OldEntity* entity, const TraceResult* resul
 
 	if ( result->collided )
 	{
-		entity->position = Vector2Add(entity->position, Vector2Scale(result->contactNormal, PHYSICS_CONTACT_ADJUST_DIST));
+		entity->position = ContactPosition(entity->position, result->contactNormal);
 		physComp->velocity = (!result->endedColliding) ? Vector2ProjectAlongSurface(physComp->velocity, result->contactNormal) : Vector2Zero();
 	}
 }
@@ -73,13 +78,19 @@ void Physics_SimulateOld(OldWorld* world, OldEntity* entity)
 	}
 }
 
-static float SimulateAgainstTerrain(PhysicsComponent* physComp, TerrainComponent* terrain, Vector2 delta, TraceResult* outResult)
+static float SimulateAgainstTerrain(
+	Rectangle hull,
+	Vector2 delta,
+	Mask32 collisionMask,
+	TerrainComponent* terrain,
+	TraceResult* outResult
+)
 {
 	*outResult = TraceRectangleMovementAgainstTerrain(
-		PhysicsComponent_GetWorldCollisionHull(physComp),
+		hull,
 		delta,
 		terrain,
-		physComp->collisionMask
+		collisionMask
 	);
 
 	float traceFraction = outResult->fraction;
@@ -90,12 +101,19 @@ static float SimulateAgainstTerrain(PhysicsComponent* physComp, TerrainComponent
 		Vector2 remainderDelta = Vector2Scale(delta, fmaxf(1.0f - outResult->fraction, 0.0f));
 		remainderDelta = Vector2ProjectAlongSurface(remainderDelta, outResult->contactNormal);
 
-		*outResult = TraceRectangleMovementAgainstTerrain(
-			PhysicsComponent_GetWorldCollisionHull(physComp),
+		Vector2 contactPos = ContactPosition(outResult->endPosition, outResult->contactNormal);
+
+		hull.x = contactPos.x;
+		hull.y = contactPos.y;
+
+		TraceResult intermediateResult = TraceRectangleMovementAgainstTerrain(
+			hull,
 			remainderDelta,
 			terrain,
-			physComp->collisionMask
+			collisionMask
 		);
+
+		outResult->endPosition = intermediateResult.endPosition;
 	}
 
 	return traceFraction;
@@ -114,6 +132,9 @@ static void MoveToPosition(PhysicsComponent* physComp, const TraceResult* result
 	Entity* ent = PhysicsComponent_GetOwnerEntity(physComp);
 	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(physComp);
 
+	// The result end position is the top left of the hull, rather than the player's
+	// actual position, which will probably be different (and may not even be the centre
+	// of the collision hull if the hull has a weird offset). Just apply the delta.
 	ent->position.x += result->endPosition.x - hull.x;
 	ent->position.y += result->endPosition.y - hull.y;
 
@@ -126,43 +147,24 @@ static void MoveToPosition(PhysicsComponent* physComp, const TraceResult* result
 
 void Physics_SimulateObjectInWorld(struct World* world, struct PhysicsComponent* physComp)
 {
-	if ( !physComp || !world || !physComp->enabled )
+	if ( !physComp || !world || !physComp->enabled || GetFrameTime() == 0.0f )
 	{
 		return;
 	}
 
 	ApplyPerFrameDeltas(world, physComp);
 
-	// Get how far we need to now move in this time delta.
-	Vector2 origDelta = Vector2Scale(physComp->velocity, GetFrameTime());
-	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(physComp);
-	Vector2 hullPos = (Vector2){ hull.x, hull.y };
+	TraceResult result = Physics_TraceHullInWorld(
+		world,
+		PhysicsComponent_GetWorldCollisionHull(physComp),
+		Vector2Scale(physComp->velocity, GetFrameTime()),
+		physComp->collisionMask,
+		PhysicsComponent_GetOwnerEntity(physComp)
+	);
 
-	// Find the final contact position from the collision with the nearest component.
-	float shortestFraction = FLT_MAX;
-	TraceResult shortestTraceResult = TraceResultNoCollision(Vector2Add(hullPos, origDelta));
-	Entity* collisionEnt = NULL;
+	MoveToPosition(physComp, &result);
 
-	// TODO: This is a naive search. It should be optimised with use of a quadtree.
-	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
-	{
-		if ( Entity_GetTerrainComponent(ent) )
-		{
-			TraceResult workingResult = TraceResultNoCollision(Vector2Add(hullPos, origDelta));
-			float fraction = SimulateAgainstTerrain(physComp, Entity_GetTerrainComponent(ent), origDelta, &workingResult);
-
-			if ( fraction < shortestFraction )
-			{
-				shortestFraction = fraction;
-				shortestTraceResult = workingResult;
-				collisionEnt = ent;
-			}
-		}
-	}
-
-	MoveToPosition(physComp, &shortestTraceResult);
-
-	if ( collisionEnt )
+	if ( result.collisionEnt )
 	{
 		Entity* physCompOwner = PhysicsComponent_GetOwnerEntity(physComp);
 
@@ -170,11 +172,11 @@ void Physics_SimulateObjectInWorld(struct World* world, struct PhysicsComponent*
 		{
 			if ( logic->callbacks.onPhysicsCollided )
 			{
-				logic->callbacks.onPhysicsCollided(logic, collisionEnt);
+				logic->callbacks.onPhysicsCollided(logic, result.collisionEnt);
 			}
 		}
 
-		for ( LogicComponent* logic = Entity_GetLogicComponentListHead(collisionEnt); logic; logic = Entity_GetNextLogicComponent(logic) )
+		for ( LogicComponent* logic = Entity_GetLogicComponentListHead(result.collisionEnt); logic; logic = Entity_GetNextLogicComponent(logic) )
 		{
 			if ( logic->callbacks.onPhysicsCollided )
 			{
@@ -182,4 +184,55 @@ void Physics_SimulateObjectInWorld(struct World* world, struct PhysicsComponent*
 			}
 		}
 	}
+}
+
+TraceResult Physics_TraceHullInWorld(
+	struct World* world,
+	Rectangle hull,
+	Vector2 delta,
+	Mask32 collisionMask,
+	struct Entity* hullOwner
+)
+{
+	if ( !world )
+	{
+		return TraceResultNull();
+	}
+
+	// Get how far we need to move in this time delta.
+	Vector2 hullPos = (Vector2){ hull.x, hull.y };
+
+	// Find the final contact position from the collision with the nearest component.
+	float shortestFraction = FLT_MAX;
+	TraceResult shortestTraceResult = TraceResultNoCollision(Vector2Add(hullPos, delta));
+
+	// TODO: This is a naive search. It should be optimised with use of a quadtree.
+	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
+	{
+		if ( ent == hullOwner )
+		{
+			continue;
+		}
+
+		if ( Entity_GetTerrainComponent(ent) )
+		{
+			TraceResult workingResult = TraceResultNoCollision(Vector2Add(hullPos, delta));
+
+			float fraction = SimulateAgainstTerrain(
+				hull,
+				delta,
+				collisionMask,
+				Entity_GetTerrainComponent(ent),
+				&workingResult
+			);
+
+			if ( fraction < shortestFraction )
+			{
+				shortestFraction = fraction;
+				shortestTraceResult = workingResult;
+			}
+		}
+	}
+
+	return shortestTraceResult;
 }

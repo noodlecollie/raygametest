@@ -7,6 +7,7 @@
 #include "gamelib/oldplayer.h"
 
 struct TerrainComponent;
+struct Entity;
 
 typedef struct TraceResult
 {
@@ -16,8 +17,10 @@ typedef struct TraceResult
 	float fraction;
 	Vector2 endPosition;
 	Vector2 contactNormal;
+	struct Entity* collisionEnt;
 } TraceResult;
 
+TraceResult TraceResultNull(void);
 TraceResult TraceResultNoCollision(Vector2 hullEndPos);
 
 TraceResult TraceRectangleMovementInLevel(Rectangle hull, Vector2 delta, Terrain level, Mask32 collisionLayers);

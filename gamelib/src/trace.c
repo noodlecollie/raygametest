@@ -75,7 +75,7 @@ TraceResult TraceRectangleMovementInLevel(Rectangle hull, Vector2 delta, Terrain
 	return result;
 }
 
-static void ClipTraceToTerrainLayer(const Rectangle* hull, const Vector2* delta, const TerrainComponent* terrain, size_t layer, TraceResult* result)
+static void ClipTraceToTerrainLayer(const Rectangle* hull, const Vector2* delta, TerrainComponent* terrain, size_t layer, TraceResult* result)
 {
 	Rectangle movementBounds = ExpandRectangle(*hull, *delta);
 
@@ -115,6 +115,7 @@ static void ClipTraceToTerrainLayer(const Rectangle* hull, const Vector2* delta,
 			if ( !result->collided || fraction < result->fraction )
 			{
 				result->collided = true;
+				result->collisionEnt = TerrainComponent_GetOwnerEntity(terrain);
 				result->contactNormal = contactNormal;
 				result->endPosition = (Vector2){ contact.x, contact.y };
 				result->fraction = fraction;
@@ -123,6 +124,13 @@ static void ClipTraceToTerrainLayer(const Rectangle* hull, const Vector2* delta,
 			}
 		}
 	}
+}
+
+TraceResult TraceResultNull(void)
+{
+	TraceResult result = { 0 };
+	result.fraction = 1.0f;
+	return result;
 }
 
 TraceResult TraceResultNoCollision(Vector2 hullEndPos)

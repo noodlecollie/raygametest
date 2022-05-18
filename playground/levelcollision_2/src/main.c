@@ -2,20 +2,63 @@
 #include "gamelib/external/raylibheaders.h"
 #include "raygui.h"
 
-#include "gamelib/oldworld.h"
 #include "gamelib/trace.h"
 #include "gamelib/gameutil.h"
-#include "gamelib/oldplayer.h"
-#include "gamelib/platformmovement.h"
+#include "gamelib/world.h"
+#include "gamelib/entity/entity.h"
+#include "gamelib/entity/terraincomponent.h"
+#include "gamelib/entity/physicscomponent.h"
+#include "gamelib/entity/logiccomponent.h"
+#include "gamelib/physics.h"
 
 typedef struct GuiValues
 {
 	float levelScale;
 } GuiValues;
 
+typedef struct PlayerData
+{
+	bool onGround;
+} PlayerData;
+
 static inline bool PanKeyPressed()
 {
 	return IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_SPACE);
+}
+
+static inline bool SurfaceNormalIsGround(Vector2 normal)
+{
+	return Vector2DotProduct(normal, (Vector2){ 0.0f, -1.0f }) > 0.5f;
+}
+
+static inline bool CheckIfStandingOnGround(PhysicsComponent* physComp, TerrainComponent* terrain)
+{
+	if ( !physComp || !terrain )
+	{
+		return false;
+	}
+
+	Vector2 delta = (Vector2){ 0.0f, 2.0f * PHYSICS_CONTACT_ADJUST_DIST };
+	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(physComp);
+	TraceResult result = TraceRectangleMovementAgainstTerrain(hull, delta, terrain, physComp->collisionMask);
+
+	return result.collided && SurfaceNormalIsGround(result.contactNormal);
+}
+
+static void PlayerPreThink(LogicComponent* component)
+{
+	PlayerData* data = (PlayerData*)component->userData;
+
+	// Before physics sim, assume the player will not be on the ground.
+	data->onGround = false;
+}
+
+static void PlayerPhysicsCollided(LogicComponent* component, Entity* otherEntity)
+{
+	PlayerData* data = (PlayerData*)component->userData;
+	Entity* thisEntity = LogicComponent_GetOwnerEntity(component);
+
+	data->onGround = CheckIfStandingOnGround(Entity_GetPhysicsComponent(thisEntity), Entity_GetTerrainComponent(otherEntity));
 }
 
 int main(int argc, char** argv)
@@ -40,13 +83,18 @@ int main(int argc, char** argv)
 
 	const Rectangle guiBounds = { 0.0f, 0.0f, 240.0f * dpiScale.x, 140.0f * dpiScale.y };
 
-	OldWorld world = { 0 };
-	world.level.scale = (float)guiValues.levelScale;
-	Terrain_LoadLayer(&world.level, 0, "res/maps/test.png");
-	Vector2i levelDim = Terrain_GetLayerDimensions(world.level, 0);
+	World* world = World_Create();
+	world->gravity = 0.0f;
+
+	Entity* terrainEnt = World_CreateEntity(world);
+	TerrainComponent* terrain = Entity_CreateTerrainComponent(terrainEnt);
+	terrain->scale = (float)guiValues.levelScale;
+
+	TerrainComponent_LoadLayer(terrain, 0, "res/maps/test.png");
+	Vector2i levelDim = TerrainComponent_GetLayerDimensions(terrain, 0);
 
 	Camera2D camera = { 0 };
-	camera.target = (Vector2){ ((float)levelDim.x / 2.0f) * world.level.scale, ((float)levelDim.y / 2.0f) * world.level.scale };
+	camera.target = (Vector2){ ((float)levelDim.x / 2.0f) * terrain->scale, ((float)levelDim.y / 2.0f) * terrain->scale };
 	camera.offset = (Vector2){ (float)screenWidth / 2.0f, (float)screenHeight / 2.0f };
 	camera.rotation = 0.0f;
 	camera.zoom = 1.0f;
@@ -54,16 +102,22 @@ int main(int argc, char** argv)
 	Vector2 beginPos = Vector2Zero();
 	Vector2 endPos = Vector2Zero();
 
-	OldPlayer player = OldPlayer_Create();
-	OldPhysicsComponent* playerPhys = OldEntity_AddPhysicsComponent(player.entity);
+	Entity* playerEnt = World_CreateEntity(world);
+	PhysicsComponent* playerPhys = Entity_CreatePhysicsComponent(playerEnt);
 	playerPhys->collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
 	playerPhys->collisionMask = 0xFFFFFFFF;
+	playerPhys->enabled = true;
+
+	LogicComponent* playerLogic = Entity_AddLogicComponent(playerEnt);
+	playerLogic->userData = MemAlloc(sizeof(PlayerData));
+	playerLogic->callbacks.onPreThink = &PlayerPreThink;
+	playerLogic->callbacks.onPhysicsCollided = &PlayerPhysicsCollided;
 
 	SetTargetFPS(60);
 
 	while ( !WindowShouldClose() )
 	{
-		world.level.scale = (float)guiValues.levelScale;
+		terrain->scale = (float)guiValues.levelScale;
 
 		bool mouseIsInGuiArea = CheckCollisionPointRec(GetMousePosition(), guiBounds);
 
@@ -120,18 +174,17 @@ int main(int argc, char** argv)
 
 		Vector2 traceDelta = Vector2Subtract(endPos, beginPos);
 
-		playerPhys->ownerEntity->position = beginPos;
+		playerEnt->position = beginPos;
 		playerPhys->velocity = traceDelta;
-		player.onGround = false;
 
-		Rectangle beginHull = OldPhysicsComponent_GetWorldCollisionHull(playerPhys);
+		Rectangle beginHull = PhysicsComponent_GetWorldCollisionHull(playerPhys);
 		float deltaTime = GetFrameTime();
 
 		if ( deltaTime > 0.0f )
 		{
 			// Scale velocity up so that it'll be scaled down again by the simulation.
 			playerPhys->velocity = Vector2Scale(playerPhys->velocity, 1.0f / deltaTime);
-			PlatformMovement_MovePlayer(&player, &world);
+			World_Think(world);
 			playerPhys->velocity = Vector2Scale(playerPhys->velocity, deltaTime);
 		}
 
@@ -141,14 +194,14 @@ int main(int argc, char** argv)
 
 		BeginMode2D(camera);
 
-		Vector2i dims = Terrain_GetLayerDimensions(world.level, 0);
+		Vector2i dims = TerrainComponent_GetLayerDimensions(terrain, 0);
 
 		for ( int y = 0; y < dims.y; ++y )
 		{
 			for ( int x = 0; x < dims.x; ++x )
 			{
-				Rectangle blockRect = Terrain_GetBlockWorldRectByCoOrds(world.level, (Vector2i){ x, y });
-				Color blockColour = Terrain_GetBlockColourByCoOrds(world.level, 0, (Vector2i){ x, y });
+				Rectangle blockRect = TerrainComponent_GetBlockWorldRectByCoOrds(terrain, (Vector2i){ x, y });
+				Color blockColour = TerrainComponent_GetBlockColourByCoOrds(terrain, 0, (Vector2i){ x, y });
 				DrawRectangleRec(blockRect, blockColour);
 			}
 
@@ -157,10 +210,10 @@ int main(int argc, char** argv)
 				DrawRectangleLinesEx(beginHull, 1.0f / camera.zoom, GREEN);
 				DrawCircle((int)beginPos.x, (int)beginPos.y, 3.0f, GREEN);
 
-				Rectangle endHull = OldPhysicsComponent_GetWorldCollisionHull(playerPhys);
+				Rectangle endHull = PhysicsComponent_GetWorldCollisionHull(playerPhys);
 				Vector2 endHullMid = RectangleMid(endHull);
-				DrawRectangleLinesEx(endHull, 1.0f / camera.zoom, player.onGround ? YELLOW : BLUE);
-				DrawCircle((int)(endHullMid.x), (int)(endHullMid.y), 3.0f, player.onGround ? YELLOW : BLUE);
+				DrawRectangleLinesEx(endHull, 1.0f / camera.zoom, ((PlayerData*)playerLogic->userData)->onGround ? YELLOW : BLUE);
+				DrawCircle((int)(endHullMid.x), (int)(endHullMid.y), 3.0f, ((PlayerData*)playerLogic->userData)->onGround ? YELLOW : BLUE);
 
 				DrawCircle((int)endPos.x, (int)endPos.y, 3.0f, GREEN);
 
@@ -201,7 +254,7 @@ int main(int argc, char** argv)
 		EndDrawing();
 	}
 
-	Terrain_Unload(world.level);
+	World_Destroy(world);
 	CloseWindow();
 
 	return 0;
