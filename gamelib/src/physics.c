@@ -140,7 +140,6 @@ static void MoveToPosition(PhysicsComponent* physComp, const TraceResult* result
 
 	if ( result->collided )
 	{
-		ent->position = Vector2Add(ent->position, Vector2Scale(result->contactNormal, PHYSICS_CONTACT_ADJUST_DIST));
 		physComp->velocity = (!result->endedColliding) ? Vector2ProjectAlongSurface(physComp->velocity, result->contactNormal) : Vector2Zero();
 	}
 }
