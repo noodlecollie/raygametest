@@ -3,9 +3,7 @@
 #include <stdint.h>
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/gametypes.h"
-#include "gamelib/terrain.h"
 #include "gamelib/entity/componenttypes.h"
-#include "gamelib/oldplayer.h"
 
 struct TerrainComponent;
 struct Entity;
@@ -25,5 +23,9 @@ typedef struct TraceResult
 TraceResult TraceResultNull(void);
 TraceResult TraceResultNoCollision(Vector2 hullEndPos);
 
-TraceResult TraceRectangleMovementInLevel(Rectangle hull, Vector2 delta, Terrain level, Mask32 collisionLayers);
-TraceResult TraceRectangleMovementAgainstTerrain(Rectangle hull, Vector2 delta, struct TerrainComponent* terrain, Mask32 collisionLayers);
+TraceResult TraceRectangleMovementAgainstTerrain(
+	Rectangle hull,
+	Vector2 delta,
+	struct TerrainComponent* terrain,
+	Mask32 collisionLayers
+);

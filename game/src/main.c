@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include "gamelib/external/raylibheaders.h"
-#include "gamelib/oldworld.h"
 #include "gamelib/gameutil.h"
-#include "gamelib/oldplayer.h"
-#include "gamelib/platformmovement.h"
+#include "gamelib/world.h"
+#include "gamelib/entity/entity.h"
+#include "gamelib/entity/terraincomponent.h"
+#include "gamelib/entity/physicscomponent.h"
+#include "gamelib/entity/logiccomponent.h"
+#include "gamelib/logic/playerlogic.h"
 
 int main(int argc, char** argv)
 {
@@ -22,16 +25,23 @@ int main(int argc, char** argv)
 	camera.rotation = 0.0f;
 	camera.zoom = 1.0f;
 
-	OldWorld world = { 0 };
-	world.level.scale = 10.0f;
-	world.gravity = 100.0f;
-	Terrain_LoadLayer(&world.level, 0, "res/maps/test.png");
+	World* world = World_Create();
+	world->gravity = 500.0f;
 
-	OldPlayer player = OldPlayer_Create();
-	OldPhysicsComponent* playerPhys = OldEntity_AddPhysicsComponent(player.entity);
+	Entity* terrainEnt = World_CreateEntity(world);
+	TerrainComponent* terrain = Entity_CreateTerrainComponent(terrainEnt);
+	terrain->scale = 10.0f;
+	TerrainComponent_LoadLayer(terrain, 0, "res/maps/test.png");
+
+	Entity* playerEnt = World_CreateEntity(world);
+	PhysicsComponent* playerPhys = Entity_CreatePhysicsComponent(playerEnt);
 	playerPhys->collisionHull = (Rectangle){ -5.0f, -5.0f, 10.0f, 10.0f };
 	playerPhys->collisionMask = 0xFFFFFFFF;
-	const float playerSpeed = 500.0f;
+	playerPhys->enabled = true;
+	playerPhys->movementType = PHYSMOVE_SLIDE;
+
+	LogicComponent* playerLogic = Entity_AddLogicComponent(playerEnt);
+	PlayerLogic_SetOnComponent(playerLogic);
 
 	SetTargetFPS(60);
 
@@ -53,22 +63,7 @@ int main(int argc, char** argv)
 			camera.zoom = 1.0f;
 		}
 
-		playerPhys->velocity.x = 0;
-
-		if ( IsKeyDown(KEY_LEFT) )
-		{
-			playerPhys->velocity.x = -playerSpeed;
-		}
-		else if ( IsKeyDown(KEY_RIGHT) )
-		{
-			playerPhys->velocity.x = playerSpeed;
-		}
-		else
-		{
-			playerPhys->velocity.x = 0.0f;
-		}
-
-		PlatformMovement_MovePlayer(&player, &world);
+		World_Think(world);
 
 		BeginDrawing();
 
@@ -76,31 +71,31 @@ int main(int argc, char** argv)
 
 		BeginMode2D(camera);
 
-		Vector2i dims = Terrain_GetLayerDimensions(world.level, 0);
+		Vector2i dims = TerrainComponent_GetLayerDimensions(terrain, 0);
 
 		for ( int y = 0; y < dims.y; ++y )
 		{
 			for ( int x = 0; x < dims.x; ++x )
 			{
-				Rectangle blockRect = Terrain_GetBlockWorldRectByCoOrds(world.level, (Vector2i){ x, y });
-				Color blockColour = Terrain_GetBlockColourByCoOrds(world.level, 0, (Vector2i){ x, y });
+				Rectangle blockRect = TerrainComponent_GetBlockWorldRectByCoOrds(terrain, (Vector2i){ x, y });
+				Color blockColour = TerrainComponent_GetBlockColourByCoOrds(terrain, 0, (Vector2i){ x, y });
 				DrawRectangleRec(blockRect, blockColour);
 			}
 		}
 
-		Rectangle playerRect = OldPhysicsComponent_GetWorldCollisionHull(playerPhys);
+		Rectangle playerRect = PhysicsComponent_GetWorldCollisionHull(playerPhys);
 		DrawRectangle((int)playerRect.x, (int)playerRect.y, (int)playerRect.width, (int)playerRect.height, RED);
 
 		EndMode2D();
 
 		char buffer[64];
-		snprintf(buffer, sizeof(buffer), "Player: (%.2f, %.2f) [%.2f, %.2f]", player.entity->position.x, player.entity->position.y, playerPhys->velocity.x, playerPhys->velocity.y);
+		snprintf(buffer, sizeof(buffer), "Player: (%.2f, %.2f) [%.2f, %.2f]", playerEnt->position.x, playerEnt->position.y, playerPhys->velocity.x, playerPhys->velocity.y);
 		DrawText(buffer, 10, 10, 10, BLACK);
 
 		EndDrawing();
 	}
 
-	Terrain_Unload(world.level);
+	World_Destroy(world);
 	CloseWindow();
 
 	return 0;
