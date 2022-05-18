@@ -82,6 +82,16 @@ static inline size_t MaxMovementIterations(PhysicsMovementType movementType)
 {
 	switch ( movementType )
 	{
+		case PHYSMOVE_NONE:
+		{
+			return 0;
+		}
+
+		case PHYSMOVE_STICK:
+		{
+			return 1;
+		}
+
 		case PHYSMOVE_SLIDE:
 		{
 			return 2;
@@ -89,6 +99,7 @@ static inline size_t MaxMovementIterations(PhysicsMovementType movementType)
 
 		default:
 		{
+			TraceLog(LOG_WARNING, "Performing physics movement with unsupported movenent type %d", movementType);
 			return 0;
 		}
 	}
@@ -166,19 +177,33 @@ void Physics_SimulateObjectInWorld(struct World* world, struct PhysicsComponent*
 	ApplyPerFrameDeltas(world, physComp);
 
 	const size_t maxIterations = MaxMovementIterations(physComp->movementType);
+	const float deltaLength = Vector2Length(Vector2Scale(physComp->velocity, GetFrameTime()));
+	float distanceTravelled = 0.0f;
 
 	for ( size_t iteration = 0; iteration < maxIterations; ++iteration )
 	{
+		if ( distanceTravelled >= deltaLength )
+		{
+			break;
+		}
+
+		// Do this in two stages, since GetFrameTime() is liable to be small anyway,
+		// and we don't want the float factor we're multiplying by to be tiny.
+		Vector2 workingDelta = Vector2Scale(physComp->velocity, GetFrameTime());
+		workingDelta = Vector2Scale(workingDelta, 1.0f - (distanceTravelled / deltaLength));
+
 		TraceResult result = Physics_TraceHullInWorld(
 			world,
 			PhysicsComponent_GetWorldCollisionHull(physComp),
-			Vector2Scale(physComp->velocity, GetFrameTime()),
+			workingDelta,
 			physComp->collisionMask,
 			PhysicsComponent_GetOwnerEntity(physComp)
 		);
 
 		MoveToPosition(physComp, &result);
 		FireCollisionCallbacks(physComp, &result, iteration);
+
+		distanceTravelled += result.fraction * Vector2Length(workingDelta);
 
 		if ( !result.collided )
 		{

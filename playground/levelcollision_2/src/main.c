@@ -110,6 +110,7 @@ int main(int argc, char** argv)
 	playerPhys->collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
 	playerPhys->collisionMask = 0xFFFFFFFF;
 	playerPhys->enabled = true;
+	playerPhys->movementType = PHYSMOVE_SLIDE;
 
 	LogicComponent* playerLogic = Entity_AddLogicComponent(playerEnt);
 	playerLogic->userData = MemAlloc(sizeof(PlayerData));

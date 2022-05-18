@@ -10,6 +10,7 @@ struct PhysicsComponentImpl;
 typedef enum PhysicsMovementType
 {
 	PHYSMOVE_NONE = 0,
+	PHYSMOVE_STICK,
 	PHYSMOVE_SLIDE
 } PhysicsMovementType;
 
