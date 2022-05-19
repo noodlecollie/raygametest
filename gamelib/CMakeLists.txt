@@ -5,6 +5,7 @@ add_library(gamelib STATIC
 	src/entity/logiccomponentimpl.c
 	src/entity/physicscomponentimpl.c
 	src/entity/terraincomponentimpl.c
+	src/entity/spritecomponentimpl.c
 	src/logic/playerlogic.c
 	src/gameutil.c
 	src/memoryallocator.c

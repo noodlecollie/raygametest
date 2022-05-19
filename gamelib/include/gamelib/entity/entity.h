@@ -6,6 +6,7 @@ struct EntityImpl;
 struct PhysicsComponent;
 struct TerrainComponent;
 struct LogicComponent;
+struct SpriteComponent;
 struct World;
 
 typedef struct Entity
@@ -23,6 +24,10 @@ void Entity_DestroyPhysicsComponent(Entity* ent);
 struct TerrainComponent* Entity_GetTerrainComponent(Entity* ent);
 struct TerrainComponent* Entity_CreateTerrainComponent(Entity* ent);
 void Entity_DestroyTerrainComponent(Entity* ent);
+
+struct SpriteComponent* Entity_GetSpriteComponent(Entity* ent);
+struct SpriteComponent* Entity_CreateSpriteComponent(Entity* ent);
+void Entity_DestroySpriteComponent(Entity* ent);
 
 struct LogicComponent* Entity_GetLogicComponentListHead(Entity* ent);
 struct LogicComponent* Entity_AddLogicComponent(Entity* ent);

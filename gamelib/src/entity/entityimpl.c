@@ -20,6 +20,7 @@ static void DestroyAllComponents(EntityImpl* impl)
 {
 	Entity_DestroyPhysicsComponent(&impl->entity);
 	Entity_DestroyTerrainComponent(&impl->entity);
+	Entity_DestroySpriteComponent(&impl->entity);
 	DestroyAllLogicComponents(impl);
 }
 
@@ -55,7 +56,7 @@ struct World* Entity_GetWorld(Entity* ent)
 struct PhysicsComponent* Entity_GetPhysicsComponent(Entity* ent)
 {
 	return (ent && ent->impl->physicsImpl)
-		? &((PhysicsComponentImpl*)ent->impl->physicsImpl)->component
+		? &ent->impl->physicsImpl->component
 		: NULL;
 }
 
@@ -88,7 +89,7 @@ void Entity_DestroyPhysicsComponent(Entity* ent)
 struct TerrainComponent* Entity_GetTerrainComponent(Entity* ent)
 {
 	return (ent && ent->impl->terrainImpl)
-		? &((TerrainComponentImpl*)ent->impl->terrainImpl)->component
+		? &ent->impl->terrainImpl->component
 		: NULL;
 }
 
@@ -116,6 +117,39 @@ void Entity_DestroyTerrainComponent(Entity* ent)
 
 	TerrainComponentImpl_Destroy(ent->impl->terrainImpl);
 	ent->impl->terrainImpl = NULL;
+}
+
+struct SpriteComponent* Entity_GetSpriteComponent(Entity* ent)
+{
+	return (ent && ent->impl->spriteImpl)
+		? &ent->impl->spriteImpl->component
+		: NULL;
+}
+
+struct SpriteComponent* Entity_CreateSpriteComponent(Entity* ent)
+{
+	if ( !ent )
+	{
+		return NULL;
+	}
+
+	Entity_DestroySpriteComponent(ent);
+
+	SpriteComponentImpl* impl = SpriteComponentImpl_Create(ent);
+	ent->impl->spriteImpl = impl;
+
+	return &impl->component;
+}
+
+void Entity_DestroySpriteComponent(Entity* ent)
+{
+	if ( !ent )
+	{
+		return;
+	}
+
+	SpriteComponentImpl_Destroy(ent->impl->spriteImpl);
+	ent->impl->spriteImpl = NULL;
 }
 
 struct LogicComponent* Entity_GetLogicComponentListHead(Entity* ent)
