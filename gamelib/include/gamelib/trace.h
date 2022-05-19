@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/gametypes.h"
 #include "gamelib/entity/componenttypes.h"
