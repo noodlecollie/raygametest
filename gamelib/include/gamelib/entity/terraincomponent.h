@@ -16,7 +16,7 @@ typedef struct TerrainComponent
 	float scale;
 } TerrainComponent;
 
-struct Entity* TerrainComponent_GetOwnerEntity(TerrainComponent* component);
+struct Entity* TerrainComponent_GetOwnerEntity(const TerrainComponent* component);
 void TerrainComponent_Unload(TerrainComponent* component);
 
 void TerrainComponent_LoadLayer(TerrainComponent* component, size_t layer, const char* fileName);

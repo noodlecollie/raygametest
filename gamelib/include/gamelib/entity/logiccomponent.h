@@ -38,5 +38,5 @@ typedef struct LogicComponent
 	void* userData;
 } LogicComponent;
 
-struct Entity* LogicComponent_GetOwnerEntity(LogicComponent* component);
+struct Entity* LogicComponent_GetOwnerEntity(const LogicComponent* component);
 void LogicComponent_PerformCleanup(LogicComponent* component);

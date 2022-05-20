@@ -3,7 +3,7 @@
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/entity/terraincomponent.h"
 
-static void ClipTraceToTerrainLayer(const Rectangle* hull, const Vector2* delta, TerrainComponent* terrain, size_t layer, TraceResult* result)
+static void ClipTraceToTerrainLayer(const Rectangle* hull, const Vector2* delta, const TerrainComponent* terrain, size_t layer, TraceResult* result)
 {
 	Rectangle movementBounds = ExpandRectangle(*hull, *delta);
 
@@ -69,7 +69,7 @@ TraceResult TraceResultNoCollision(Vector2 hullEndPos)
 	return result;
 }
 
-TraceResult TraceRectangleMovementAgainstTerrain(Rectangle hull, Vector2 delta, struct TerrainComponent* terrain, Mask32 collisionLayers)
+TraceResult TraceRectangleMovementAgainstTerrain(Rectangle hull, Vector2 delta, const struct TerrainComponent* terrain, Mask32 collisionLayers)
 {
 	TraceResult result = TraceResultNoCollision((Vector2){ hull.x + delta.x, hull.y + delta.y });
 

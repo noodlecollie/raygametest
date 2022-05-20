@@ -26,7 +26,7 @@ void LogicComponentImpl_Destroy(LogicComponentImpl* impl)
 	MemFree(impl);
 }
 
-struct Entity* LogicComponent_GetOwnerEntity(LogicComponent* component)
+struct Entity* LogicComponent_GetOwnerEntity(const LogicComponent* component)
 {
 	return component ? component->impl->ownerEntity : NULL;
 }

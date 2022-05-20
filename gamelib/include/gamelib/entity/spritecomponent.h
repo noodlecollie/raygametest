@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include "gamelib/external/raylibheaders.h"
 
 struct Entity;
@@ -13,3 +14,4 @@ typedef struct SpriteComponent
 } SpriteComponent;
 
 struct Entity* SpriteComponent_GetOwnerEntity(const SpriteComponent* component);
+bool SpriteComponent_SetImage(SpriteComponent* component, const char* filePath);

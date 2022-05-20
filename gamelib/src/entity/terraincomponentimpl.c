@@ -48,7 +48,7 @@ void TerrainComponentImpl_Destroy(TerrainComponentImpl* impl)
 	MemFree(impl);
 }
 
-struct Entity* TerrainComponent_GetOwnerEntity(TerrainComponent* component)
+struct Entity* TerrainComponent_GetOwnerEntity(const TerrainComponent* component)
 {
 	return component ? component->impl->ownerEntity : NULL;
 }

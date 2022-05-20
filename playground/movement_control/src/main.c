@@ -5,6 +5,7 @@
 #include "gamelib/entity/entity.h"
 #include "gamelib/entity/terraincomponent.h"
 #include "gamelib/entity/physicscomponent.h"
+#include "gamelib/entity/spritecomponent.h"
 #include "gamelib/logic/playerlogic.h"
 
 int main(int argc, char** argv)
@@ -50,6 +51,9 @@ int main(int argc, char** argv)
 	playerPhys->collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
 	playerPhys->enabled = true;
 	playerPhys->movementType = PHYSMOVE_SLIDE;
+
+	SpriteComponent* playerSprite = Entity_CreateSpriteComponent(playerEnt);
+	SpriteComponent_SetImage(playerSprite, "res/sprites/raccoon.png");
 
 	LogicComponent* playerLogic = Entity_AddLogicComponent(playerEnt);
 	PlayerLogic_SetOnComponent(playerLogic);

@@ -27,6 +27,6 @@ TraceResult TraceResultNoCollision(Vector2 hullEndPos);
 TraceResult TraceRectangleMovementAgainstTerrain(
 	Rectangle hull,
 	Vector2 delta,
-	struct TerrainComponent* terrain,
+	const struct TerrainComponent* terrain,
 	Mask32 collisionLayers
 );
