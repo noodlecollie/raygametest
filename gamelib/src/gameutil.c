@@ -1,7 +1,31 @@
 #include <float.h>
 #include <stdlib.h>
+#include <string.h>
 #include "gamelib/gameutil.h"
 #include "gamelib/external/raylibheaders.h"
+
+char* DuplicateString(const char* in)
+{
+	if ( !in )
+	{
+		return NULL;
+	}
+
+	size_t length = strlen(in) + 1;
+
+	// Do a normal malloc since this doesn't need to be zeroed.
+	char* out = malloc(length);
+
+	// This does mean we have to check the return ourselves, though.
+	if ( !out )
+	{
+		TraceLog(LOG_FATAL, "Could not allocate %zu bytes for string duplication", length);
+		return NULL;
+	}
+
+	memcpy(out, in, length);
+	return out;
+}
 
 Rectangle NormaliseRectangle(Rectangle rect)
 {

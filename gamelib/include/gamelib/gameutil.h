@@ -5,6 +5,8 @@
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
+char* DuplicateString(const char* in);
+
 // Ensures that x and y are the minimum point of the rect, and width and height are non-negative.
 Rectangle NormaliseRectangle(Rectangle rect);
 
