@@ -11,3 +11,7 @@ ImagePoolItem* ImagePool_AddRef(const char* path);
 void ImagePool_RemoveRef(ImagePoolItem* item);
 
 Image* ImagePool_GetImage(ImagePoolItem* item);
+
+// This should be called if the image itself is modified.
+void ImagePool_FlagTextureNeedsUpdate(ImagePoolItem* item);
+bool ImagePool_EnsureTextureUpdated(ImagePoolItem* item);

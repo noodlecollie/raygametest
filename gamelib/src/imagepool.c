@@ -10,6 +10,8 @@ struct ImagePoolItem
 	char* filePath;
 	size_t refCount;
 	Image image;
+	Texture2D texture;
+	bool textureUpdated;
 };
 
 ImagePoolItem* PoolListHead = NULL;
@@ -93,4 +95,35 @@ void ImagePool_RemoveRef(ImagePoolItem* item)
 Image* ImagePool_GetImage(ImagePoolItem* item)
 {
 	return item ? &item->image : NULL;
+}
+
+void ImagePool_FlagTextureNeedsUpdate(ImagePoolItem* item)
+{
+	if ( !item )
+	{
+		return;
+	}
+
+	item->textureUpdated = false;
+}
+
+bool ImagePool_EnsureTextureUpdated(ImagePoolItem* item)
+{
+	if ( !item || (!item->textureUpdated && !item->image.data) )
+	{
+		return false;
+	}
+
+	if ( !item->textureUpdated )
+	{
+		if ( item->texture.id )
+		{
+			UnloadTexture(item->texture);
+		}
+
+		item->texture = LoadTextureFromImage(item->image);
+		item->textureUpdated = item->texture.id != 0;
+	}
+
+	return item->textureUpdated;
 }
