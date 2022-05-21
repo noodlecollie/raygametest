@@ -1,7 +1,7 @@
 #include "entity/spritecomponentimpl.h"
 #include "gamelib/entity/entity.h"
 #include "gamelib/external/raylibheaders.h"
-#include "texturepool.h"
+#include "resourcepool.h"
 
 SpriteComponentImpl* SpriteComponentImpl_Create(struct Entity* ownerEntity)
 {
@@ -26,10 +26,10 @@ void SpriteComponentImpl_Destroy(SpriteComponentImpl* impl)
 		return;
 	}
 
-	if ( impl->imagePoolItem )
+	if ( impl->textureResource )
 	{
-		TexturePool_RemoveRef(impl->imagePoolItem);
-		impl->imagePoolItem = NULL;
+		ResourcePool_RemoveTextureRef(impl->textureResource);
+		impl->textureResource = NULL;
 	}
 
 	MemFree(impl);
@@ -37,12 +37,12 @@ void SpriteComponentImpl_Destroy(SpriteComponentImpl* impl)
 
 void SpriteComponentImpl_Render(SpriteComponentImpl* impl)
 {
-	if ( !impl || !impl->imagePoolItem )
+	if ( !impl || !impl->textureResource )
 	{
 		return;
 	}
 
-	Texture2D* texture = TexturePool_GetTexture(impl->imagePoolItem);
+	Texture2D* texture = ResourcePool_GetTexture(impl->textureResource);
 	Rectangle source = (Rectangle){ 0.0f, 0.0f, (float)texture->width, (float)texture->height };
 	Vector2 pos = impl->ownerEntity->position;
 	Vector2 scale = (Vector2){ texture->width * impl->component.scale.x, texture->height * impl->component.scale.y };
@@ -67,13 +67,13 @@ bool SpriteComponent_SetImage(SpriteComponent* component, const char* filePath)
 	// Acquire the new image before releasing the old one.
 	// This means that, if the image that's being set is the same,
 	// we avoid unnecessarily unloading and reloading resources.
-	TexturePoolItem* item = TexturePool_AddRef(filePath);
+	ResourcePoolTexture* item = ResourcePool_LoadTextureAndAddRef(filePath);
 
-	if ( component->impl->imagePoolItem )
+	if ( component->impl->textureResource )
 	{
-		TexturePool_RemoveRef(component->impl->imagePoolItem);
+		ResourcePool_RemoveTextureRef(component->impl->textureResource);
 	}
 
-	component->impl->imagePoolItem = item;
-	return component->impl->imagePoolItem != NULL;
+	component->impl->textureResource = item;
+	return component->impl->textureResource != NULL;
 }

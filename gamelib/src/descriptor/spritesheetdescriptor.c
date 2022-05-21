@@ -2,13 +2,13 @@
 #include "gamelib/external/raylibheaders.h"
 #include "external/cJSON_wrapper.h"
 #include "descriptor/descriptorutil.h"
-#include "texturepool.h"
+#include "resourcepool.h"
 
 #define SUPPORTED_VERSION 1
 
 struct SpriteSheetDescriptor
 {
-	TexturePoolItem* frame;
+	ResourcePoolTexture* frame;
 };
 
 SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSON(const char* filePath)
@@ -82,16 +82,16 @@ SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSON(const char* filePath)
 			break;
 		}
 
-		TexturePoolItem* tpItem = TexturePool_AddRef(frameFilePath);
+		ResourcePoolTexture* rpTexture = ResourcePool_LoadTextureAndAddRef(frameFilePath);
 
-		if ( !tpItem )
+		if ( !rpTexture )
 		{
 			TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: File %s animation 1 frame 1: could not load %s", filePath, frameFilePath);
 			break;
 		}
 
 		descriptor = (SpriteSheetDescriptor*)MemAlloc(sizeof(SpriteSheetDescriptor));
-		descriptor->frame = tpItem;
+		descriptor->frame = rpTexture;
 
 		TraceLog(LOG_DEBUG, "SPRITESHEET DESCRIPTOR: Loaded %s successfully", filePath);
 	}
@@ -108,11 +108,16 @@ void SpriteSheetDescriptor_Destroy(SpriteSheetDescriptor* descriptor)
 		return;
 	}
 
-	TexturePool_RemoveRef(descriptor->frame);
+	ResourcePool_RemoveTextureRef(descriptor->frame);
 	MemFree(descriptor);
 }
 
-struct TexturePoolItem* SpriteSheetDescriptor_GetFrameAndAddRef(SpriteSheetDescriptor* descriptor)
+struct ResourcePoolTexture* SpriteSheetDescriptor_GetFrameAndAddRef(SpriteSheetDescriptor* descriptor)
 {
-	return descriptor ? descriptor->frame : NULL;
+	if ( !descriptor )
+	{
+		return NULL;
+	}
+
+	return ResourcePool_AddTextureRef(descriptor->frame);
 }

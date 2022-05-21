@@ -1,10 +1,10 @@
 #pragma once
 
-struct TexturePoolItem;
+struct ResourcePoolTexture;
 
 typedef struct SpriteSheetDescriptor SpriteSheetDescriptor;
 
 SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSON(const char* filePath);
 void SpriteSheetDescriptor_Destroy(SpriteSheetDescriptor* descriptor);
 
-struct TexturePoolItem* SpriteSheetDescriptor_GetFrameAndAddRef(SpriteSheetDescriptor* descriptor);
+struct ResourcePoolTexture* SpriteSheetDescriptor_GetFrameAndAddRef(SpriteSheetDescriptor* descriptor);

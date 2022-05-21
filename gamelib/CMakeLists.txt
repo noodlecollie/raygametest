@@ -14,7 +14,7 @@ add_library(gamelib STATIC
 	src/gameutil.c
 	src/memoryallocator.c
 	src/physics.c
-	src/texturepool.c
+	src/resourcepool.c
 	src/trace.c
 	src/world.c
 )
