@@ -14,3 +14,4 @@ typedef struct SpriteComponentImpl
 
 SpriteComponentImpl* SpriteComponentImpl_Create(struct Entity* ownerEntity);
 void SpriteComponentImpl_Destroy(SpriteComponentImpl* impl);
+void SpriteComponentImpl_Render(SpriteComponentImpl* impl);

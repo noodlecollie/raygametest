@@ -4,6 +4,8 @@
 #include "gamelib/entity/entity.h"
 #include "entity/entityimpl.h"
 #include "gamelib/entity/logiccomponent.h"
+#include "gamelib/entity/spritecomponent.h"
+#include "gamelib/entity/terraincomponent.h"
 #include "listmacros.h"
 
 typedef struct WorldImpl
@@ -137,6 +139,11 @@ struct Entity* World_GetNextEntity(struct Entity* ent)
 	return (ent && ent->impl->next) ? &ent->impl->next->entity : NULL;
 }
 
+size_t World_GetEntityCount(const World* world)
+{
+	return world ? world->impl->entityCount : 0;
+}
+
 void World_Think(World* world)
 {
 	if ( !world )
@@ -169,7 +176,27 @@ void World_Think(World* world)
 	}
 }
 
-size_t World_GetEntityCount(const World* world)
+void World_Render(World* world)
 {
-	return world ? world->impl->entityCount : 0;
+	if ( !world )
+	{
+		return;
+	}
+
+	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
+	{
+		TerrainComponent* terrain = Entity_GetTerrainComponent(ent);
+
+		if ( terrain )
+		{
+			// TODO: Render
+		}
+
+		SpriteComponent* sprite = Entity_GetSpriteComponent(ent);
+
+		if ( sprite )
+		{
+			// TODO: Render
+		}
+	}
 }

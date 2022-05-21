@@ -23,3 +23,4 @@ struct Entity* World_GetNextEntity(struct Entity* ent);
 size_t World_GetEntityCount(const World* world);
 
 void World_Think(World* world);
+void World_Render(World* world);
