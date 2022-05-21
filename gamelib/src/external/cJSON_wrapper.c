@@ -101,3 +101,15 @@ cJSON* cJSONWrapper_ParseFile(const char* filePath)
 
 	return json;
 }
+
+cJSON* cJSONWrapper_GetObjectItemOfType(cJSON* object, const char* key, int itemType)
+{
+	if ( !object )
+	{
+		return NULL;
+	}
+
+	cJSON* item = cJSON_GetObjectItem(object, key);
+
+	return (item && item->type == itemType) ? item : NULL;
+}

@@ -8,3 +8,5 @@
 void cJSONWrapper_InitHooks(void);
 
 cJSON* cJSONWrapper_ParseFile(const char* filePath);
+
+cJSON* cJSONWrapper_GetObjectItemOfType(cJSON* object, const char* key, int itemType);
