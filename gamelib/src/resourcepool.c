@@ -3,52 +3,59 @@
 #include "gamelib/gameutil.h"
 #include "descriptor/spritesheetdescriptor.h"
 
-// Conveniences for this file, given we use meta.hh instead of just hh:
-
-#define RPHASH_FIND_STR(head,findstr,out)                                        \
-do {                                                                             \
-    unsigned _uthash_hfstr_keylen = (unsigned)uthash_strlen(findstr);            \
-    HASH_FIND(meta.hh, head, findstr, _uthash_hfstr_keylen, out);                \
-} while (0)
-
-#define RPHASH_ADD_STR(head,strfield,add)                                        \
-do {                                                                             \
-    unsigned _uthash_hastr_keylen = (unsigned)uthash_strlen((add)->strfield);    \
-    HASH_ADD(meta.hh, head, strfield[0], _uthash_hastr_keylen, add);             \
-} while (0)
-
-typedef struct ResourceMeta
+typedef struct ResourcePoolItem
 {
 	UT_hash_handle hh;
 	char* key;
 	size_t refCount;
-} ResourceMeta;
+
+	void* payload;
+} ResourcePoolItem;
 
 struct ResourcePoolTexture
 {
-	ResourceMeta meta;
+	ResourcePoolItem* owner;
 	Texture2D texture;
 };
 
 typedef struct ResourcePool
 {
-	ResourcePoolTexture* textures;
+	ResourcePoolItem* textures;
 } ResourcePool;
 
 static ResourcePool Pool;
 
-static inline void CleanUpMeta(ResourceMeta* meta)
+static inline ResourcePoolItem* FindItemByPath(ResourcePoolItem* head, const char* path)
 {
-	MemFree(meta->key);
+	ResourcePoolItem* item = NULL;
+	HASH_FIND_STR(head, path, item);
+	return item;
 }
 
-static inline ResourcePoolTexture* FindTextureByPath(const char* path)
+static inline ResourcePoolItem* CreateItem(const char* path)
 {
-	ResourcePoolTexture* item = NULL;
-
-	RPHASH_FIND_STR(Pool.textures, path, item);
-
+	ResourcePoolItem* item = (ResourcePoolItem*)MemAlloc(sizeof(ResourcePoolItem));
+	item->key = DuplicateString(path);
 	return item;
+}
+
+static inline void DestroyItem(ResourcePoolItem* item)
+{
+	MemFree(item->key);
+	MemFree(item);
+}
+
+static inline void AddRef(ResourcePoolItem* item)
+{
+	++item->refCount;
+}
+
+static inline void RemoveRef(ResourcePoolItem* item)
+{
+	if ( item->refCount > 0 )
+	{
+		--item->refCount;
+	}
 }
 
 static bool LocalLoadTexture(Texture2D* texture, const char* path)
@@ -72,42 +79,33 @@ static bool LocalLoadTexture(Texture2D* texture, const char* path)
 	return true;
 }
 
-static ResourcePoolTexture* CreateTextureItem(const char* path)
+static void CreateTexturePayload(ResourcePoolItem* item)
 {
-	Image image = LoadImage(path);
-
-	if ( !image.data )
-	{
-		return NULL;
-	}
-
 	Texture2D texture = { 0 };
 
-	if ( !LocalLoadTexture(&texture, path) )
-	{
-		return NULL;
-	}
-
-	ResourcePoolTexture* item = (ResourcePoolTexture*)MemAlloc(sizeof(ResourcePoolTexture));
-
-	item->meta.key = DuplicateString(path);
-	item->texture = texture;
-
-	RPHASH_ADD_STR(Pool.textures, meta.key, item);
-
-	return item;
-}
-
-static void DestroyTextureItem(ResourcePoolTexture* item)
-{
-	if ( !item )
+	if ( !LocalLoadTexture(&texture, item->key) )
 	{
 		return;
 	}
 
-	UnloadTexture(item->texture);
-	CleanUpMeta(&item->meta);
-	MemFree(item);
+	ResourcePoolTexture* payload = (ResourcePoolTexture*)MemAlloc(sizeof(ResourcePoolTexture));
+	item->payload = payload;
+
+	payload->owner = item;
+	payload->texture = texture;
+}
+
+static inline void DestroyTexturePayload(ResourcePoolItem* item)
+{
+	ResourcePoolTexture* payload = (ResourcePoolTexture*)item->payload;
+
+	if ( payload )
+	{
+		UnloadTexture(payload->texture);
+		MemFree(payload);
+	}
+
+	item->payload = NULL;
 }
 
 ResourcePoolTexture* ResourcePool_LoadTextureAndAddRef(const char* path)
@@ -117,19 +115,26 @@ ResourcePoolTexture* ResourcePool_LoadTextureAndAddRef(const char* path)
 		return NULL;
 	}
 
-	ResourcePoolTexture* item = FindTextureByPath(path);
+	ResourcePoolItem* item = FindItemByPath(Pool.textures, path);
 
 	if ( !item )
 	{
-		item = CreateTextureItem(path);
+		item = CreateItem(path);
+		CreateTexturePayload(item);
 
-		if ( !item )
+		if ( !item->payload )
 		{
+			DestroyItem(item);
 			return NULL;
 		}
+
+		// This must be here because the head pointer must be mutable.
+		HASH_ADD_STR(Pool.textures, key, item);
 	}
 
-	return ResourcePool_AddTextureRef(item);
+	AddRef(item);
+
+	return (ResourcePoolTexture*)item->payload;
 }
 
 ResourcePoolTexture* ResourcePool_AddTextureRef(ResourcePoolTexture* item)
@@ -139,7 +144,7 @@ ResourcePoolTexture* ResourcePool_AddTextureRef(ResourcePoolTexture* item)
 		return NULL;
 	}
 
-	++item->meta.refCount;
+	AddRef(item->owner);
 
 	return item;
 }
@@ -151,14 +156,15 @@ void ResourcePool_RemoveTextureRef(ResourcePoolTexture* item)
 		return;
 	}
 
-	if ( item->meta.refCount > 0 )
-	{
-		--item->meta.refCount;
-	}
+	RemoveRef(item->owner);
 
-	if ( item->meta.refCount < 1 )
+	if ( item->owner->refCount < 1 )
 	{
-		DestroyTextureItem(item);
+		ResourcePoolItem* owner = item->owner;
+		HASH_DEL(Pool.textures, owner);
+
+		DestroyTexturePayload(owner);
+		DestroyItem(owner);
 	}
 }
 
@@ -169,5 +175,5 @@ Texture2D* ResourcePool_GetTexture(ResourcePoolTexture* item)
 
 const char* ResourcePool_GetTextureFilePath(ResourcePoolTexture* item)
 {
-	return item ? item->meta.key : NULL;
+	return item ? item->owner->key : NULL;
 }
