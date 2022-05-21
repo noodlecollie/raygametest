@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gamelib/entity/spritecomponent.h"
-#include "imagepool.h"
+#include "texturepool.h"
 
 struct Entity;
 
@@ -9,7 +9,7 @@ typedef struct SpriteComponentImpl
 {
 	struct Entity* ownerEntity;
 	SpriteComponent component;
-	ImagePoolItem* imagePoolItem;
+	TexturePoolItem* imagePoolItem;
 } SpriteComponentImpl;
 
 SpriteComponentImpl* SpriteComponentImpl_Create(struct Entity* ownerEntity);

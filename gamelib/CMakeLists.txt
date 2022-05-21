@@ -9,9 +9,9 @@ add_library(gamelib STATIC
 	src/entity/spritecomponentimpl.c
 	src/logic/playerlogic.c
 	src/gameutil.c
-	src/imagepool.c
 	src/memoryallocator.c
 	src/physics.c
+	src/texturepool.c
 	src/trace.c
 	src/world.c
 )

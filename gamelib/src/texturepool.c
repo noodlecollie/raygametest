@@ -1,9 +1,9 @@
 #include <stddef.h>
-#include "imagepool.h"
+#include "texturepool.h"
 #include "external/uthash_wrapper.h"
 #include "gamelib/gameutil.h"
 
-struct ImagePoolItem
+struct TexturePoolItem
 {
 	UT_hash_handle hh;
 
@@ -13,11 +13,11 @@ struct ImagePoolItem
 	bool textureUpdated;
 };
 
-ImagePoolItem* PoolListHead = NULL;
+TexturePoolItem* PoolListHead = NULL;
 
-static inline ImagePoolItem* FindItemByFilePath(const char* path)
+static inline TexturePoolItem* FindItemByFilePath(const char* path)
 {
-	ImagePoolItem* item = NULL;
+	TexturePoolItem* item = NULL;
 
 	HASH_FIND_STR(PoolListHead, path, item);
 
@@ -45,7 +45,7 @@ static bool LocalLoadTexture(Texture2D* texture, const char* path)
 	return true;
 }
 
-static ImagePoolItem* CreateItem(const char* path)
+static TexturePoolItem* CreateItem(const char* path)
 {
 	Image image = LoadImage(path);
 
@@ -61,7 +61,7 @@ static ImagePoolItem* CreateItem(const char* path)
 		return NULL;
 	}
 
-	ImagePoolItem* item = (ImagePoolItem*)MemAlloc(sizeof(ImagePoolItem));
+	TexturePoolItem* item = (TexturePoolItem*)MemAlloc(sizeof(TexturePoolItem));
 
 	item->filePath = DuplicateString(path);
 	item->texture = texture;
@@ -71,7 +71,7 @@ static ImagePoolItem* CreateItem(const char* path)
 	return item;
 }
 
-static void DestroyItem(ImagePoolItem* item)
+static void DestroyItem(TexturePoolItem* item)
 {
 	if ( !item )
 	{
@@ -83,14 +83,14 @@ static void DestroyItem(ImagePoolItem* item)
 	MemFree(item);
 }
 
-ImagePoolItem* ImagePool_AddRef(const char* path)
+TexturePoolItem* TexturePool_AddRef(const char* path)
 {
 	if ( !path || !(*path) )
 	{
 		return NULL;
 	}
 
-	ImagePoolItem* item = FindItemByFilePath(path);
+	TexturePoolItem* item = FindItemByFilePath(path);
 
 	if ( !item )
 	{
@@ -106,7 +106,7 @@ ImagePoolItem* ImagePool_AddRef(const char* path)
 	return item;
 }
 
-void ImagePool_RemoveRef(ImagePoolItem* item)
+void TexturePool_RemoveRef(TexturePoolItem* item)
 {
 	if ( !item )
 	{
@@ -124,12 +124,12 @@ void ImagePool_RemoveRef(ImagePoolItem* item)
 	}
 }
 
-Texture2D* ImagePool_GetTexture(ImagePoolItem* item)
+Texture2D* TexturePool_GetTexture(TexturePoolItem* item)
 {
 	return item ? &item->texture : NULL;
 }
 
-const char* ImagePool_GetFilePath(ImagePoolItem* item)
+const char* TexturePool_GetFilePath(TexturePoolItem* item)
 {
 	return item ? item->filePath : NULL;
 }
