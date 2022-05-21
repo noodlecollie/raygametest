@@ -42,19 +42,6 @@ void SpriteComponentImpl_Render(SpriteComponentImpl* impl)
 		return;
 	}
 
-	if ( !ImagePool_EnsureTextureUpdated(impl->imagePoolItem) )
-	{
-		// No texture to work with - something went wrong.
-
-		TraceLog(
-			LOG_WARNING,
-			"SPRITE COMPONENT: Unable to render: texture for %s could not be constructed.",
-			ImagePool_GetFilePath(impl->imagePoolItem)
-		);
-
-		return;
-	}
-
 	Texture2D* texture = ImagePool_GetTexture(impl->imagePoolItem);
 	Rectangle source = (Rectangle){ 0.0f, 0.0f, (float)texture->width, (float)texture->height };
 	Vector2 pos = impl->ownerEntity->position;

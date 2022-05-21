@@ -9,7 +9,6 @@ struct ImagePoolItem
 
 	char* filePath;
 	size_t refCount;
-	Image image;
 	Texture2D texture;
 	bool textureUpdated;
 };
@@ -25,6 +24,27 @@ static inline ImagePoolItem* FindItemByFilePath(const char* path)
 	return item;
 }
 
+static bool LocalLoadTexture(Texture2D* texture, const char* path)
+{
+	*texture = LoadTexture(path);
+
+	if ( texture->id == 0 )
+	{
+		TraceLog(LOG_DEBUG, "IMAGEPOOL: Unable to create texture for %s", path);
+		return false;
+	}
+
+	// Allow these to be customised in future?
+	// We'd be getting more into material territory then.
+	// For now, just let the user of the texture override
+	// these manually later, if they want to. These values
+	// are good enough defaults.
+	SetTextureFilter(*texture, TEXTURE_FILTER_POINT);
+	SetTextureWrap(*texture, TEXTURE_WRAP_CLAMP);
+
+	return true;
+}
+
 static ImagePoolItem* CreateItem(const char* path)
 {
 	Image image = LoadImage(path);
@@ -34,10 +54,17 @@ static ImagePoolItem* CreateItem(const char* path)
 		return NULL;
 	}
 
+	Texture2D texture = { 0 };
+
+	if ( !LocalLoadTexture(&texture, path) )
+	{
+		return NULL;
+	}
+
 	ImagePoolItem* item = (ImagePoolItem*)MemAlloc(sizeof(ImagePoolItem));
 
 	item->filePath = DuplicateString(path);
-	item->image = image;
+	item->texture = texture;
 
 	HASH_ADD_STR(PoolListHead, filePath, item);
 
@@ -51,7 +78,7 @@ static void DestroyItem(ImagePoolItem* item)
 		return;
 	}
 
-	UnloadImage(item->image);
+	UnloadTexture(item->texture);
 	MemFree(item->filePath);
 	MemFree(item);
 }
@@ -97,11 +124,6 @@ void ImagePool_RemoveRef(ImagePoolItem* item)
 	}
 }
 
-Image* ImagePool_GetImage(ImagePoolItem* item)
-{
-	return item ? &item->image : NULL;
-}
-
 Texture2D* ImagePool_GetTexture(ImagePoolItem* item)
 {
 	return item ? &item->texture : NULL;
@@ -110,48 +132,4 @@ Texture2D* ImagePool_GetTexture(ImagePoolItem* item)
 const char* ImagePool_GetFilePath(ImagePoolItem* item)
 {
 	return item ? item->filePath : NULL;
-}
-
-void ImagePool_FlagTextureNeedsUpdate(ImagePoolItem* item)
-{
-	if ( !item )
-	{
-		return;
-	}
-
-	item->textureUpdated = false;
-}
-
-bool ImagePool_EnsureTextureUpdated(ImagePoolItem* item)
-{
-	if ( !item )
-	{
-		return false;
-	}
-
-	if ( !item->textureUpdated && item->image.data )
-	{
-		if ( item->texture.id )
-		{
-			UnloadTexture(item->texture);
-		}
-
-		item->texture = LoadTextureFromImage(item->image);
-		item->textureUpdated = item->texture.id != 0;
-
-		if ( item->texture.id != 0 )
-		{
-			// Allow these to be customised in future?
-			// We'd be getting more into material territory then.
-			SetTextureFilter(item->texture, TEXTURE_FILTER_POINT);
-			SetTextureWrap(item->texture, TEXTURE_WRAP_CLAMP);
-		}
-	}
-
-	if ( !item->textureUpdated )
-	{
-		TraceLog(LOG_DEBUG, "IMAGEPOOL: Unable to update GPU texture for %s", item->filePath);
-	}
-
-	return item->textureUpdated;
 }
