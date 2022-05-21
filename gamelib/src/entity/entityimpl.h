@@ -25,3 +25,4 @@ typedef struct EntityImpl
 } EntityImpl;
 
 void EntityImpl_Destroy(EntityImpl* impl);
+void EntityImpl_Render(EntityImpl* impl);

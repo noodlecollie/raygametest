@@ -185,18 +185,6 @@ void World_Render(World* world)
 
 	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
 	{
-		TerrainComponent* terrain = Entity_GetTerrainComponent(ent);
-
-		if ( terrain )
-		{
-			// TODO: Render
-		}
-
-		SpriteComponent* sprite = Entity_GetSpriteComponent(ent);
-
-		if ( sprite )
-		{
-			// TODO: Render
-		}
+		EntityImpl_Render(ent->impl);
 	}
 }

@@ -7,6 +7,7 @@
 #include "gamelib/entity/physicscomponent.h"
 #include "gamelib/entity/spritecomponent.h"
 #include "gamelib/logic/playerlogic.h"
+#include "gamelib/gameutil.h"
 
 int main(int argc, char** argv)
 {
@@ -54,6 +55,8 @@ int main(int argc, char** argv)
 
 	SpriteComponent* playerSprite = Entity_CreateSpriteComponent(playerEnt);
 	SpriteComponent_SetImage(playerSprite, "res/sprites/raccoon.png");
+	playerSprite->origin.x = 16;
+	playerSprite->origin.y = 22;
 
 	LogicComponent* playerLogic = Entity_AddLogicComponent(playerEnt);
 	PlayerLogic_SetOnComponent(playerLogic);
@@ -110,8 +113,13 @@ int main(int argc, char** argv)
 				DrawRectangleRec(blockRect, blockColour);
 			}
 
-			DrawRectangleRec(PhysicsComponent_GetWorldCollisionHull(playerPhys), PlayerLogic_GetDataFromComponent(playerLogic)->onGround ? YELLOW : RED);
+			Rectangle hull = PhysicsComponent_GetWorldCollisionHull(playerPhys);
+			DrawRectangleRec(hull, PlayerLogic_GetDataFromComponent(playerLogic)->onGround ? YELLOW : RED);
+
+			DrawCircle(playerEnt->position.x, playerEnt->position.y, 2.0f, BLACK);
 		}
+
+		World_Render(world);
 
 		EndMode2D();
 

@@ -97,6 +97,16 @@ Image* ImagePool_GetImage(ImagePoolItem* item)
 	return item ? &item->image : NULL;
 }
 
+Texture2D* ImagePool_GetTexture(ImagePoolItem* item)
+{
+	return item ? &item->texture : NULL;
+}
+
+const char* ImagePool_GetFilePath(ImagePoolItem* item)
+{
+	return item ? item->filePath : NULL;
+}
+
 void ImagePool_FlagTextureNeedsUpdate(ImagePoolItem* item)
 {
 	if ( !item )
@@ -109,12 +119,12 @@ void ImagePool_FlagTextureNeedsUpdate(ImagePoolItem* item)
 
 bool ImagePool_EnsureTextureUpdated(ImagePoolItem* item)
 {
-	if ( !item || (!item->textureUpdated && !item->image.data) )
+	if ( !item )
 	{
 		return false;
 	}
 
-	if ( !item->textureUpdated )
+	if ( !item->textureUpdated && item->image.data )
 	{
 		if ( item->texture.id )
 		{
@@ -123,6 +133,20 @@ bool ImagePool_EnsureTextureUpdated(ImagePoolItem* item)
 
 		item->texture = LoadTextureFromImage(item->image);
 		item->textureUpdated = item->texture.id != 0;
+
+		if ( item->texture.id != 0 )
+		{
+			// Allow these to be customised in future?
+			// We'd be getting more into material territory then.
+			GenTextureMipmaps(&item->texture);
+			SetTextureFilter(item->texture, TEXTURE_FILTER_POINT);
+			SetTextureWrap(item->texture, TEXTURE_WRAP_CLAMP);
+		}
+	}
+
+	if ( !item->textureUpdated )
+	{
+		TraceLog(LOG_DEBUG, "IMAGEPOOL: Unable to update GPU texture for %s", item->filePath);
 	}
 
 	return item->textureUpdated;

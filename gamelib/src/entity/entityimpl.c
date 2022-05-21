@@ -48,6 +48,24 @@ void EntityImpl_Destroy(EntityImpl* impl)
 	MemFree(impl);
 }
 
+void EntityImpl_Render(EntityImpl* impl)
+{
+	if ( !impl )
+	{
+		return;
+	}
+
+	if ( impl->terrainImpl )
+	{
+		// TODO: Render
+	}
+
+	if ( impl->spriteImpl )
+	{
+		SpriteComponentImpl_Render(impl->spriteImpl);
+	}
+}
+
 struct World* Entity_GetWorld(Entity* ent)
 {
 	return ent ? ent->impl->ownerWorld : NULL;

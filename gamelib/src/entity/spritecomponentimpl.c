@@ -35,6 +35,36 @@ void SpriteComponentImpl_Destroy(SpriteComponentImpl* impl)
 	MemFree(impl);
 }
 
+void SpriteComponentImpl_Render(SpriteComponentImpl* impl)
+{
+	if ( !impl || !impl->imagePoolItem )
+	{
+		return;
+	}
+
+	if ( !ImagePool_EnsureTextureUpdated(impl->imagePoolItem) )
+	{
+		// No texture to work with - something went wrong.
+
+		TraceLog(
+			LOG_WARNING,
+			"SPRITE COMPONENT: Unable to render: texture for %s could not be constructed.",
+			ImagePool_GetFilePath(impl->imagePoolItem)
+		);
+
+		return;
+	}
+
+	Texture2D* texture = ImagePool_GetTexture(impl->imagePoolItem);
+	Rectangle source = (Rectangle){ 0.0f, 0.0f, texture->width, texture->height };
+	Vector2 pos = impl->ownerEntity->position;
+	Vector2 scale = (Vector2){ texture->width * impl->component.scale.x, texture->height * impl->component.scale.y };
+	Rectangle dest = (Rectangle){ pos.x, pos.y, scale.x, scale.y };
+	Vector2 origin = Vector2Multiply(impl->component.origin, impl->component.scale);
+
+	DrawTexturePro(*texture, source, dest, origin, 0.0f, WHITE);
+}
+
 struct Entity* SpriteComponent_GetOwnerEntity(const SpriteComponent* component)
 {
 	return component ? component->impl->ownerEntity : NULL;

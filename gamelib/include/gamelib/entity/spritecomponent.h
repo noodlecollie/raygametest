@@ -10,6 +10,12 @@ typedef struct SpriteComponent
 {
 	struct SpriteComponentImpl* impl;
 
+	// Location on sprite that should be
+	// placed at the position of the entity.
+	Vector2 origin;
+
+	// How big the sprite should be in X and Y,
+	// in units per pixel.
 	Vector2 scale;
 } SpriteComponent;
 
