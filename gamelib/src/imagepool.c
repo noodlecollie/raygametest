@@ -138,7 +138,6 @@ bool ImagePool_EnsureTextureUpdated(ImagePoolItem* item)
 		{
 			// Allow these to be customised in future?
 			// We'd be getting more into material territory then.
-			GenTextureMipmaps(&item->texture);
 			SetTextureFilter(item->texture, TEXTURE_FILTER_POINT);
 			SetTextureWrap(item->texture, TEXTURE_WRAP_CLAMP);
 		}
