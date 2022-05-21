@@ -101,26 +101,7 @@ int main(int argc, char** argv)
 		ClearBackground(LIGHTGRAY);
 
 		BeginMode2D(camera);
-
-		Vector2i dims = TerrainComponent_GetLayerDimensions(terrain, 0);
-
-		for ( int y = 0; y < dims.y; ++y )
-		{
-			for ( int x = 0; x < dims.x; ++x )
-			{
-				Rectangle blockRect = TerrainComponent_GetBlockWorldRectByCoOrds(terrain, (Vector2i){ x, y });
-				Color blockColour = TerrainComponent_GetBlockColourByCoOrds(terrain, 0, (Vector2i){ x, y });
-				DrawRectangleRec(blockRect, blockColour);
-			}
-
-			Rectangle hull = PhysicsComponent_GetWorldCollisionHull(playerPhys);
-			DrawRectangleRec(hull, PlayerLogic_GetDataFromComponent(playerLogic)->onGround ? YELLOW : RED);
-
-			DrawCircle(playerEnt->position.x, playerEnt->position.y, 2.0f, BLACK);
-		}
-
 		World_Render(world);
-
 		EndMode2D();
 
 		int leftMargin = (int)(10.0f * dpiScale.x);

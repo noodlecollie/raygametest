@@ -57,7 +57,7 @@ void EntityImpl_Render(EntityImpl* impl)
 
 	if ( impl->terrainImpl )
 	{
-		// TODO: Render
+		TerrainComponentImpl_Render(impl->terrainImpl);
 	}
 
 	if ( impl->spriteImpl )
