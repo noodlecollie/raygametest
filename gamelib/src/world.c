@@ -3,6 +3,7 @@
 #include "gamelib/physics.h"
 #include "gamelib/entity/entity.h"
 #include "entity/entityimpl.h"
+#include "entity/cameracomponentimpl.h"
 #include "gamelib/entity/logiccomponent.h"
 #include "gamelib/entity/spritecomponent.h"
 #include "gamelib/entity/terraincomponent.h"
@@ -13,6 +14,8 @@ typedef struct WorldImpl
 	size_t entityCount;
 	EntityImpl* entitiesHead;
 	EntityImpl* entitiesTail;
+
+	CameraComponent* activeCamera;
 } WorldImpl;
 
 static void DestroyAllEntities(WorldImpl* impl)
@@ -176,15 +179,39 @@ void World_Think(World* world)
 	}
 }
 
-void World_Render(World* world)
+void World_SetActiveCamera(World* world, struct CameraComponent* camera)
 {
 	if ( !world )
 	{
 		return;
 	}
 
+	world->impl->activeCamera = camera;
+}
+
+void World_Render(World* world)
+{
+	if ( !world || !world->impl->activeCamera )
+	{
+		return;
+	}
+
+	CameraComponentImpl* camImpl = world->impl->activeCamera->impl;
+	Camera2D camera = { 0 };
+
+	camera.target = camImpl->ownerEntity->position;
+	camera.zoom = camImpl->component.zoom;
+
+	const Vector2 dpiScale = GetWindowScaleDPI();
+	const Vector2 windowDim = (Vector2){ (float)GetScreenWidth() * dpiScale.x, (float)GetScreenHeight() * dpiScale.y };
+	camera.offset = Vector2Scale(windowDim, 0.5f);
+
+	BeginMode2D(camera);
+
 	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
 	{
 		EntityImpl_Render(ent->impl);
 	}
+
+	EndMode2D();
 }

@@ -5,6 +5,7 @@
 #include "entity/terraincomponentimpl.h"
 #include "entity/logiccomponentimpl.h"
 #include "entity/spritecomponentimpl.h"
+#include "entity/cameracomponentimpl.h"
 
 struct World;
 
@@ -19,6 +20,7 @@ typedef struct EntityImpl
 	PhysicsComponentImpl* physicsImpl;
 	TerrainComponentImpl* terrainImpl;
 	SpriteComponentImpl* spriteImpl;
+	CameraComponentImpl* cameraImpl;
 
 	LogicComponentImpl* logicImplHead;
 	LogicComponentImpl* logicImplTail;

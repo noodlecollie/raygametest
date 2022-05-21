@@ -170,6 +170,39 @@ void Entity_DestroySpriteComponent(Entity* ent)
 	ent->impl->spriteImpl = NULL;
 }
 
+struct CameraComponent* Entity_GetCameraComponent(Entity* ent)
+{
+	return (ent && ent->impl->cameraImpl)
+		? &ent->impl->cameraImpl->component
+		: NULL;
+}
+
+struct CameraComponent* Entity_CreateCameraComponent(Entity* ent)
+{
+	if ( !ent )
+	{
+		return NULL;
+	}
+
+	Entity_DestroyCameraComponent(ent);
+
+	CameraComponentImpl* impl = CameraComponentImpl_Create(ent);
+	ent->impl->cameraImpl = impl;
+
+	return &impl->component;
+}
+
+void Entity_DestroyCameraComponent(Entity* ent)
+{
+	if ( !ent )
+	{
+		return;
+	}
+
+	CameraComponentImpl_Destroy(ent->impl->cameraImpl);
+	ent->impl->cameraImpl = NULL;
+}
+
 struct LogicComponent* Entity_GetLogicComponentListHead(Entity* ent)
 {
 	return (ent && ent->impl->logicImplHead)

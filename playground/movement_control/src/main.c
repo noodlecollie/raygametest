@@ -6,6 +6,7 @@
 #include "gamelib/entity/terraincomponent.h"
 #include "gamelib/entity/physicscomponent.h"
 #include "gamelib/entity/spritecomponent.h"
+#include "gamelib/entity/cameracomponent.h"
 #include "gamelib/logic/playerlogic.h"
 #include "gamelib/gameutil.h"
 
@@ -34,13 +35,10 @@ int main(int argc, char** argv)
 	terrain->scale = 10.0f;
 
 	TerrainComponent_LoadLayer(terrain, 0, "res/maps/test.png");
-	Vector2i levelDim = TerrainComponent_GetLayerDimensions(terrain, 0);
 
-	Camera2D camera = { 0 };
-	camera.target = (Vector2){ ((float)levelDim.x / 2.0f) * terrain->scale, ((float)levelDim.y / 2.0f) * terrain->scale };
-	camera.offset = (Vector2){ (float)screenWidth / 2.0f, (float)screenHeight / 2.0f };
-	camera.rotation = 0.0f;
-	camera.zoom = 1.0f;
+	Entity* cameraEnt = World_CreateEntity(world);
+	CameraComponent* camComp = Entity_CreateCameraComponent(cameraEnt);
+	World_SetActiveCamera(world, camComp);
 
 	const Vector2 playerStartPos = (Vector2){ 1000.0f, 0.0f };
 
@@ -69,40 +67,37 @@ int main(int argc, char** argv)
 
 		if ( wheelDelta >= 0.0f )
 		{
-			camera.zoom *= 1.0f + wheelDelta;
+			camComp->zoom *= 1.0f + wheelDelta;
 		}
 		else
 		{
-			camera.zoom *= 1.0f / (1 - wheelDelta);
+			camComp->zoom *= 1.0f / (1 - wheelDelta);
 		}
 
-		if ( camera.zoom < 0.125f )
+		if ( camComp->zoom < 0.125f )
 		{
-			camera.zoom = 0.125f;
+			camComp->zoom = 0.125f;
 		}
-		else if ( camera.zoom > 10.0f )
+		else if ( camComp->zoom > 10.0f )
 		{
-			camera.zoom = 10.0f;
+			camComp->zoom = 10.0f;
 		}
 
 		if ( IsKeyPressed(KEY_R) )
 		{
 			playerEnt->position = playerStartPos;
 			playerPhys->velocity = Vector2Zero();
-			camera.zoom = 1.0f;
+			camComp->zoom = 1.0f;
 		}
 
 		World_Think(world);
 
-		camera.target = playerEnt->position;
+		cameraEnt->position = playerEnt->position;
 
 		BeginDrawing();
 
 		ClearBackground(LIGHTGRAY);
-
-		BeginMode2D(camera);
 		World_Render(world);
-		EndMode2D();
 
 		int leftMargin = (int)(10.0f * dpiScale.x);
 		int fontSize = (int)(10.0f * dpiScale.y);

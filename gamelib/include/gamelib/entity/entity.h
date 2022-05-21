@@ -29,6 +29,10 @@ struct SpriteComponent* Entity_GetSpriteComponent(Entity* ent);
 struct SpriteComponent* Entity_CreateSpriteComponent(Entity* ent);
 void Entity_DestroySpriteComponent(Entity* ent);
 
+struct CameraComponent* Entity_GetCameraComponent(Entity* ent);
+struct CameraComponent* Entity_CreateCameraComponent(Entity* ent);
+void Entity_DestroyCameraComponent(Entity* ent);
+
 struct LogicComponent* Entity_GetLogicComponentListHead(Entity* ent);
 struct LogicComponent* Entity_AddLogicComponent(Entity* ent);
 void Entity_RemoveLogicComponent(struct LogicComponent* component);

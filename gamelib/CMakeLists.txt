@@ -1,6 +1,7 @@
 include(compile_options)
 
 add_library(gamelib STATIC
+	src/entity/cameracomponentimpl.c
 	src/entity/entityimpl.c
 	src/entity/logiccomponentimpl.c
 	src/entity/physicscomponentimpl.c
