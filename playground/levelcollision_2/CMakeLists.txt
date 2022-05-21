@@ -1,4 +1,5 @@
 include(compile_options)
+include(install_helpers)
 
 add_executable(level_collision_2
 	src/main.c
@@ -16,6 +17,4 @@ install(TARGETS level_collision_2
 	RUNTIME DESTINATION playground/level_collision_2
 )
 
-install(DIRECTORY res DESTINATION playground/level_collision_2
-	FILES_MATCHING PATTERN "*.*~" EXCLUDE
-)
+install_dir_with_filters(res playground/level_collision_2)

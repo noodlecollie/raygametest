@@ -151,18 +151,6 @@ do {                                                                            
   HASH_FUNCTION(keyptr, keylen, hashv);                                          \
 } while (0)
 
-#define HASH_FIND_BYHASHVALUE(hh,head,keyptr,keylen,hashval,out)                 \
-do {                                                                             \
-  (out) = NULL;                                                                  \
-  if (head) {                                                                    \
-    unsigned _hf_bkt;                                                            \
-    HASH_TO_BKT(hashval, (head)->hh.tbl->num_buckets, _hf_bkt);                  \
-    if (HASH_BLOOM_TEST((head)->hh.tbl, hashval) != 0) {                         \
-      HASH_FIND_IN_BKT((head)->hh.tbl, hh, (head)->hh.tbl->buckets[ _hf_bkt ], keyptr, keylen, hashval, out); \
-    }                                                                            \
-  }                                                                              \
-} while (0)
-
 #define HASH_FIND(hh,head,keyptr,keylen,out)                                     \
 do {                                                                             \
   (out) = NULL;                                                                  \
@@ -202,12 +190,34 @@ do {                                                                            
 #define HASH_BLOOM_TEST(tbl,hashv)                                               \
   HASH_BLOOM_BITTEST((tbl)->bloom_bv, ((hashv) & (uint32_t)((1UL << (tbl)->bloom_nbits) - 1U)))
 
+#define HASH_FIND_BYHASHVALUE(hh,head,keyptr,keylen,hashval,out)                 \
+do {                                                                             \
+  (out) = NULL;                                                                  \
+  if (head) {                                                                    \
+    unsigned _hf_bkt;                                                            \
+    HASH_TO_BKT(hashval, (head)->hh.tbl->num_buckets, _hf_bkt);                  \
+    if (HASH_BLOOM_TEST((head)->hh.tbl, hashval) != 0) {                         \
+      HASH_FIND_IN_BKT((head)->hh.tbl, hh, (head)->hh.tbl->buckets[ _hf_bkt ], keyptr, keylen, hashval, out); \
+    }                                                                            \
+  }                                                                              \
+} while (0)
+
 #else
 #define HASH_BLOOM_MAKE(tbl,oomed)
 #define HASH_BLOOM_FREE(tbl)
 #define HASH_BLOOM_ADD(tbl,hashv)
 #define HASH_BLOOM_TEST(tbl,hashv) (1)
 #define HASH_BLOOM_BYTELEN 0U
+
+#define HASH_FIND_BYHASHVALUE(hh,head,keyptr,keylen,hashval,out)                 \
+do {                                                                             \
+  (out) = NULL;                                                                  \
+  if (head) {                                                                    \
+    unsigned _hf_bkt;                                                            \
+    HASH_TO_BKT(hashval, (head)->hh.tbl->num_buckets, _hf_bkt);                  \
+    HASH_FIND_IN_BKT((head)->hh.tbl, hh, (head)->hh.tbl->buckets[ _hf_bkt ], keyptr, keylen, hashval, out); \
+  }                                                                              \
+} while (0)
 #endif
 
 #define HASH_MAKE_TABLE(hh,head,oomed)                                           \

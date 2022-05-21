@@ -1,6 +1,6 @@
 #include <stddef.h>
 #include "imagepool.h"
-#include "external/uthash/uthash.h"
+#include "external/uthash_wrapper.h"
 #include "gamelib/gameutil.h"
 
 struct ImagePoolItem
@@ -65,9 +65,14 @@ ImagePoolItem* ImagePool_AddRef(const char* path)
 
 	ImagePoolItem* item = FindItemByFilePath(path);
 
-	if ( !item && !(item = CreateItem(path)) )
+	if ( !item )
 	{
-		return NULL;
+		item = CreateItem(path);
+
+		if ( !item )
+		{
+			return NULL;
+		}
 	}
 
 	++item->refCount;

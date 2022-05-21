@@ -1,4 +1,5 @@
 include(compile_options)
+include(install_helpers)
 
 add_executable(game
 	src/main.c
@@ -11,6 +12,4 @@ install(TARGETS game
 	RUNTIME DESTINATION game
 )
 
-install(DIRECTORY res DESTINATION game
-	FILES_MATCHING PATTERN "*.*~" EXCLUDE
-)
+install_dir_with_filters(res game)

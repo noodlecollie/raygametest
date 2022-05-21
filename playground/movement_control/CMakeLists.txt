@@ -1,4 +1,5 @@
 include(compile_options)
+include(install_helpers)
 
 add_executable(movement_control
 	src/main.c
@@ -16,6 +17,4 @@ install(TARGETS movement_control
 	RUNTIME DESTINATION playground/movement_control
 )
 
-install(DIRECTORY res DESTINATION playground/movement_control
-	FILES_MATCHING PATTERN "*.*~" EXCLUDE
-)
+install_dir_with_filters(res playground/movement_control)

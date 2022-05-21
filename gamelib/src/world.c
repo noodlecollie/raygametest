@@ -202,8 +202,7 @@ void World_Render(World* world)
 	camera.target = camImpl->ownerEntity->position;
 	camera.zoom = camImpl->component.zoom;
 
-	const Vector2 dpiScale = GetWindowScaleDPI();
-	const Vector2 windowDim = (Vector2){ (float)GetScreenWidth() * dpiScale.x, (float)GetScreenHeight() * dpiScale.y };
+	const Vector2 windowDim = (Vector2){ (float)GetScreenWidth(), (float)GetScreenHeight() };
 	camera.offset = Vector2Scale(windowDim, 0.5f);
 
 	BeginMode2D(camera);

@@ -56,7 +56,7 @@ void SpriteComponentImpl_Render(SpriteComponentImpl* impl)
 	}
 
 	Texture2D* texture = ImagePool_GetTexture(impl->imagePoolItem);
-	Rectangle source = (Rectangle){ 0.0f, 0.0f, texture->width, texture->height };
+	Rectangle source = (Rectangle){ 0.0f, 0.0f, (float)texture->width, (float)texture->height };
 	Vector2 pos = impl->ownerEntity->position;
 	Vector2 scale = (Vector2){ texture->width * impl->component.scale.x, texture->height * impl->component.scale.y };
 	Rectangle dest = (Rectangle){ pos.x, pos.y, scale.x, scale.y };
