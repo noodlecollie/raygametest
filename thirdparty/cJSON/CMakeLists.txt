@@ -1,5 +1,9 @@
-set(CJSON_OVERRIDE_BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
-set(CJSON_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-set(ENABLE_CJSON_TEST OFF CACHE BOOL "" FORCE)
+add_library(cJSON STATIC
+	src/cJSON.c
+)
 
-add_subdirectory(cJSON EXCLUDE_FROM_ALL)
+target_include_directories(cJSON PUBLIC include)
+
+if(NOT WIN32)
+	target_link_libraries(cJSON PRIVATE m)
+endif()

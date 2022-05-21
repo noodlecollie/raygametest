@@ -30,7 +30,7 @@ target_link_libraries(gamelib PUBLIC
 )
 
 target_link_libraries(gamelib PRIVATE
-	cjson
+	cJSON
 )
 
 apply_pedantic_compile_options(gamelib)
