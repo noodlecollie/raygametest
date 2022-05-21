@@ -16,4 +16,6 @@ install(TARGETS movement_control
 	RUNTIME DESTINATION playground/movement_control
 )
 
-install(DIRECTORY res DESTINATION playground/movement_control)
+install(DIRECTORY res DESTINATION playground/movement_control
+	FILES_MATCHING PATTERN "*.*~" EXCLUDE
+)

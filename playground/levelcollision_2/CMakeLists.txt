@@ -16,4 +16,6 @@ install(TARGETS level_collision_2
 	RUNTIME DESTINATION playground/level_collision_2
 )
 
-install(DIRECTORY res DESTINATION playground/level_collision_2)
+install(DIRECTORY res DESTINATION playground/level_collision_2
+	FILES_MATCHING PATTERN "*.*~" EXCLUDE
+)

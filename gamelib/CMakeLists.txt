@@ -16,7 +16,20 @@ add_library(gamelib STATIC
 	src/world.c
 )
 
-target_include_directories(gamelib PUBLIC include)
-target_include_directories(gamelib PRIVATE src)
-target_link_libraries(gamelib PUBLIC raylib)
+target_include_directories(gamelib PUBLIC
+	include
+)
+
+target_include_directories(gamelib PRIVATE
+	src
+)
+
+target_link_libraries(gamelib PUBLIC
+	raylib
+)
+
+target_link_libraries(gamelib PRIVATE
+	cjson
+)
+
 apply_pedantic_compile_options(gamelib)
