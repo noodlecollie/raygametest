@@ -10,7 +10,7 @@ cJSON* Descriptor_GetContent(cJSON* root, const char* descType, int version)
 
 	cJSON* descriptor = cJSONWrapper_GetObjectItemOfType(root, "descriptor", cJSON_String);
 
-	if ( !descriptor || TextIsEqual(descriptor->valuestring, descType) )
+	if ( !descriptor || !TextIsEqual(descriptor->valuestring, descType) )
 	{
 		return NULL;
 	}

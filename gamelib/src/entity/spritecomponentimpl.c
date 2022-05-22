@@ -2,6 +2,7 @@
 #include "gamelib/entity/entity.h"
 #include "gamelib/external/raylibheaders.h"
 #include "resourcepool.h"
+#include "descriptor/spritesheetdescriptor.h"
 
 SpriteComponentImpl* SpriteComponentImpl_Create(struct Entity* ownerEntity)
 {
@@ -26,10 +27,10 @@ void SpriteComponentImpl_Destroy(SpriteComponentImpl* impl)
 		return;
 	}
 
-	if ( impl->textureResource )
+	if ( impl->sprSheetResource )
 	{
-		ResourcePool_RemoveTextureRef(impl->textureResource);
-		impl->textureResource = NULL;
+		ResourcePool_RemoveSpriteSheetRef(impl->sprSheetResource);
+		impl->sprSheetResource = NULL;
 	}
 
 	MemFree(impl);
@@ -37,12 +38,14 @@ void SpriteComponentImpl_Destroy(SpriteComponentImpl* impl)
 
 void SpriteComponentImpl_Render(SpriteComponentImpl* impl)
 {
-	if ( !impl || !impl->textureResource )
+	if ( !impl || !impl->sprSheetResource )
 	{
 		return;
 	}
 
-	Texture2D* texture = ResourcePool_GetTexture(impl->textureResource);
+	SpriteSheetDescriptor* sprDesc = ResourcePool_GetSpriteSheet(impl->sprSheetResource);
+	ResourcePoolTexture* rpTex = SpriteSheetDescriptor_GetFrame(sprDesc);
+	Texture2D* texture = ResourcePool_GetTexture(rpTex);
 	Rectangle source = (Rectangle){ 0.0f, 0.0f, (float)texture->width, (float)texture->height };
 	Vector2 pos = impl->ownerEntity->position;
 	Vector2 scale = (Vector2){ texture->width * impl->component.scale.x, texture->height * impl->component.scale.y };
@@ -57,23 +60,23 @@ struct Entity* SpriteComponent_GetOwnerEntity(const SpriteComponent* component)
 	return component ? component->impl->ownerEntity : NULL;
 }
 
-bool SpriteComponent_SetImage(SpriteComponent* component, const char* filePath)
+bool SpriteComponent_SetSpriteSheet(SpriteComponent* component, const char* filePath)
 {
 	if ( !component || !filePath || !(*filePath) )
 	{
 		return false;
 	}
 
-	// Acquire the new image before releasing the old one.
-	// This means that, if the image that's being set is the same,
+	// Acquire the new resource before releasing the old one.
+	// This means that, if the resource that's being set is the same,
 	// we avoid unnecessarily unloading and reloading resources.
-	ResourcePoolTexture* item = ResourcePool_LoadTextureAndAddRef(filePath);
+	ResourcePoolSpriteSheet* item = ResourcePool_LoadSpriteSheetAndAddRef(filePath);
 
-	if ( component->impl->textureResource )
+	if ( component->impl->sprSheetResource )
 	{
-		ResourcePool_RemoveTextureRef(component->impl->textureResource);
+		ResourcePool_RemoveSpriteSheetRef(component->impl->sprSheetResource);
 	}
 
-	component->impl->textureResource = item;
-	return component->impl->textureResource != NULL;
+	component->impl->sprSheetResource = item;
+	return component->impl->sprSheetResource != NULL;
 }

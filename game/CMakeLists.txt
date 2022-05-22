@@ -1,5 +1,4 @@
 include(compile_options)
-include(install_helpers)
 
 add_executable(game
 	src/main.c
@@ -12,4 +11,8 @@ install(TARGETS game
 	RUNTIME DESTINATION game
 )
 
-install_dir_with_filters(res game)
+# For some reason CMake absolutely sucks at excluding files (it basically excludes everything),
+# so instead we include files that don't end with ~
+install(DIRECTORY res DESTINATION game
+	FILES_MATCHING REGEX "^.*[^~]$"
+)

@@ -1,0 +1,17 @@
+{
+	"descriptor": "spritesheet",
+	"version": 1,
+	"content":
+	{
+		"animations":
+		[
+			{
+				"name": "static",
+				"frames":
+				[
+					"res/sprites/raccoon/raccoon.png"
+				]
+			}
+		]
+	}
+}

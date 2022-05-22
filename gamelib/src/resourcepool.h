@@ -16,3 +16,9 @@ ResourcePoolTexture* ResourcePool_AddTextureRef(ResourcePoolTexture* item);
 void ResourcePool_RemoveTextureRef(ResourcePoolTexture* item);
 Texture2D* ResourcePool_GetTexture(ResourcePoolTexture* item);
 const char* ResourcePool_GetTextureFilePath(ResourcePoolTexture* item);
+
+ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetAndAddRef(const char* path);
+ResourcePoolSpriteSheet* ResourcePool_AddSpriteSheetRef(ResourcePoolSpriteSheet* item);
+void ResourcePool_RemoveSpriteSheetRef(ResourcePoolSpriteSheet* item);
+struct SpriteSheetDescriptor* ResourcePool_GetSpriteSheet(ResourcePoolSpriteSheet* item);
+const char* ResourcePool_GetSpriteSheetFilePath(ResourcePoolSpriteSheet* item);

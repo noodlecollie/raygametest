@@ -1,5 +1,4 @@
 include(compile_options)
-include(install_helpers)
 
 add_executable(movement_control
 	src/main.c
@@ -17,4 +16,8 @@ install(TARGETS movement_control
 	RUNTIME DESTINATION playground/movement_control
 )
 
-install_dir_with_filters(res playground/movement_control)
+# For some reason CMake absolutely sucks at excluding files (it basically excludes everything),
+# so instead we include files that don't end with ~
+install(DIRECTORY res DESTINATION playground/movement_control
+	FILES_MATCHING REGEX "^.*[^~]$"
+)

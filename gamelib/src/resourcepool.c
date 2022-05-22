@@ -18,9 +18,16 @@ struct ResourcePoolTexture
 	Texture2D texture;
 };
 
+struct ResourcePoolSpriteSheet
+{
+	ResourcePoolItem* owner;
+	SpriteSheetDescriptor* descriptor;
+};
+
 typedef struct ResourcePool
 {
 	ResourcePoolItem* textures;
+	ResourcePoolItem* spriteSheets;
 } ResourcePool;
 
 static ResourcePool Pool;
@@ -95,7 +102,7 @@ static void CreateTexturePayload(ResourcePoolItem* item)
 	payload->texture = texture;
 }
 
-static inline void DestroyTexturePayload(ResourcePoolItem* item)
+static void DestroyTexturePayload(ResourcePoolItem* item)
 {
 	ResourcePoolTexture* payload = (ResourcePoolTexture*)item->payload;
 
@@ -103,9 +110,36 @@ static inline void DestroyTexturePayload(ResourcePoolItem* item)
 	{
 		UnloadTexture(payload->texture);
 		MemFree(payload);
+		item->payload = NULL;
+	}
+}
+
+static void CreateSpriteSheetPayload(ResourcePoolItem* item)
+{
+	SpriteSheetDescriptor* descriptor = SpriteSheetDescriptor_LoadFromJSON(item->key);
+
+	if ( !descriptor )
+	{
+		return;
 	}
 
-	item->payload = NULL;
+	ResourcePoolSpriteSheet* payload = (ResourcePoolSpriteSheet*)MemAlloc(sizeof(ResourcePoolSpriteSheet));
+	item->payload = payload;
+
+	payload->owner = item;
+	payload->descriptor = descriptor;
+}
+
+static void DestroySpriteSheetPayload(ResourcePoolItem* item)
+{
+	ResourcePoolSpriteSheet* payload = (ResourcePoolSpriteSheet*)item->payload;
+
+	if ( payload )
+	{
+		SpriteSheetDescriptor_Destroy(payload->descriptor);
+		MemFree(payload);
+		item->payload = NULL;
+	}
 }
 
 ResourcePoolTexture* ResourcePool_LoadTextureAndAddRef(const char* path)
@@ -174,6 +208,76 @@ Texture2D* ResourcePool_GetTexture(ResourcePoolTexture* item)
 }
 
 const char* ResourcePool_GetTextureFilePath(ResourcePoolTexture* item)
+{
+	return item ? item->owner->key : NULL;
+}
+
+ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetAndAddRef(const char* path)
+{
+	if ( !path || !(*path) )
+	{
+		return NULL;
+	}
+
+	ResourcePoolItem* item = FindItemByPath(Pool.textures, path);
+
+	if ( !item )
+	{
+		item = CreateItem(path);
+		CreateSpriteSheetPayload(item);
+
+		if ( !item->payload )
+		{
+			DestroyItem(item);
+			return NULL;
+		}
+
+		// This must be here because the head pointer must be mutable.
+		HASH_ADD_STR(Pool.spriteSheets, key, item);
+	}
+
+	AddRef(item);
+
+	return (ResourcePoolSpriteSheet*)item->payload;
+}
+
+ResourcePoolSpriteSheet* ResourcePool_AddSpriteSheetRef(ResourcePoolSpriteSheet* item)
+{
+	if ( !item )
+	{
+		return NULL;
+	}
+
+	AddRef(item->owner);
+
+	return item;
+}
+
+void ResourcePool_RemoveSpriteSheetRef(ResourcePoolSpriteSheet* item)
+{
+	if ( !item )
+	{
+		return;
+	}
+
+	RemoveRef(item->owner);
+
+	if ( item->owner->refCount < 1 )
+	{
+		ResourcePoolItem* owner = item->owner;
+		HASH_DEL(Pool.spriteSheets, owner);
+
+		DestroySpriteSheetPayload(owner);
+		DestroyItem(owner);
+	}
+}
+
+struct SpriteSheetDescriptor* ResourcePool_GetSpriteSheet(ResourcePoolSpriteSheet* item)
+{
+	return item ? item->descriptor : NULL;
+}
+
+const char* ResourcePool_GetSpriteSheetFilePath(ResourcePoolSpriteSheet* item)
 {
 	return item ? item->owner->key : NULL;
 }

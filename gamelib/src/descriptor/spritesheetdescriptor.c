@@ -112,12 +112,7 @@ void SpriteSheetDescriptor_Destroy(SpriteSheetDescriptor* descriptor)
 	MemFree(descriptor);
 }
 
-struct ResourcePoolTexture* SpriteSheetDescriptor_GetFrameAndAddRef(SpriteSheetDescriptor* descriptor)
+struct ResourcePoolTexture* SpriteSheetDescriptor_GetFrame(SpriteSheetDescriptor* descriptor)
 {
-	if ( !descriptor )
-	{
-		return NULL;
-	}
-
-	return ResourcePool_AddTextureRef(descriptor->frame);
+	return descriptor ? descriptor->frame : NULL;
 }

@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 	playerPhys->movementType = PHYSMOVE_SLIDE;
 
 	SpriteComponent* playerSprite = Entity_CreateSpriteComponent(playerEnt);
-	SpriteComponent_SetImage(playerSprite, "res/sprites/raccoon.png");
+	SpriteComponent_SetSpriteSheet(playerSprite, "res/sprites/raccoon/raccoon.json");
 	playerSprite->origin.x = 16;
 	playerSprite->origin.y = 22;
 

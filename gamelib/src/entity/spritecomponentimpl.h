@@ -9,7 +9,7 @@ typedef struct SpriteComponentImpl
 {
 	struct Entity* ownerEntity;
 	SpriteComponent component;
-	ResourcePoolTexture* textureResource;
+	ResourcePoolSpriteSheet* sprSheetResource;
 } SpriteComponentImpl;
 
 SpriteComponentImpl* SpriteComponentImpl_Create(struct Entity* ownerEntity);

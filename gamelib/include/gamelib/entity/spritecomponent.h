@@ -20,4 +20,4 @@ typedef struct SpriteComponent
 } SpriteComponent;
 
 struct Entity* SpriteComponent_GetOwnerEntity(const SpriteComponent* component);
-bool SpriteComponent_SetImage(SpriteComponent* component, const char* filePath);
+bool SpriteComponent_SetSpriteSheet(SpriteComponent* component, const char* filePath);

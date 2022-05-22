@@ -1,5 +1,4 @@
 include(compile_options)
-include(install_helpers)
 
 add_executable(level_collision
 	src/main.c
@@ -17,4 +16,8 @@ install(TARGETS level_collision
 	RUNTIME DESTINATION playground/level_collision
 )
 
-install_dir_with_filters(res playground/level_collision)
+# For some reason CMake absolutely sucks at excluding files (it basically excludes everything),
+# so instead we include files that don't end with ~
+install(DIRECTORY res DESTINATION playground/level_collision
+	FILES_MATCHING REGEX "^.*[^~]$"
+)
