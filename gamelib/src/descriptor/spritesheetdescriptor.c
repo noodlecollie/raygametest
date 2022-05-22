@@ -140,7 +140,7 @@ static void UnloadSourceImages(SourceImages* images)
 
 static Image CreateCanvas(cJSON* framesItem, Vector2i bounds, const SourceImages* sourceImages, size_t numImages)
 {
-	Image canvas = GenImageColor(numImages * bounds.x, bounds.y, BLANK);
+	Image canvas = GenImageColor((int)numImages * bounds.x, bounds.y, BLANK);
 
 	if ( !canvas.data )
 	{
@@ -150,20 +150,20 @@ static Image CreateCanvas(cJSON* framesItem, Vector2i bounds, const SourceImages
 	size_t frameIndex = 1;
 	for ( cJSON* frame = framesItem->child; frame && frameIndex <= numImages; frame = frame->next, ++frameIndex )
 	{
-		Rectangle srcRect = (Rectangle){ 0, 0, bounds.x, bounds.y };
-		Rectangle destRect = (Rectangle){ (frameIndex - 1) * bounds.x, 0, bounds.x, bounds.y };
+		Rectangle srcRect = (Rectangle){ 0, 0, (float)bounds.x, (float)bounds.y };
+		Rectangle destRect = (Rectangle){ (float)((frameIndex - 1) * bounds.x), 0, (float)bounds.x, (float)bounds.y };
 		const Image* sourceImage = &sourceImages->images[frameIndex - 1];
 
 		if ( sourceImage->data )
 		{
-			if ( srcRect.width > sourceImage->width )
+			if ( (int)srcRect.width > sourceImage->width )
 			{
-				srcRect.width = sourceImage->width;
+				srcRect.width = (float)sourceImage->width;
 			}
 
-			if ( srcRect.height > sourceImage->height )
+			if ( (int)srcRect.height > sourceImage->height )
 			{
-				srcRect.height = sourceImage->height;
+				srcRect.height = (float)sourceImage->height;
 			}
 
 			ImageDraw(&canvas, *sourceImage, srcRect, destRect, WHITE);
