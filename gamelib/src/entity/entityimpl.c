@@ -21,6 +21,7 @@ static void DestroyAllComponents(EntityImpl* impl)
 	Entity_DestroyPhysicsComponent(&impl->entity);
 	Entity_DestroyTerrainComponent(&impl->entity);
 	Entity_DestroySpriteComponent(&impl->entity);
+	Entity_DestroyCameraComponent(&impl->entity);
 	DestroyAllLogicComponents(impl);
 }
 

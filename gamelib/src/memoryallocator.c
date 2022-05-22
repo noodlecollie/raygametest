@@ -1,3 +1,11 @@
+#if defined(_MSC_VER) && defined(WIN32_DEBUG_MEMORY_LEAKS)
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#else
+#include <stdlib.h>
+#endif
+
 #include "gamelib/memoryallocator.h"
 #include "raylib.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdlib.h>
+#include <stddef.h>
 
 void* GameAlloc(size_t size);
 void* GameCalloc(size_t num, size_t size);

@@ -35,4 +35,8 @@ target_link_libraries(gamelib PRIVATE
 	cJSON
 )
 
+if(WIN32 AND WIN32_DEBUG_MEMORY_LEAKS)
+	target_compile_definitions(gamelib PUBLIC -DWIN32_DEBUG_MEMORY_LEAKS)
+endif()
+
 apply_pedantic_compile_options(gamelib)

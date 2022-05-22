@@ -308,7 +308,7 @@ SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSON(const char* filePath)
 
 	if ( !root )
 	{
-		TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: [%s]  Could not load file", filePath);
+		TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: [%s] Could not load file", filePath);
 		return NULL;
 	}
 
@@ -327,7 +327,7 @@ SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSON(const char* filePath)
 		TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: [%s] File did not describe a version %d spritesheet", filePath, SUPPORTED_VERSION);
 	}
 
-	cJSON_free(root);
+	cJSON_Delete(root);
 	return descriptor;
 }
 
