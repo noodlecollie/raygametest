@@ -147,7 +147,7 @@ size_t World_GetEntityCount(const World* world)
 	return world ? world->impl->entityCount : 0;
 }
 
-void World_Think(World* world)
+void World_Update(World* world)
 {
 	if ( !world )
 	{
@@ -164,9 +164,14 @@ void World_Think(World* world)
 			}
 		}
 
-		if ( Entity_GetPhysicsComponent(ent) )
+		if ( Entity_GetSpriteComponent(ent) )
 		{
-			Physics_SimulateObjectInWorld(world, Entity_GetPhysicsComponent(ent));
+			SpriteComponentImpl_Update(ent->impl->spriteImpl);
+		}
+
+		if ( ent->impl->physicsImpl )
+		{
+			Physics_SimulateObjectInWorld(world, &ent->impl->physicsImpl->component);
 		}
 
 		for ( LogicComponent* logic = Entity_GetLogicComponentListHead(ent); logic; logic = Entity_GetNextLogicComponent(logic) )

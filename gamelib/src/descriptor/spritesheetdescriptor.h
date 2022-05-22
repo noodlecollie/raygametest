@@ -18,3 +18,4 @@ SpriteSheetAnimation* SpriteSheetDescriptor_GetNextAnimation(SpriteSheetAnimatio
 Texture2D* SpriteSheetDescriptor_GetAnimationTexture(SpriteSheetAnimation* anim);
 Vector2i SpriteSheetDescriptor_GetAnimationFrameBounds(SpriteSheetAnimation* anim);
 size_t SpriteSheetDescriptor_GetAnimationFrameCount(SpriteSheetAnimation* anim);
+float SpriteSheetDescriptor_GetAnimationFPS(SpriteSheetAnimation* anim);

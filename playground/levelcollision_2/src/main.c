@@ -188,7 +188,7 @@ int main(int argc, char** argv)
 		{
 			// Scale velocity up so that it'll be scaled down again by the simulation.
 			playerPhys->velocity = Vector2Scale(playerPhys->velocity, 1.0f / deltaTime);
-			World_Think(world);
+			World_Update(world);
 			playerPhys->velocity = Vector2Scale(playerPhys->velocity, deltaTime);
 		}
 

@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 			camComp->zoom = 1.0f;
 		}
 
-		World_Think(world);
+		World_Update(world);
 
 		cameraEnt->position = playerEnt->position;
 

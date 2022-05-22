@@ -20,3 +20,4 @@ typedef struct SpriteComponent
 
 struct Entity* SpriteComponent_GetOwnerEntity(const SpriteComponent* component);
 bool SpriteComponent_SetSpriteSheet(SpriteComponent* component, const char* filePath);
+bool SpriteComponent_SetAnimationByName(SpriteComponent* component, const char* animName);

@@ -11,6 +11,7 @@
 #define SUPPORTED_VERSION 1
 #define V1_MAX_FRAMES_PER_ANIMATION 8
 #define V1_MAX_DIM_PER_FRAME 256
+#define V1_DEFAULT_ANIM_FPS 3.0f
 
 struct SpriteSheetAnimation
 {
@@ -21,6 +22,7 @@ struct SpriteSheetAnimation
 	Texture2D texture;
 	Vector2i frameBounds;
 	size_t numFrames;
+	float fps;
 };
 
 struct SpriteSheetDescriptor
@@ -218,6 +220,11 @@ static void LoadAnimation(const char* filePath, cJSON* animation, size_t index, 
 
 	animData->name = DuplicateString(name);
 
+	cJSON* fpsItem = cJSONWrapper_GetObjectItemOfType(animation, "fps", cJSON_Number);
+	animData->fps = fpsItem ? (float)fpsItem->valuedouble : V1_DEFAULT_ANIM_FPS;
+
+	TraceLog(LOG_DEBUG, "SPRITESHEET DESCRIPTOR: [%s] Animation \"%s\" has FPS of %.2f", filePath, name, animData->fps);
+
 	SourceImages sourceImages = { 0 };
 	Image canvas = { 0 };
 
@@ -403,4 +410,9 @@ Vector2i SpriteSheetDescriptor_GetAnimationFrameBounds(SpriteSheetAnimation* ani
 size_t SpriteSheetDescriptor_GetAnimationFrameCount(SpriteSheetAnimation* anim)
 {
 	return anim ? anim->numFrames : 0;
+}
+
+float SpriteSheetDescriptor_GetAnimationFPS(SpriteSheetAnimation* anim)
+{
+	return anim ? anim->fps : 0.0f;
 }

@@ -8,6 +8,7 @@
 		[
 			{
 				"name": "run_right",
+				"fps": 6,
 				"frames":
 				[
 					"res/sprites/runcycle/stand.png",

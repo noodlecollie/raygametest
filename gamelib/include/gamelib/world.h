@@ -23,7 +23,7 @@ struct Entity* World_GetPreviousEntity(struct Entity* ent);
 struct Entity* World_GetNextEntity(struct Entity* ent);
 size_t World_GetEntityCount(const World* world);
 
-void World_Think(World* world);
+void World_Update(World* world);
 
 void World_SetActiveCamera(World* world, struct CameraComponent* camera);
 

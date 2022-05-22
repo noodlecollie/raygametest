@@ -4,6 +4,20 @@
 #include "resourcepool.h"
 #include "descriptor/spritesheetdescriptor.h"
 
+static void ResetSpriteAnimationVars(SpriteComponentImpl* impl)
+{
+	impl->animTime = 0.0f;
+
+	if ( impl->sprSheetResource )
+	{
+		impl->animation = SpriteSheetDescriptor_GetFirstAnimation(ResourcePool_GetSpriteSheet(impl->sprSheetResource));
+	}
+	else
+	{
+		impl->animation = NULL;
+	}
+}
+
 SpriteComponentImpl* SpriteComponentImpl_Create(struct Entity* ownerEntity)
 {
 	if ( !ownerEntity )
@@ -36,27 +50,58 @@ void SpriteComponentImpl_Destroy(SpriteComponentImpl* impl)
 	MemFree(impl);
 }
 
-void SpriteComponentImpl_Render(SpriteComponentImpl* impl)
+void SpriteComponentImpl_Update(SpriteComponentImpl* impl)
 {
-	if ( !impl || !impl->sprSheetResource )
+	if ( !impl )
 	{
 		return;
 	}
 
-	// TODO: At some point we need to implement animations. For now, display the first frame of the first animation.
-	SpriteSheetDescriptor* sprDesc = ResourcePool_GetSpriteSheet(impl->sprSheetResource);
-	SpriteSheetAnimation* anim = SpriteSheetDescriptor_GetFirstAnimation(sprDesc);
-	Texture2D* texture = SpriteSheetDescriptor_GetAnimationTexture(anim);
-	size_t numFrames = SpriteSheetDescriptor_GetAnimationFrameCount(anim);
+	if ( !impl->animation )
+	{
+		impl->animTime = 0.0f;
+		return;
+	}
+
+	size_t numFrames = SpriteSheetDescriptor_GetAnimationFrameCount(impl->animation);
+
+	if ( numFrames < 1 )
+	{
+		impl->animTime = 0.0f;
+		return;
+	}
+
+	float fps = SpriteSheetDescriptor_GetAnimationFPS(impl->animation);
+
+	// TODO: Put the following into a utility function somewhere?
+	// animTime is in the range [0 1), where floor(animTime * numFrames) gives the frame index.
+	// If we have an animation of 10 frames running at 3 fps, a deltaTime of 1 implies an
+	// increment of 3 frames, which is an animTime increment of 3/10. Therefore the formula becomes:
+	impl->animTime += (GetFrameTime() * fps) / (float)numFrames;
+	impl->animTime = fmodf(impl->animTime, 1.0f);
+}
+
+void SpriteComponentImpl_Render(SpriteComponentImpl* impl)
+{
+	if ( !impl || !impl->sprSheetResource || !impl->animation )
+	{
+		return;
+	}
+
+	Texture2D* texture = SpriteSheetDescriptor_GetAnimationTexture(impl->animation);
+	size_t numFrames = SpriteSheetDescriptor_GetAnimationFrameCount(impl->animation);
 
 	if ( !texture || numFrames < 1 )
 	{
 		return;
 	}
 
+	// Calculate the current frame index from animTime.
+	size_t frameIndex = (size_t)(impl->animTime * (float)numFrames);
+
 	// Define the source rect from the texture image that we're going to draw.
-	Vector2i sourceRectDim = SpriteSheetDescriptor_GetAnimationFrameBounds(anim);
-	Rectangle sourceRect = (Rectangle){ 0.0f, 0.0f, (float)sourceRectDim.x, (float)sourceRectDim.y };
+	Vector2i sourceRectDim = SpriteSheetDescriptor_GetAnimationFrameBounds(impl->animation);
+	Rectangle sourceRect = (Rectangle){ (float)(frameIndex * sourceRectDim.x), 0.0f, (float)sourceRectDim.x, (float)sourceRectDim.y };
 
 	// The scale defines how large the sprite is drawn relative to the source rect's size.
 	Vector2 scale = impl->component.scale;
@@ -66,7 +111,7 @@ void SpriteComponentImpl_Render(SpriteComponentImpl* impl)
 
 	// This is the point on the source rectangle that should be lined up with the entity's position when drawn.
 	// The sprite component's offset is applied on top of this later, in world units.
-	Vector2 sourceOrigin = SpriteSheetDescriptor_GetOrigin(sprDesc);
+	Vector2 sourceOrigin = SpriteSheetDescriptor_GetOrigin(ResourcePool_GetSpriteSheet(impl->sprSheetResource));
 
 	// This is where the entity itself is located.
 	Vector2 worldPos = impl->ownerEntity->position;
@@ -98,16 +143,39 @@ bool SpriteComponent_SetSpriteSheet(SpriteComponent* component, const char* file
 		return false;
 	}
 
-	// Acquire the new resource before releasing the old one.
-	// This means that, if the resource that's being set is the same,
-	// we avoid unnecessarily unloading and reloading resources.
 	ResourcePoolSpriteSheet* item = ResourcePool_LoadSpriteSheetAndAddRef(filePath);
 
-	if ( component->impl->sprSheetResource )
+	if ( item != component->impl->sprSheetResource )
 	{
-		ResourcePool_RemoveSpriteSheetRef(component->impl->sprSheetResource);
+		if ( component->impl->sprSheetResource )
+		{
+			ResourcePool_RemoveSpriteSheetRef(component->impl->sprSheetResource);
+		}
+
+		component->impl->sprSheetResource = item;
+		ResetSpriteAnimationVars(component->impl);
+	}
+	else
+	{
+		if ( item )
+		{
+			ResourcePool_RemoveSpriteSheetRef(item);
+		}
 	}
 
-	component->impl->sprSheetResource = item;
 	return component->impl->sprSheetResource != NULL;
+}
+
+bool SpriteComponent_SetAnimationByName(SpriteComponent* component, const char* animName)
+{
+	if ( !component || !animName || !(*animName) || !component->impl->sprSheetResource )
+	{
+		return false;
+	}
+
+	SpriteSheetDescriptor* sprDesc = ResourcePool_GetSpriteSheet(component->impl->sprSheetResource);
+	component->impl->animation = SpriteSheetDescriptor_GetAnimation(sprDesc, animName);
+	component->impl->animTime = 0.0f;
+
+	return component->impl->animation != NULL;
 }
