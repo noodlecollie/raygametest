@@ -43,10 +43,19 @@ void SpriteComponentImpl_Render(SpriteComponentImpl* impl)
 		return;
 	}
 
+	// TODO: At some point we need to implement animations. For now, display the first frame of the first animation.
 	SpriteSheetDescriptor* sprDesc = ResourcePool_GetSpriteSheet(impl->sprSheetResource);
-	ResourcePoolTexture* rpTex = SpriteSheetDescriptor_GetFrame(sprDesc);
-	Texture2D* texture = ResourcePool_GetTexture(rpTex);
-	Rectangle source = (Rectangle){ 0.0f, 0.0f, (float)texture->width, (float)texture->height };
+	SpriteSheetAnimation* anim = SpriteSheetDescriptor_GetFirstAnimation(sprDesc);
+	Texture2D* texture = SpriteSheetDescriptor_GetAnimationTexture(anim);
+	size_t numFrames = SpriteSheetDescriptor_GetAnimationFrameCount(anim);
+
+	if ( !texture || numFrames < 1 )
+	{
+		return;
+	}
+
+	Vector2i bounds = SpriteSheetDescriptor_GetAnimationFrameBounds(anim);
+	Rectangle source = (Rectangle){ 0.0f, 0.0f, (float)bounds.x, (float)bounds.y };
 	Vector2 pos = impl->ownerEntity->position;
 	Vector2 scale = (Vector2){ texture->width * impl->component.scale.x, texture->height * impl->component.scale.y };
 	Rectangle dest = (Rectangle){ pos.x, pos.y, scale.x, scale.y };

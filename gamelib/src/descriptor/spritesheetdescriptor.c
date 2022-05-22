@@ -1,15 +1,301 @@
 #include "descriptor/spritesheetdescriptor.h"
 #include "gamelib/external/raylibheaders.h"
+#include "gamelib/gameutil.h"
+#include "gamelib/gametypes.h"
 #include "external/cJSON_wrapper.h"
 #include "descriptor/descriptorutil.h"
 #include "resourcepool.h"
+#include "listmacros.h"
 
 #define SUPPORTED_VERSION 1
+#define V1_MAX_FRAMES_PER_ANIMATION 8
+#define V1_MAX_DIM_PER_FRAME 256
+
+struct SpriteSheetAnimation
+{
+	struct SpriteSheetAnimation* prev;
+	struct SpriteSheetAnimation* next;
+
+	char* name;
+	Texture2D texture;
+	Vector2i frameBounds;
+	size_t numFrames;
+};
 
 struct SpriteSheetDescriptor
 {
-	ResourcePoolTexture* frame;
+	SpriteSheetAnimation* animListHead;
+	SpriteSheetAnimation* animListTail;
+	size_t numAnimations;
 };
+
+typedef struct SourceImages
+{
+	Image images[V1_MAX_FRAMES_PER_ANIMATION];
+} SourceImages;
+
+static void FreeAnimation(SpriteSheetAnimation* animation)
+{
+	if ( animation->texture.id != 0 )
+	{
+		UnloadTexture(animation->texture);
+	}
+
+	if ( animation->name )
+	{
+		MemFree(animation->name);
+	}
+
+	MemFree(animation);
+}
+
+static Vector2i LoadImagesAndCalculateMaxBounds(const char* filePath, SpriteSheetAnimation* animation, SourceImages* images, cJSON* framesArray)
+{
+	Vector2i bounds = { 0 };
+
+	size_t frameIndex = 1;
+	for ( cJSON* frame = framesArray->child; frame && frameIndex <= V1_MAX_FRAMES_PER_ANIMATION; frame = frame->next, ++frameIndex )
+	{
+		const char* frameFilePath = cJSON_GetStringValue(frame);
+
+		if ( !frameFilePath || !(*frameFilePath) )
+		{
+			TraceLog(
+				LOG_WARNING,
+				"SPRITESHEET DESCRIPTOR: [%s] Animation \"%s\" frame %zu path was missing, or was not a valid string",
+				filePath,
+				animation->name,
+				frameIndex
+			);
+
+			continue;
+		}
+
+		Image* image = &images->images[frameIndex - 1];
+		*image = LoadImage(frameFilePath);
+
+		if ( !image->data )
+		{
+			TraceLog(
+				LOG_WARNING,
+				"SPRITESHEET DESCRIPTOR: [%s] Animation \"%s\" frame %zu: could not load file %s",
+				filePath,
+				animation->name,
+				frameIndex,
+				frameFilePath
+			);
+		}
+
+		Vector2i imgSize = (Vector2i){ image->width, image->height };
+
+		if ( imgSize.x > V1_MAX_DIM_PER_FRAME || imgSize.y > V1_MAX_DIM_PER_FRAME )
+		{
+			TraceLog(
+				LOG_WARNING,
+				"SPRITESHEET DESCRIPTOR: [%s] Animation \"%s\" frame %zu: size of %dx%d exceeds max size of %dx%d, clamping",
+				filePath,
+				animation->name,
+				frameIndex,
+				imgSize.x,
+				imgSize.y,
+				V1_MAX_DIM_PER_FRAME,
+				V1_MAX_DIM_PER_FRAME
+			);
+
+			if ( imgSize.x > V1_MAX_DIM_PER_FRAME )
+			{
+				imgSize.x = V1_MAX_DIM_PER_FRAME;
+			}
+
+			if ( imgSize.y > V1_MAX_DIM_PER_FRAME )
+			{
+				imgSize.y = V1_MAX_DIM_PER_FRAME;
+			}
+		}
+
+		if ( imgSize.x > bounds.x )
+		{
+			bounds.x = imgSize.x;
+		}
+
+		if ( imgSize.y > bounds.y )
+		{
+			bounds.y = imgSize.y;
+		}
+	}
+
+	return bounds;
+}
+
+static void UnloadSourceImages(SourceImages* images)
+{
+	for ( size_t index = 0; index < ARRAY_SIZE(images->images); ++index )
+	{
+		if ( images->images[index].data )
+		{
+			UnloadImage(images->images[index]);
+		}
+	}
+}
+
+static Image CreateCanvas(cJSON* framesItem, Vector2i bounds, const SourceImages* sourceImages, size_t numImages)
+{
+	Image canvas = GenImageColor(numImages * bounds.x, bounds.y, BLANK);
+
+	if ( !canvas.data )
+	{
+		return canvas;
+	}
+
+	size_t frameIndex = 1;
+	for ( cJSON* frame = framesItem->child; frame && frameIndex <= numImages; frame = frame->next, ++frameIndex )
+	{
+		Rectangle srcRect = (Rectangle){ 0, 0, bounds.x, bounds.y };
+		Rectangle destRect = (Rectangle){ (frameIndex - 1) * bounds.x, 0, bounds.x, bounds.y };
+		const Image* sourceImage = &sourceImages->images[frameIndex - 1];
+
+		if ( sourceImage->data )
+		{
+			if ( srcRect.width > sourceImage->width )
+			{
+				srcRect.width = sourceImage->width;
+			}
+
+			if ( srcRect.height > sourceImage->height )
+			{
+				srcRect.height = sourceImage->height;
+			}
+
+			ImageDraw(&canvas, *sourceImage, srcRect, destRect, WHITE);
+		}
+		else
+		{
+			// Make it obvious that this image failed to load.
+			ImageDrawRectangleRec(&canvas, destRect, RED);
+		}
+	}
+
+	return canvas;
+}
+
+static void LoadAnimation(const char* filePath, cJSON* animation, size_t index, SpriteSheetDescriptor* descriptor)
+{
+	if ( !cJSON_IsObject(animation) )
+	{
+		TraceLog(LOG_WARNING, "SPRITESHEET DESCRIPTOR: [%s] Animation %zu was not specified as an object", filePath, index);
+		return;
+	}
+
+	cJSON* nameItem = cJSONWrapper_GetObjectItemOfType(animation, "name", cJSON_String);
+	const char* name = nameItem ? nameItem->valuestring : NULL;
+
+	if ( !name || !(*name) )
+	{
+		TraceLog(LOG_WARNING, "SPRITESHEET DESCRIPTOR: [%s] Animation %zu did not have a valid name, not loading", filePath, index);
+		return;
+	}
+
+	cJSON* framesItem = cJSONWrapper_GetObjectItemOfType(animation, "frames", cJSON_Array);
+	size_t numFrames = framesItem ? cJSON_GetArraySize(framesItem) : 0;
+
+	if ( numFrames < 1 )
+	{
+		TraceLog(LOG_WARNING, "SPRITESHEET DESCRIPTOR: [%s] Animation \"%s\" did not contain a valid frames array, not loading", filePath, name);
+		return;
+	}
+
+	if ( numFrames > V1_MAX_FRAMES_PER_ANIMATION )
+	{
+		TraceLog(LOG_WARNING, "SPRITESHEET DESCRIPTOR: [%s] Animation \"%s\" had %zu frames, clamping to max of %zu", filePath, name, numFrames, V1_MAX_FRAMES_PER_ANIMATION);
+		numFrames = V1_MAX_FRAMES_PER_ANIMATION;
+	}
+
+	SpriteSheetAnimation* animData = (SpriteSheetAnimation*)MemAlloc(sizeof(SpriteSheetAnimation));
+	DBL_LL_ADD_TO_TAIL(animData, prev, next, descriptor, animListHead, animListTail);
+	++descriptor->numAnimations;
+
+	animData->name = DuplicateString(name);
+
+	SourceImages sourceImages = { 0 };
+	Image canvas = { 0 };
+
+	do
+	{
+		Vector2i bounds = LoadImagesAndCalculateMaxBounds(filePath, animData, &sourceImages, framesItem);
+
+		if ( bounds.x < 1 || bounds.y < 1 )
+		{
+			TraceLog(LOG_WARNING, "SPRITESHEET DESCRIPTOR: [%s] Animation \"%s\": unable to load frames", filePath, name);
+			break;
+		}
+
+		canvas = CreateCanvas(framesItem, bounds, &sourceImages, numFrames);
+
+		if ( !canvas.data )
+		{
+			TraceLog(LOG_WARNING, "SPRITESHEET DESCRIPTOR: [%s] Animation \"%s\": unable to compile frames", filePath, name);
+			break;
+		}
+
+		TraceLog(
+			LOG_DEBUG,
+			"SPRITESHEET DESCRIPTOR: [%s] Animation \"%s\": created intermediate canvas image of size %dx%d for %zu frames",
+			filePath,
+			name,
+			canvas.width,
+			canvas.height,
+			numFrames
+		);
+
+		Texture2D texture = LoadTextureFromImage(canvas);
+
+		if ( texture.id == 0 )
+		{
+			TraceLog(LOG_WARNING, "SPRITESHEET DESCRIPTOR: [%s] Animation \"%s\": unable to generate texture from frames", filePath, name);
+			break;
+		}
+
+		TraceLog(
+			LOG_DEBUG,
+			"SPRITESHEET DESCRIPTOR: [%s] Animation \"%s\": created texture with ID %u of size %dx%d for %zu frames",
+			filePath,
+			name,
+			texture.id,
+			texture.width,
+			texture.height,
+			numFrames
+		);
+
+		animData->texture = texture;
+		animData->frameBounds = bounds;
+		animData->numFrames = numFrames;
+	}
+	while ( false );
+
+	if ( canvas.data )
+	{
+		UnloadImage(canvas);
+	}
+
+	UnloadSourceImages(&sourceImages);
+}
+
+static void LoadAnimations(const char* filePath, cJSON* content, SpriteSheetDescriptor* descriptor)
+{
+	cJSON* animationsItem = cJSONWrapper_GetObjectItemOfType(content, "animations", cJSON_Array);
+
+	if ( !animationsItem )
+	{
+		TraceLog(LOG_WARNING, "SPRITESHEET DESCRIPTOR: [%s] File did not contain a valid animations array, spritesheet will be empty", filePath);
+		return;
+	}
+
+	size_t index = 1;
+	for ( cJSON* item = animationsItem->child; item; item = item->next, ++index )
+	{
+		LoadAnimation(filePath, item, index, descriptor);
+	}
+}
 
 SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSON(const char* filePath)
 {
@@ -22,80 +308,24 @@ SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSON(const char* filePath)
 
 	if ( !root )
 	{
-		TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: Could not load %s", filePath);
+		TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: [%s]  Could not load file", filePath);
 		return NULL;
 	}
 
 	SpriteSheetDescriptor* descriptor = NULL;
+	cJSON* content = Descriptor_GetContent(root, "spritesheet", SUPPORTED_VERSION);
 
-	do
+	if ( content )
 	{
-		cJSON* content = Descriptor_GetContent(root, "spritesheet", SUPPORTED_VERSION);
-
-		if ( !content )
-		{
-			TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: File %s did not describe a version %d spritesheet", filePath, SUPPORTED_VERSION);
-			break;
-		}
-
-		cJSON* animationsItem = cJSONWrapper_GetObjectItemOfType(content, "animations", cJSON_Array);
-		size_t numAnimations = animationsItem ? (size_t)cJSON_GetArraySize(animationsItem) : 0;
-
-		if ( numAnimations < 1 )
-		{
-			TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: File %s did not contain a valid animations array", filePath);
-			break;
-		}
-
-		// Until we extend support for this format:
-		if ( numAnimations > 1 )
-		{
-			TraceLog(LOG_WARNING, "SPRITESHEET DESCRIPTOR: File %s contained %zu animations, but only 1 animation is currently supported", filePath, numAnimations);
-		}
-
-		if ( !cJSON_IsObject(animationsItem->child) )
-		{
-			TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: File %s animation 1 was not specified as an object", filePath);
-			break;
-		}
-
-		cJSON* framesItem = cJSONWrapper_GetObjectItemOfType(animationsItem->child, "frames", cJSON_Array);
-		size_t numFrames = framesItem ? cJSON_GetArraySize(framesItem) : 0;
-
-		if ( numFrames < 1 )
-		{
-			TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: File %s animation 1 did not contain a valid frames array", filePath);
-			break;
-		}
-
-		// Until we extend support for this format:
-		if ( numFrames > 1 )
-		{
-			TraceLog(LOG_WARNING, "SPRITESHEET DESCRIPTOR: File %s animation 1 contained %zu frames, but only 1 frame is currently supported.", filePath, numFrames);
-		}
-
-		const char* frameFilePath = cJSON_GetStringValue(framesItem->child);
-
-		if ( !frameFilePath )
-		{
-			TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: File %s animation 1 frame 1 path was missing, or was not a string", filePath);
-			break;
-		}
-
-		ResourcePoolTexture* rpTexture = ResourcePool_LoadTextureAndAddRef(frameFilePath);
-
-		if ( !rpTexture )
-		{
-			TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: File %s animation 1 frame 1: could not load %s", filePath, frameFilePath);
-			break;
-		}
-
 		descriptor = (SpriteSheetDescriptor*)MemAlloc(sizeof(SpriteSheetDescriptor));
-		descriptor->frame = rpTexture;
+		LoadAnimations(filePath, content, descriptor);
 
-		TraceLog(LOG_DEBUG, "SPRITESHEET DESCRIPTOR: Loaded %s successfully", filePath);
+		TraceLog(LOG_DEBUG, "SPRITESHEET DESCRIPTOR: [%s] Loaded successfully (%zu animations)", filePath, descriptor->numAnimations);
 	}
-	while ( false );
+	else
+	{
+		TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: [%s] File did not describe a version %d spritesheet", filePath, SUPPORTED_VERSION);
+	}
 
 	cJSON_free(root);
 	return descriptor;
@@ -108,11 +338,58 @@ void SpriteSheetDescriptor_Destroy(SpriteSheetDescriptor* descriptor)
 		return;
 	}
 
-	ResourcePool_RemoveTextureRef(descriptor->frame);
+	SpriteSheetAnimation* anim = descriptor->animListHead;
+
+	while ( anim )
+	{
+		SpriteSheetAnimation* next = anim->next;
+
+		FreeAnimation(anim);
+		anim = next;
+	}
+
 	MemFree(descriptor);
 }
 
-struct ResourcePoolTexture* SpriteSheetDescriptor_GetFrame(SpriteSheetDescriptor* descriptor)
+SpriteSheetAnimation* SpriteSheetDescriptor_GetAnimation(SpriteSheetDescriptor* descriptor, const char* animName)
 {
-	return descriptor ? descriptor->frame : NULL;
+	if ( !descriptor || !animName || !(*animName) )
+	{
+		return NULL;
+	}
+
+	for ( SpriteSheetAnimation* anim = descriptor->animListHead; anim; anim = anim->next )
+	{
+		if ( TextIsEqual(anim->name, animName) )
+		{
+			return anim;
+		}
+	}
+
+	return NULL;
+}
+
+SpriteSheetAnimation* SpriteSheetDescriptor_GetFirstAnimation(SpriteSheetDescriptor* descriptor)
+{
+	return descriptor ? descriptor->animListHead : NULL;
+}
+
+SpriteSheetAnimation* SpriteSheetDescriptor_GetNextAnimation(SpriteSheetAnimation* anim)
+{
+	return anim ? anim->next : NULL;
+}
+
+Texture2D* SpriteSheetDescriptor_GetAnimationTexture(SpriteSheetAnimation* anim)
+{
+	return anim ? &anim->texture : NULL;
+}
+
+Vector2i SpriteSheetDescriptor_GetAnimationFrameBounds(SpriteSheetAnimation* anim)
+{
+	return anim ? anim->frameBounds : (Vector2i){ 0, 0 };
+}
+
+size_t SpriteSheetDescriptor_GetAnimationFrameCount(SpriteSheetAnimation* anim)
+{
+	return anim ? anim->numFrames : 0;
 }
