@@ -39,6 +39,7 @@ int main(int argc, char** argv)
 
 	SpriteComponent* playerSprite = Entity_CreateSpriteComponent(playerEnt);
 	SpriteComponent_SetSpriteSheet(playerSprite, "res/sprites/runcycle/runcycle.json");
+	playerSprite->scale = (Vector2){ 0.5f, 0.5f };
 
 	LogicComponent* playerLogic = Entity_AddLogicComponent(playerEnt);
 	PlayerLogic_SetOnComponent(playerLogic);

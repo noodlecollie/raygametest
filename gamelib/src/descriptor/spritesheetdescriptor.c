@@ -3,6 +3,7 @@
 #include "gamelib/gameutil.h"
 #include "gamelib/gametypes.h"
 #include "external/cJSON_wrapper.h"
+#include "external/cJSON_util.h"
 #include "descriptor/descriptorutil.h"
 #include "resourcepool.h"
 #include "listmacros.h"
@@ -24,6 +25,7 @@ struct SpriteSheetAnimation
 
 struct SpriteSheetDescriptor
 {
+	Vector2 origin;
 	SpriteSheetAnimation* animListHead;
 	SpriteSheetAnimation* animListTail;
 	size_t numAnimations;
@@ -318,6 +320,10 @@ SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSON(const char* filePath)
 	if ( content )
 	{
 		descriptor = (SpriteSheetDescriptor*)MemAlloc(sizeof(SpriteSheetDescriptor));
+
+		// Optional:
+		cJSONUtil_GetVector2Item(content, "origin", &descriptor->origin);
+
 		LoadAnimations(filePath, content, descriptor);
 
 		TraceLog(LOG_DEBUG, "SPRITESHEET DESCRIPTOR: [%s] Loaded successfully (%zu animations)", filePath, descriptor->numAnimations);
@@ -349,6 +355,11 @@ void SpriteSheetDescriptor_Destroy(SpriteSheetDescriptor* descriptor)
 	}
 
 	MemFree(descriptor);
+}
+
+Vector2 SpriteSheetDescriptor_GetOrigin(SpriteSheetDescriptor* descriptor)
+{
+	return descriptor ? descriptor->origin : (Vector2){ 0.0f, 0.0f };
 }
 
 SpriteSheetAnimation* SpriteSheetDescriptor_GetAnimation(SpriteSheetDescriptor* descriptor, const char* animName)

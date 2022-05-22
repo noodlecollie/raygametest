@@ -54,14 +54,36 @@ void SpriteComponentImpl_Render(SpriteComponentImpl* impl)
 		return;
 	}
 
-	Vector2i bounds = SpriteSheetDescriptor_GetAnimationFrameBounds(anim);
-	Rectangle source = (Rectangle){ 0.0f, 0.0f, (float)bounds.x, (float)bounds.y };
-	Vector2 pos = impl->ownerEntity->position;
-	Vector2 scale = (Vector2){ (float)bounds.x * impl->component.scale.x, (float)bounds.y * impl->component.scale.y };
-	Rectangle dest = (Rectangle){ pos.x, pos.y, scale.x, scale.y };
-	Vector2 origin = Vector2Multiply(impl->component.origin, impl->component.scale);
+	// Define the source rect from the texture image that we're going to draw.
+	Vector2i sourceRectDim = SpriteSheetDescriptor_GetAnimationFrameBounds(anim);
+	Rectangle sourceRect = (Rectangle){ 0.0f, 0.0f, (float)sourceRectDim.x, (float)sourceRectDim.y };
 
-	DrawTexturePro(*texture, source, dest, origin, 0.0f, WHITE);
+	// The scale defines how large the sprite is drawn relative to the source rect's size.
+	Vector2 scale = impl->component.scale;
+
+	// The size of the desination rectangle is affected by the scale.
+	Vector2 destRectDim = (Vector2){ (float)sourceRectDim.x * scale.x, (float)sourceRectDim.y * scale.y };
+
+	// This is the point on the source rectangle that should be lined up with the entity's position when drawn.
+	// The sprite component's offset is applied on top of this later, in world units.
+	Vector2 sourceOrigin = SpriteSheetDescriptor_GetOrigin(sprDesc);
+
+	// This is where the entity itself is located.
+	Vector2 worldPos = impl->ownerEntity->position;
+
+	// The dest rect position must be adjusted to cater for the source origin.
+	// The scale of the sprite affects this adjustment.
+	Vector2 destRectPos = Vector2Subtract(worldPos, Vector2Multiply(sourceOrigin, scale));
+
+	// The position is further adjusted by the offset set on the component.
+	destRectPos = Vector2Add(destRectPos, impl->component.offset);
+
+	// Now we can construct the dest rectangle.
+	Rectangle destRect = (Rectangle){ destRectPos.x, destRectPos.y, destRectDim.x, destRectDim.y };
+
+	// It's easier to explicitly do the above than to provide a value for the
+	// "origin" argument to this function.
+	DrawTexturePro(*texture, sourceRect, destRect, Vector2Zero(), 0.0f, WHITE);
 }
 
 struct Entity* SpriteComponent_GetOwnerEntity(const SpriteComponent* component)

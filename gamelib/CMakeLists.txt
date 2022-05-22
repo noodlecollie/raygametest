@@ -9,6 +9,7 @@ add_library(gamelib STATIC
 	src/entity/physicscomponentimpl.c
 	src/entity/terraincomponentimpl.c
 	src/entity/spritecomponentimpl.c
+	src/external/cJSON_util.c
 	src/external/cJSON_wrapper.c
 	src/logic/playerlogic.c
 	src/gameutil.c

@@ -53,8 +53,8 @@ int main(int argc, char** argv)
 
 	SpriteComponent* playerSprite = Entity_CreateSpriteComponent(playerEnt);
 	SpriteComponent_SetSpriteSheet(playerSprite, "res/sprites/raccoon/raccoon.json");
-	playerSprite->origin.x = 16;
-	playerSprite->origin.y = 22;
+	playerSprite->offset.x = -16;
+	playerSprite->offset.y = -22;
 
 	LogicComponent* playerLogic = Entity_AddLogicComponent(playerEnt);
 	PlayerLogic_SetOnComponent(playerLogic);
