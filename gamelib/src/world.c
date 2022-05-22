@@ -191,8 +191,14 @@ void World_SetActiveCamera(World* world, struct CameraComponent* camera)
 
 void World_Render(World* world)
 {
-	if ( !world || !world->impl->activeCamera )
+	if ( !world )
 	{
+		return;
+	}
+
+	if ( !world->impl->activeCamera )
+	{
+		TraceLog(LOG_WARNING, "WORLD: Render call without active camera set!");
 		return;
 	}
 

@@ -57,7 +57,7 @@ void SpriteComponentImpl_Render(SpriteComponentImpl* impl)
 	Vector2i bounds = SpriteSheetDescriptor_GetAnimationFrameBounds(anim);
 	Rectangle source = (Rectangle){ 0.0f, 0.0f, (float)bounds.x, (float)bounds.y };
 	Vector2 pos = impl->ownerEntity->position;
-	Vector2 scale = (Vector2){ texture->width * impl->component.scale.x, texture->height * impl->component.scale.y };
+	Vector2 scale = (Vector2){ (float)bounds.x * impl->component.scale.x, (float)bounds.y * impl->component.scale.y };
 	Rectangle dest = (Rectangle){ pos.x, pos.y, scale.x, scale.y };
 	Vector2 origin = Vector2Multiply(impl->component.origin, impl->component.scale);
 

@@ -1,0 +1,19 @@
+{
+	"descriptor": "spritesheet",
+	"version": 1,
+	"content":
+	{
+		"animations":
+		[
+			{
+				"name": "run_right",
+				"frames":
+				[
+					"res/sprites/runcycle/stand.png",
+					"res/sprites/runcycle/up.png",
+					"res/sprites/runcycle/down.png"
+				]
+			}
+		]
+	}
+}
