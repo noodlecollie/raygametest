@@ -15,6 +15,7 @@ SpriteSheetAnimation* SpriteSheetDescriptor_GetAnimation(SpriteSheetDescriptor* 
 SpriteSheetAnimation* SpriteSheetDescriptor_GetFirstAnimation(SpriteSheetDescriptor* descriptor);
 SpriteSheetAnimation* SpriteSheetDescriptor_GetNextAnimation(SpriteSheetAnimation* anim);
 
+SpriteSheetDescriptor* SpriteSheetDescriptor_GetAnimationOwner(SpriteSheetAnimation* anim);
 Texture2D* SpriteSheetDescriptor_GetAnimationTexture(SpriteSheetAnimation* anim);
 Vector2i SpriteSheetDescriptor_GetAnimationFrameBounds(SpriteSheetAnimation* anim);
 size_t SpriteSheetDescriptor_GetAnimationFrameCount(SpriteSheetAnimation* anim);

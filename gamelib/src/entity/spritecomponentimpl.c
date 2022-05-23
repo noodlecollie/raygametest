@@ -3,6 +3,7 @@
 #include "gamelib/external/raylibheaders.h"
 #include "resourcepool.h"
 #include "descriptor/spritesheetdescriptor.h"
+#include "rendering/spriterenderer.h"
 
 static void ResetSpriteAnimationVars(SpriteComponentImpl* impl)
 {
@@ -83,52 +84,24 @@ void SpriteComponentImpl_Update(SpriteComponentImpl* impl)
 
 void SpriteComponentImpl_Render(SpriteComponentImpl* impl)
 {
-	if ( !impl || !impl->sprSheetResource || !impl->animation )
+	if ( !impl || !impl->animation )
 	{
 		return;
 	}
 
-	Texture2D* texture = SpriteSheetDescriptor_GetAnimationTexture(impl->animation);
 	size_t numFrames = SpriteSheetDescriptor_GetAnimationFrameCount(impl->animation);
 
-	if ( !texture || numFrames < 1 )
+	if ( numFrames < 1 )
 	{
 		return;
 	}
 
-	// Calculate the current frame index from animTime.
-	size_t frameIndex = (size_t)(impl->animTime * (float)numFrames);
-
-	// Define the source rect from the texture image that we're going to draw.
-	Vector2i sourceRectDim = SpriteSheetDescriptor_GetAnimationFrameBounds(impl->animation);
-	Rectangle sourceRect = (Rectangle){ (float)(frameIndex * sourceRectDim.x), 0.0f, (float)sourceRectDim.x, (float)sourceRectDim.y };
-
-	// The scale defines how large the sprite is drawn relative to the source rect's size.
-	Vector2 scale = impl->component.scale;
-
-	// The size of the desination rectangle is affected by the scale.
-	Vector2 destRectDim = (Vector2){ (float)sourceRectDim.x * scale.x, (float)sourceRectDim.y * scale.y };
-
-	// This is the point on the source rectangle that should be lined up with the entity's position when drawn.
-	// The sprite component's offset is applied on top of this later, in world units.
-	Vector2 sourceOrigin = SpriteSheetDescriptor_GetOrigin(ResourcePool_GetSpriteSheet(impl->sprSheetResource));
-
-	// This is where the entity itself is located.
-	Vector2 worldPos = impl->ownerEntity->position;
-
-	// The dest rect position must be adjusted to cater for the source origin.
-	// The scale of the sprite affects this adjustment.
-	Vector2 destRectPos = Vector2Subtract(worldPos, Vector2Multiply(sourceOrigin, scale));
-
-	// The position is further adjusted by the offset set on the component.
-	destRectPos = Vector2Add(destRectPos, impl->component.offset);
-
-	// Now we can construct the dest rectangle.
-	Rectangle destRect = (Rectangle){ destRectPos.x, destRectPos.y, destRectDim.x, destRectDim.y };
-
-	// It's easier to explicitly do the above than to provide a value for the
-	// "origin" argument to this function.
-	DrawTexturePro(*texture, sourceRect, destRect, Vector2Zero(), 0.0f, WHITE);
+	SpriteRenderer_DrawSpriteFrame(
+		impl->animation,
+		(size_t)(impl->animTime * (float)numFrames),
+		Vector2Add(impl->ownerEntity->position, impl->component.offset),
+		impl->component.scale
+	);
 }
 
 struct Entity* SpriteComponent_GetOwnerEntity(const SpriteComponent* component)

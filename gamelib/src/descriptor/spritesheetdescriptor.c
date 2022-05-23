@@ -15,6 +15,7 @@
 
 struct SpriteSheetAnimation
 {
+	SpriteSheetDescriptor* owner;
 	struct SpriteSheetAnimation* prev;
 	struct SpriteSheetAnimation* next;
 
@@ -218,6 +219,7 @@ static void LoadAnimation(const char* filePath, cJSON* animation, size_t index, 
 	DBL_LL_ADD_TO_TAIL(animData, prev, next, descriptor, animListHead, animListTail);
 	++descriptor->numAnimations;
 
+	animData->owner = descriptor;
 	animData->name = DuplicateString(name);
 
 	cJSON* fpsItem = cJSONWrapper_GetObjectItemOfType(animation, "fps", cJSON_Number);
@@ -398,6 +400,11 @@ SpriteSheetAnimation* SpriteSheetDescriptor_GetFirstAnimation(SpriteSheetDescrip
 SpriteSheetAnimation* SpriteSheetDescriptor_GetNextAnimation(SpriteSheetAnimation* anim)
 {
 	return anim ? anim->next : NULL;
+}
+
+SpriteSheetDescriptor* SpriteSheetDescriptor_GetAnimationOwner(SpriteSheetAnimation* anim)
+{
+	return anim ? anim->owner : NULL;
 }
 
 Texture2D* SpriteSheetDescriptor_GetAnimationTexture(SpriteSheetAnimation* anim)
