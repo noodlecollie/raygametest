@@ -16,6 +16,10 @@ typedef struct SpriteComponent
 	// How big the sprite should be in X and Y,
 	// in units per pixel.
 	Vector2 scale;
+
+	// 1.0f is normal speed, 0.5f is half speed,
+	// 2.0f is double speed, etc.
+	float animationSpeed;
 } SpriteComponent;
 
 struct Entity* SpriteComponent_GetOwnerEntity(const SpriteComponent* component);

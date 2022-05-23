@@ -31,6 +31,7 @@ SpriteComponentImpl* SpriteComponentImpl_Create(struct Entity* ownerEntity)
 	impl->component.impl = impl;
 	impl->ownerEntity = ownerEntity;
 	impl->component.scale = (Vector2){ 1.0f, 1.0f };
+	impl->component.animationSpeed = 1.0f;
 
 	return impl;
 }
@@ -78,8 +79,20 @@ void SpriteComponentImpl_Update(SpriteComponentImpl* impl)
 	// animTime is in the range [0 1), where floor(animTime * numFrames) gives the frame index.
 	// If we have an animation of 10 frames running at 3 fps, a deltaTime of 1 implies an
 	// increment of 3 frames, which is an animTime increment of 3/10. Therefore the formula becomes:
-	impl->animTime += (GetFrameTime() * fps) / (float)numFrames;
-	impl->animTime = fmodf(impl->animTime, 1.0f);
+	impl->animTime += (impl->component.animationSpeed * GetFrameTime() * fps) / (float)numFrames;
+
+	if ( impl->animTime >= 0.0f )
+	{
+		// Normal mod in positive domain
+		impl->animTime = fmodf(impl->animTime, 1.0f);
+	}
+	else
+	{
+		// Something like 1.1 mod 1 = 0.1.
+		// However, C says that -0.1 mod 1 = -0.1, but we want to map it to 0.9.
+		// Therefore we can do 1 + (time mod 1)
+		impl->animTime = 1.0f + fmodf(impl->animTime, 1.0f);
+	}
 }
 
 void SpriteComponentImpl_Render(SpriteComponentImpl* impl)
