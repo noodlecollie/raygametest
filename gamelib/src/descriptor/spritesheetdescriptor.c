@@ -275,6 +275,9 @@ static void LoadAnimation(const char* filePath, cJSON* animation, size_t index, 
 			numFrames
 		);
 
+		SetTextureFilter(texture, TEXTURE_FILTER_POINT);
+		SetTextureWrap(texture, TEXTURE_WRAP_CLAMP);
+
 		animData->texture = texture;
 		animData->frameBounds = bounds;
 		animData->numFrames = numFrames;
