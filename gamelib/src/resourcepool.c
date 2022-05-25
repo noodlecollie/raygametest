@@ -38,6 +38,9 @@ typedef struct ResourcePool
 	ResourcePoolItem* meshes;
 } ResourcePool;
 
+typedef void (* CreatePayloadFunc)(ResourcePoolItem* item);
+typedef void (* DestroyPayloadFunc)(ResourcePoolItem* item);
+
 static ResourcePool Pool;
 
 static inline ResourcePoolItem* FindItemByPath(ResourcePoolItem* head, const char* path)
@@ -47,7 +50,7 @@ static inline ResourcePoolItem* FindItemByPath(ResourcePoolItem* head, const cha
 	return item;
 }
 
-static inline ResourcePoolItem* CreateItem(const char* path)
+static inline ResourcePoolItem* CreateItemBase(const char* path)
 {
 	ResourcePoolItem* item = (ResourcePoolItem*)MemAlloc(sizeof(ResourcePoolItem));
 	item->key = DuplicateString(path);
@@ -56,6 +59,11 @@ static inline ResourcePoolItem* CreateItem(const char* path)
 
 static inline void DestroyItem(ResourcePoolItem* item)
 {
+	if ( item->payload )
+	{
+		MemFree(item->payload);
+	}
+
 	MemFree(item->key);
 	MemFree(item);
 }
@@ -70,6 +78,51 @@ static inline void RemoveRef(ResourcePoolItem* item)
 	if ( item->refCount > 0 )
 	{
 		--item->refCount;
+	}
+}
+
+static ResourcePoolItem* CreateItemDelegated(const char* key, ResourcePoolItem** itemPool, CreatePayloadFunc createFunc)
+{
+	if ( !key || !(*key) )
+	{
+		return NULL;
+	}
+
+	ResourcePoolItem* item = FindItemByPath(*itemPool, key);
+
+	if ( !item )
+	{
+		item = CreateItemBase(key);
+		(*createFunc)(item);
+
+		if ( !item->payload )
+		{
+			DestroyItem(item);
+			return NULL;
+		}
+
+		ResourcePoolItem* pool = *itemPool;
+		HASH_ADD_STR(pool, key, item);
+		*itemPool = pool;
+	}
+
+	AddRef(item);
+
+	return item;
+}
+
+static void RemoveRefFromItemDelegated(ResourcePoolItem* item, ResourcePoolItem** itemPool, DestroyPayloadFunc destroyFunc)
+{
+	RemoveRef(item);
+
+	if ( item->refCount < 1 )
+	{
+		ResourcePoolItem* pool = *itemPool;
+		HASH_DEL(pool, item);
+		*itemPool = pool;
+
+		(*destroyFunc)(item);
+		DestroyItem(item);
 	}
 }
 
@@ -117,8 +170,6 @@ static void DestroyTexturePayload(ResourcePoolItem* item)
 	if ( payload )
 	{
 		UnloadTexture(payload->texture);
-		MemFree(payload);
-		item->payload = NULL;
 	}
 }
 
@@ -147,8 +198,6 @@ static void DestroyMeshPayload(ResourcePoolItem* item)
 	if ( payload )
 	{
 		UnloadMesh(payload->mesh);
-		MemFree(payload);
-		item->payload = NULL;
 	}
 }
 
@@ -175,38 +224,13 @@ static void DestroySpriteSheetPayload(ResourcePoolItem* item)
 	if ( payload )
 	{
 		SpriteSheetDescriptor_Destroy(payload->descriptor);
-		MemFree(payload);
-		item->payload = NULL;
 	}
 }
 
 ResourcePoolTexture* ResourcePool_LoadTextureAndAddRef(const char* path)
 {
-	if ( !path || !(*path) )
-	{
-		return NULL;
-	}
-
-	ResourcePoolItem* item = FindItemByPath(Pool.textures, path);
-
-	if ( !item )
-	{
-		item = CreateItem(path);
-		CreateTexturePayload(item);
-
-		if ( !item->payload )
-		{
-			DestroyItem(item);
-			return NULL;
-		}
-
-		// This must be here because the head pointer must be mutable.
-		HASH_ADD_STR(Pool.textures, key, item);
-	}
-
-	AddRef(item);
-
-	return (ResourcePoolTexture*)item->payload;
+	ResourcePoolItem* item = CreateItemDelegated(path, &Pool.textures, &CreateTexturePayload);
+	return item ? (ResourcePoolTexture*)item->payload : NULL;
 }
 
 ResourcePoolTexture* ResourcePool_AddTextureRef(ResourcePoolTexture* item)
@@ -228,16 +252,7 @@ void ResourcePool_RemoveTextureRef(ResourcePoolTexture* item)
 		return;
 	}
 
-	RemoveRef(item->owner);
-
-	if ( item->owner->refCount < 1 )
-	{
-		ResourcePoolItem* owner = item->owner;
-		HASH_DEL(Pool.textures, owner);
-
-		DestroyTexturePayload(owner);
-		DestroyItem(owner);
-	}
+	RemoveRefFromItemDelegated(item->owner, &Pool.textures, &DestroyTexturePayload);
 }
 
 Texture2D* ResourcePool_GetTexture(ResourcePoolTexture* item)
@@ -252,31 +267,8 @@ const char* ResourcePool_GetTextureFilePath(ResourcePoolTexture* item)
 
 ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetAndAddRef(const char* path)
 {
-	if ( !path || !(*path) )
-	{
-		return NULL;
-	}
-
-	ResourcePoolItem* item = FindItemByPath(Pool.textures, path);
-
-	if ( !item )
-	{
-		item = CreateItem(path);
-		CreateSpriteSheetPayload(item);
-
-		if ( !item->payload )
-		{
-			DestroyItem(item);
-			return NULL;
-		}
-
-		// This must be here because the head pointer must be mutable.
-		HASH_ADD_STR(Pool.spriteSheets, key, item);
-	}
-
-	AddRef(item);
-
-	return (ResourcePoolSpriteSheet*)item->payload;
+	ResourcePoolItem* item = CreateItemDelegated(path, &Pool.spriteSheets, &CreateSpriteSheetPayload);
+	return item ? (ResourcePoolSpriteSheet*)item->payload : NULL;
 }
 
 ResourcePoolSpriteSheet* ResourcePool_AddSpriteSheetRef(ResourcePoolSpriteSheet* item)
@@ -298,16 +290,7 @@ void ResourcePool_RemoveSpriteSheetRef(ResourcePoolSpriteSheet* item)
 		return;
 	}
 
-	RemoveRef(item->owner);
-
-	if ( item->owner->refCount < 1 )
-	{
-		ResourcePoolItem* owner = item->owner;
-		HASH_DEL(Pool.spriteSheets, owner);
-
-		DestroySpriteSheetPayload(owner);
-		DestroyItem(owner);
-	}
+	RemoveRefFromItemDelegated(item->owner, &Pool.spriteSheets, &DestroySpriteSheetPayload);
 }
 
 struct SpriteSheetDescriptor* ResourcePool_GetSpriteSheet(ResourcePoolSpriteSheet* item)
@@ -322,32 +305,10 @@ const char* ResourcePool_GetSpriteSheetFilePath(ResourcePoolSpriteSheet* item)
 
 ResourcePoolMesh* ResourcePool_AddMeshRef(const char* name)
 {
-	if ( !name || !(*name) )
-	{
-		return NULL;
-	}
-
-	ResourcePoolItem* item = FindItemByPath(Pool.meshes, name);
-
-	if ( !item )
-	{
-		item = CreateItem(name);
-		CreateMeshPayload(item);
-
-		if ( !item->payload )
-		{
-			DestroyItem(item);
-			return NULL;
-		}
-
-		// This must be here because the head pointer must be mutable.
-		HASH_ADD_STR(Pool.meshes, key, item);
-	}
-
-	AddRef(item);
-
-	return (ResourcePoolMesh*)item->payload;
+	ResourcePoolItem* item = CreateItemDelegated(name, &Pool.meshes, &CreateMeshPayload);
+	return item ? (ResourcePoolMesh*)item->payload : NULL;
 }
+
 void ResourcePool_RemoveMeshRef(ResourcePoolMesh* item)
 {
 	if ( !item )
@@ -355,22 +316,14 @@ void ResourcePool_RemoveMeshRef(ResourcePoolMesh* item)
 		return;
 	}
 
-	RemoveRef(item->owner);
-
-	if ( item->owner->refCount < 1 )
-	{
-		ResourcePoolItem* owner = item->owner;
-		HASH_DEL(Pool.meshes, owner);
-
-		DestroyMeshPayload(owner);
-		DestroyItem(owner);
-	}
+	RemoveRefFromItemDelegated(item->owner, &Pool.meshes, &DestroyMeshPayload);
 }
 
 Mesh* ResourcePool_GetMesh(ResourcePoolMesh* item)
 {
 	return item ? &item->mesh : NULL;
 }
+
 const char* ResourcePool_GetMeshPresetName(ResourcePoolMesh* item)
 {
 	return item ? item->owner->key : NULL;
