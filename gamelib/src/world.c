@@ -194,6 +194,27 @@ void World_SetActiveCamera(World* world, struct CameraComponent* camera)
 	world->impl->activeCamera = camera;
 }
 
+/*
+	New camera should look like the following:
+
+		CameraComponentImpl* camImpl = world->impl->activeCamera->impl;
+		Camera3D camera = { 0 };
+
+		camera.projection = CAMERA_ORTHOGRAPHIC;
+		camera.target = (Vector3){ camImpl->ownerEntity->position.x, camImpl->ownerEntity->position.y, 0.0f };
+
+		camera.position = camera.target;
+		camera.position.z = -500.0f; // This should depend on what world layers we define
+
+		camera.up = (Vector3){ 0.0f, -1.0f, 0.0f };
+		camera.fovy = (float)GetScreenHeight(); // To be verified, but looks correct
+
+	There's currently a weird-ass bug with raylib where drawing a certain number of triangles in immediate mode
+	(maybe too many, or a multiple of two?) causes the entire screen to be blank.
+	https://github.com/raysan5/raylib/issues/2489
+
+	We'll probably need to skip the immediate mode exploratory phase and just try rendering meshes.
+ */
 void World_Render(World* world)
 {
 	if ( !world )
