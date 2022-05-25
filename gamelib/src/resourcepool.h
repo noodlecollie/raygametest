@@ -1,11 +1,13 @@
 #pragma once
 
 #include "gamelib/external/raylibheaders.h"
+#include "presetnames.h"
 
 struct SpriteSheetDescriptor;
 
 typedef struct ResourcePoolTexture ResourcePoolTexture;
 typedef struct ResourcePoolSpriteSheet ResourcePoolSpriteSheet;
+typedef struct ResourcePoolMesh ResourcePoolMesh;
 
 // File paths are case sensitive here!
 // Even on case-insensitive systems, they are used
@@ -22,3 +24,8 @@ ResourcePoolSpriteSheet* ResourcePool_AddSpriteSheetRef(ResourcePoolSpriteSheet*
 void ResourcePool_RemoveSpriteSheetRef(ResourcePoolSpriteSheet* item);
 struct SpriteSheetDescriptor* ResourcePool_GetSpriteSheet(ResourcePoolSpriteSheet* item);
 const char* ResourcePool_GetSpriteSheetFilePath(ResourcePoolSpriteSheet* item);
+
+ResourcePoolMesh* ResourcePool_AddMeshRef(const char* name);
+void ResourcePool_RemoveMeshRef(ResourcePoolMesh* item);
+Mesh* ResourcePool_GetMesh(ResourcePoolMesh* item);
+const char* ResourcePool_GetMeshPresetName(ResourcePoolMesh* item);

@@ -2,6 +2,7 @@
 #include "external/uthash_wrapper.h"
 #include "gamelib/gameutil.h"
 #include "descriptor/spritesheetdescriptor.h"
+#include "presetmeshes.h"
 
 typedef struct ResourcePoolItem
 {
@@ -24,10 +25,17 @@ struct ResourcePoolSpriteSheet
 	SpriteSheetDescriptor* descriptor;
 };
 
+struct ResourcePoolMesh
+{
+	ResourcePoolItem* owner;
+	Mesh mesh;
+};
+
 typedef struct ResourcePool
 {
 	ResourcePoolItem* textures;
 	ResourcePoolItem* spriteSheets;
+	ResourcePoolItem* meshes;
 } ResourcePool;
 
 static ResourcePool Pool;
@@ -109,6 +117,36 @@ static void DestroyTexturePayload(ResourcePoolItem* item)
 	if ( payload )
 	{
 		UnloadTexture(payload->texture);
+		MemFree(payload);
+		item->payload = NULL;
+	}
+}
+
+static void CreateMeshPayload(ResourcePoolItem* item)
+{
+	Mesh mesh = PresetMeshes_Create(item->key);
+
+	if ( mesh.vertexCount == 0 )
+	{
+		return;
+	}
+
+	UploadMesh(&mesh, false);
+
+	ResourcePoolMesh* payload = (ResourcePoolMesh*)MemAlloc(sizeof(ResourcePoolMesh));
+	item->payload = payload;
+
+	payload->owner = item;
+	payload->mesh = mesh;
+}
+
+static void DestroyMeshPayload(ResourcePoolItem* item)
+{
+	ResourcePoolMesh* payload = (ResourcePoolMesh*)item->payload;
+
+	if ( payload )
+	{
+		UnloadMesh(payload->mesh);
 		MemFree(payload);
 		item->payload = NULL;
 	}
@@ -278,6 +316,62 @@ struct SpriteSheetDescriptor* ResourcePool_GetSpriteSheet(ResourcePoolSpriteShee
 }
 
 const char* ResourcePool_GetSpriteSheetFilePath(ResourcePoolSpriteSheet* item)
+{
+	return item ? item->owner->key : NULL;
+}
+
+ResourcePoolMesh* ResourcePool_AddMeshRef(const char* name)
+{
+	if ( !name || !(*name) )
+	{
+		return NULL;
+	}
+
+	ResourcePoolItem* item = FindItemByPath(Pool.meshes, name);
+
+	if ( !item )
+	{
+		item = CreateItem(name);
+		CreateMeshPayload(item);
+
+		if ( !item->payload )
+		{
+			DestroyItem(item);
+			return NULL;
+		}
+
+		// This must be here because the head pointer must be mutable.
+		HASH_ADD_STR(Pool.meshes, key, item);
+	}
+
+	AddRef(item);
+
+	return (ResourcePoolMesh*)item->payload;
+}
+void ResourcePool_RemoveMeshRef(ResourcePoolMesh* item)
+{
+	if ( !item )
+	{
+		return;
+	}
+
+	RemoveRef(item->owner);
+
+	if ( item->owner->refCount < 1 )
+	{
+		ResourcePoolItem* owner = item->owner;
+		HASH_DEL(Pool.meshes, owner);
+
+		DestroyMeshPayload(owner);
+		DestroyItem(owner);
+	}
+}
+
+Mesh* ResourcePool_GetMesh(ResourcePoolMesh* item)
+{
+	return item ? &item->mesh : NULL;
+}
+const char* ResourcePool_GetMeshPresetName(ResourcePoolMesh* item)
 {
 	return item ? item->owner->key : NULL;
 }
