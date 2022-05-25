@@ -214,6 +214,59 @@ void World_SetActiveCamera(World* world, struct CameraComponent* camera)
 	https://github.com/raysan5/raylib/issues/2489
 
 	We'll probably need to skip the immediate mode exploratory phase and just try rendering meshes.
+
+	In addition, to perform instanced rendering we need to set up a shader that supports it.
+	The following is based off the default shader:
+
+		static const char VS_CODE[] =
+			"#version 330                       \n"
+			"in vec3 vertexPosition;            \n"
+			"in vec2 vertexTexCoord;            \n"
+			"in vec4 vertexColor;               \n"
+			"in mat4 instanceTransform;         \n"
+			"out vec2 fragTexCoord;             \n"
+			"out vec4 fragColor;                \n"
+			"uniform mat4 mvp;                  \n"
+			"void main()                        \n"
+			"{                                  \n"
+			"    mat4 mvpi = mvp*instanceTransform;\n"
+			"    fragTexCoord = vertexTexCoord; \n"
+			"    fragColor = vertexColor;       \n"
+			"    gl_Position = mvpi*vec4(vertexPosition, 1.0); \n"
+			"}                                  \n"
+		;
+
+		static const char FS_CODE[] =
+			"#version 330       \n"
+			"in vec2 fragTexCoord;              \n"
+			"in vec4 fragColor;                 \n"
+			"out vec4 finalColor;               \n"
+			"uniform sampler2D texture0;        \n"
+			"uniform vec4 colDiffuse;           \n"
+			"void main()                        \n"
+			"{                                  \n"
+			"    vec4 texelColor = texture(texture0, fragTexCoord);   \n"
+			"    finalColor = texelColor*colDiffuse*fragColor;        \n"
+			"}                                  \n"
+		;
+
+		Shader shader = LoadShaderFromMemory(VS_CODE, FS_CODE);
+		shader.locs[SHADER_LOC_VERTEX_POSITION] = GetShaderLocation(shader, "vertexPosition");
+		shader.locs[SHADER_LOC_VERTEX_TEXCOORD01] = GetShaderLocation(shader, "vertexTexCoord");
+		shader.locs[SHADER_LOC_VERTEX_COLOR] = GetShaderLocation(shader, "vertexColor");
+		shader.locs[SHADER_LOC_MATRIX_MVP]  = GetShaderLocation(shader, "mvp");
+		shader.locs[SHADER_LOC_COLOR_DIFFUSE] = GetShaderLocation(shader, "colDiffuse");
+		shader.locs[SHADER_LOC_MAP_DIFFUSE] = GetShaderLocation(shader, "texture0");
+		shader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocationAttrib(shader, "instanceTransform");
+
+		materialToUse.shader = shader;
+
+		DrawMeshInstanced(mesh, materialToUse, transforms, ARRAY_SIZE(transforms));
+
+	This demonstrates the main idea. However, storing loads of matrices for all the blocks in
+	the terrain will probably be really inefficient on memory, so we could tweak this shader
+	to optimise. We could provide the bounds for the area that we are drawing, and provide
+	texture uniforms for other pieces of information.
  */
 void World_Render(World* world)
 {
