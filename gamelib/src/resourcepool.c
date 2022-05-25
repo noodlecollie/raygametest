@@ -3,6 +3,7 @@
 #include "gamelib/gameutil.h"
 #include "descriptor/spritesheetdescriptor.h"
 #include "presets/presetmeshes.h"
+#include "presets/presettextures.h"
 
 typedef struct ResourcePoolItem
 {
@@ -34,6 +35,7 @@ struct ResourcePoolMesh
 typedef struct ResourcePool
 {
 	ResourcePoolItem* textures;
+	ResourcePoolItem* presetTextures;
 	ResourcePoolItem* spriteSheets;
 	ResourcePoolItem* presetMeshes;
 } ResourcePool;
@@ -144,8 +146,33 @@ static bool LocalLoadTexture(Texture2D* texture, const char* path)
 
 	if ( texture->id == 0 )
 	{
-		TraceLog(LOG_DEBUG, "RESOURCEPOOL: Unable to create texture for %s", path);
+		TraceLog(LOG_DEBUG, "RESOURCE POOL: Unable to create texture for %s", path);
 		return false;
+	}
+
+	return true;
+}
+
+static bool LocalLoadPresetTexture(Texture2D* texture, const char* name)
+{
+	*texture = PresetTextures_Create(name);
+
+	if ( texture->id == 0 )
+	{
+		TraceLog(LOG_DEBUG, "RESOURCE POOL: Unable to create preset texture \"%s\"", name);
+		return false;
+	}
+
+	return true;
+}
+
+static void CreateTexturePayloadDelegated(ResourcePoolItem* item, bool (* createFunc)(Texture2D*, const char*))
+{
+	Texture2D texture = { 0 };
+
+	if ( !(*createFunc)(&texture, item->key) )
+	{
+		return;
 	}
 
 	// Allow these to be customised in future?
@@ -153,26 +180,24 @@ static bool LocalLoadTexture(Texture2D* texture, const char* path)
 	// For now, just let the user of the texture override
 	// these manually later, if they want to. These values
 	// are good enough defaults.
-	SetTextureFilter(*texture, TEXTURE_FILTER_POINT);
-	SetTextureWrap(*texture, TEXTURE_WRAP_CLAMP);
-
-	return true;
-}
-
-static void CreateTexturePayload(ResourcePoolItem* item)
-{
-	Texture2D texture = { 0 };
-
-	if ( !LocalLoadTexture(&texture, item->key) )
-	{
-		return;
-	}
+	SetTextureFilter(texture, TEXTURE_FILTER_POINT);
+	SetTextureWrap(texture, TEXTURE_WRAP_CLAMP);
 
 	ResourcePoolTexture* payload = (ResourcePoolTexture*)MemAlloc(sizeof(ResourcePoolTexture));
 	item->payload = payload;
 
 	payload->owner = item;
 	payload->texture = texture;
+}
+
+static void CreateTexturePayload(ResourcePoolItem* item)
+{
+	CreateTexturePayloadDelegated(item, &LocalLoadTexture);
+}
+
+static void CreatePresetTexturePayload(ResourcePoolItem* item)
+{
+	CreateTexturePayloadDelegated(item, &LocalLoadPresetTexture);
 }
 
 static void DestroyTexturePayload(ResourcePoolItem* item)
@@ -185,7 +210,7 @@ static void DestroyTexturePayload(ResourcePoolItem* item)
 	}
 }
 
-static void CreateMeshPayload(ResourcePoolItem* item)
+static void CreatePresetMeshPayload(ResourcePoolItem* item)
 {
 	Mesh mesh = PresetMeshes_Create(item->key);
 
@@ -193,8 +218,6 @@ static void CreateMeshPayload(ResourcePoolItem* item)
 	{
 		return;
 	}
-
-	UploadMesh(&mesh, false);
 
 	ResourcePoolMesh* payload = (ResourcePoolMesh*)MemAlloc(sizeof(ResourcePoolMesh));
 	item->payload = payload;
@@ -242,6 +265,12 @@ static void DestroySpriteSheetPayload(ResourcePoolItem* item)
 ResourcePoolTexture* ResourcePool_LoadTextureAndAddRef(const char* path)
 {
 	ResourcePoolItem* item = CreateItemDelegated(&Pool.textures, path, &CreateTexturePayload);
+	return item ? (ResourcePoolTexture*)item->payload : NULL;
+}
+
+ResourcePoolTexture* ResourcePool_LoadPresetTextureAndAddRef(const char* name)
+{
+	ResourcePoolItem* item = CreateItemDelegated(&Pool.presetTextures, name, &CreatePresetTexturePayload);
 	return item ? (ResourcePoolTexture*)item->payload : NULL;
 }
 
@@ -315,9 +344,9 @@ const char* ResourcePool_GetSpriteSheetKey(ResourcePoolSpriteSheet* item)
 	return item ? item->owner->key : NULL;
 }
 
-ResourcePoolMesh* ResourcePool_LoadPresetMesh(const char* name)
+ResourcePoolMesh* ResourcePool_LoadPresetMeshAndAddRef(const char* name)
 {
-	ResourcePoolItem* item = CreateItemDelegated(&Pool.presetMeshes, name, &CreateMeshPayload);
+	ResourcePoolItem* item = CreateItemDelegated(&Pool.presetMeshes, name, &CreatePresetMeshPayload);
 	return item ? (ResourcePoolMesh*)item->payload : NULL;
 }
 
