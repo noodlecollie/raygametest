@@ -272,7 +272,7 @@ Texture2D* ResourcePool_GetTexture(ResourcePoolTexture* item)
 	return item ? &item->texture : NULL;
 }
 
-const char* ResourcePool_GetTextureFilePath(ResourcePoolTexture* item)
+const char* ResourcePool_GetTextureFileKey(ResourcePoolTexture* item)
 {
 	return item ? item->owner->key : NULL;
 }
@@ -310,7 +310,7 @@ struct SpriteSheetDescriptor* ResourcePool_GetSpriteSheet(ResourcePoolSpriteShee
 	return item ? item->descriptor : NULL;
 }
 
-const char* ResourcePool_GetSpriteSheetFilePath(ResourcePoolSpriteSheet* item)
+const char* ResourcePool_GetSpriteSheetKey(ResourcePoolSpriteSheet* item)
 {
 	return item ? item->owner->key : NULL;
 }
@@ -336,7 +336,7 @@ Mesh* ResourcePool_GetMesh(ResourcePoolMesh* item)
 	return item ? &item->mesh : NULL;
 }
 
-const char* ResourcePool_GetMeshPresetName(ResourcePoolMesh* item)
+const char* ResourcePool_GetMeshKey(ResourcePoolMesh* item)
 {
 	return item ? item->owner->key : NULL;
 }

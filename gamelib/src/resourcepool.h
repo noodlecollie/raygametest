@@ -17,16 +17,16 @@ ResourcePoolTexture* ResourcePool_LoadTextureAndAddRef(const char* path);
 ResourcePoolTexture* ResourcePool_AddTextureRef(ResourcePoolTexture* item);
 void ResourcePool_RemoveTextureRef(ResourcePoolTexture* item);
 Texture2D* ResourcePool_GetTexture(ResourcePoolTexture* item);
-const char* ResourcePool_GetTextureFilePath(ResourcePoolTexture* item);
+const char* ResourcePool_GetTextureFileKey(ResourcePoolTexture* item);
 
 ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetAndAddRef(const char* path);
 ResourcePoolSpriteSheet* ResourcePool_AddSpriteSheetRef(ResourcePoolSpriteSheet* item);
 void ResourcePool_RemoveSpriteSheetRef(ResourcePoolSpriteSheet* item);
 struct SpriteSheetDescriptor* ResourcePool_GetSpriteSheet(ResourcePoolSpriteSheet* item);
-const char* ResourcePool_GetSpriteSheetFilePath(ResourcePoolSpriteSheet* item);
+const char* ResourcePool_GetSpriteSheetKey(ResourcePoolSpriteSheet* item);
 
 ResourcePoolMesh* ResourcePool_LoadPresetMesh(const char* name);
 ResourcePoolMesh* ResourcePool_AddMeshRef(ResourcePoolMesh* item);
 void ResourcePool_RemoveMeshRef(ResourcePoolMesh* item);
 Mesh* ResourcePool_GetMesh(ResourcePoolMesh* item);
-const char* ResourcePool_GetMeshPresetName(ResourcePoolMesh* item);
+const char* ResourcePool_GetMeshKey(ResourcePoolMesh* item);
