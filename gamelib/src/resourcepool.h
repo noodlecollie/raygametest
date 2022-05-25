@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gamelib/external/raylibheaders.h"
-#include "presetnames.h"
+#include "presets/presetnames.h"
 
 struct SpriteSheetDescriptor;
 
@@ -25,7 +25,8 @@ void ResourcePool_RemoveSpriteSheetRef(ResourcePoolSpriteSheet* item);
 struct SpriteSheetDescriptor* ResourcePool_GetSpriteSheet(ResourcePoolSpriteSheet* item);
 const char* ResourcePool_GetSpriteSheetFilePath(ResourcePoolSpriteSheet* item);
 
-ResourcePoolMesh* ResourcePool_AddMeshRef(const char* name);
+ResourcePoolMesh* ResourcePool_LoadPresetMesh(const char* name);
+ResourcePoolMesh* ResourcePool_AddMeshRef(ResourcePoolMesh* item);
 void ResourcePool_RemoveMeshRef(ResourcePoolMesh* item);
 Mesh* ResourcePool_GetMesh(ResourcePoolMesh* item);
 const char* ResourcePool_GetMeshPresetName(ResourcePoolMesh* item);

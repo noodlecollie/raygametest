@@ -2,7 +2,7 @@
 #include "external/uthash_wrapper.h"
 #include "gamelib/gameutil.h"
 #include "descriptor/spritesheetdescriptor.h"
-#include "presetmeshes.h"
+#include "presets/presetmeshes.h"
 
 typedef struct ResourcePoolItem
 {
@@ -303,7 +303,7 @@ const char* ResourcePool_GetSpriteSheetFilePath(ResourcePoolSpriteSheet* item)
 	return item ? item->owner->key : NULL;
 }
 
-ResourcePoolMesh* ResourcePool_AddMeshRef(const char* name)
+ResourcePoolMesh* ResourcePool_LoadPresetMesh(const char* name)
 {
 	ResourcePoolItem* item = CreateItemDelegated(name, &Pool.meshes, &CreateMeshPayload);
 	return item ? (ResourcePoolMesh*)item->payload : NULL;

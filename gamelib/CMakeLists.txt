@@ -12,11 +12,12 @@ add_library(gamelib STATIC
 	src/external/cJSON_util.c
 	src/external/cJSON_wrapper.c
 	src/logic/playerlogic.c
+	src/presets/presetmeshes.c
+	src/presets/presettextures.c
 	src/rendering/spriterenderer.c
 	src/gameutil.c
 	src/memoryallocator.c
 	src/physics.c
-	src/presetmeshes.c
 	src/resourcepool.c
 	src/trace.c
 	src/world.c
