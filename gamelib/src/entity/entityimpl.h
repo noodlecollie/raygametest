@@ -27,4 +27,4 @@ typedef struct EntityImpl
 } EntityImpl;
 
 void EntityImpl_Destroy(EntityImpl* impl);
-void EntityImpl_Render(EntityImpl* impl);
+void EntityImpl_Render(EntityImpl* impl, Camera2D camera);

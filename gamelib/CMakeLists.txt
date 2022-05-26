@@ -15,6 +15,7 @@ add_library(gamelib STATIC
 	src/presets/presetmeshes.c
 	src/presets/presettextures.c
 	src/rendering/spriterenderer.c
+	src/rendering/terrainrenderer.c
 	src/gameutil.c
 	src/memoryallocator.c
 	src/physics.c

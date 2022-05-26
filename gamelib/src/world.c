@@ -294,7 +294,7 @@ void World_Render(World* world)
 
 	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
 	{
-		EntityImpl_Render(ent->impl);
+		EntityImpl_Render(ent->impl, camera);
 	}
 
 	EndMode2D();

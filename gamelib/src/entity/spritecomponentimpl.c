@@ -95,8 +95,10 @@ void SpriteComponentImpl_Update(SpriteComponentImpl* impl)
 	}
 }
 
-void SpriteComponentImpl_Render(SpriteComponentImpl* impl)
+void SpriteComponentImpl_Render(SpriteComponentImpl* impl, Camera2D camera)
 {
+	(void)camera;
+
 	if ( !impl || !impl->animation )
 	{
 		return;

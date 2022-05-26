@@ -29,6 +29,8 @@ Vector2 RectangleMid(Rectangle rect);
 bool RectangleHasNoArea(Rectangle rect);
 bool RectangleIsNull(Rectangle rect);
 
+Vector2 GetScreenToWorldOrtho(Vector2 position, Camera3D camera);
+
 // If t is not null, it will be set to a value indicating
 // how far allong the first line the intersection occurred. 0 = at p0,
 // 1 = at p1, other values imply points inside or outside this range.

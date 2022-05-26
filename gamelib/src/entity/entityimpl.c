@@ -49,7 +49,7 @@ void EntityImpl_Destroy(EntityImpl* impl)
 	MemFree(impl);
 }
 
-void EntityImpl_Render(EntityImpl* impl)
+void EntityImpl_Render(EntityImpl* impl, Camera2D camera)
 {
 	if ( !impl )
 	{
@@ -58,12 +58,12 @@ void EntityImpl_Render(EntityImpl* impl)
 
 	if ( impl->terrainImpl )
 	{
-		TerrainComponentImpl_Render(impl->terrainImpl);
+		TerrainComponentImpl_Render(impl->terrainImpl, camera);
 	}
 
 	if ( impl->spriteImpl )
 	{
-		SpriteComponentImpl_Render(impl->spriteImpl);
+		SpriteComponentImpl_Render(impl->spriteImpl, camera);
 	}
 }
 

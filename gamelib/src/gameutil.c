@@ -136,6 +136,19 @@ bool RectangleIsNull(Rectangle rect)
 	return Vector2IsZero((Vector2){ rect.width, rect.height });
 }
 
+Vector2 GetScreenToWorldOrtho(Vector2 position, Camera3D camera)
+{
+	if ( camera.projection != CAMERA_ORTHOGRAPHIC )
+	{
+		return Vector2Zero();
+	}
+
+	Matrix invMatCamera = MatrixInvert(GetCameraMatrix(camera));
+	Vector3 transform = Vector3Transform((Vector3){ position.x, position.y, 0.0f }, invMatCamera);
+
+	return (Vector2){ transform.x, transform.y };
+}
+
 // Adapted from https://stackoverflow.com/a/4543530/2054335
 bool LinesIntersect(Vector2 p0, Vector2 p1, Vector2 q0, Vector2 q1, float* t, Vector2* point)
 {
