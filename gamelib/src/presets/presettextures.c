@@ -3,7 +3,7 @@
 
 static Texture2D CreateDefaultTexture()
 {
-	Texture2D texture;
+	Texture2D texture = { 0 };
 	Image image = GenImageColor(16, 16, BLACK);
 
 	if ( !image.data )

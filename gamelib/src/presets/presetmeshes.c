@@ -76,7 +76,7 @@ static Mesh CreateQuadMesh()
 	// Mesh indices array initialization
 	for (int i = 0; i < mesh.triangleCount * 3; i++)
 	{
-		mesh.indices[i] = triangles[i];
+		mesh.indices[i] = (unsigned short)triangles[i];
 	}
 
 	GameFree(vertices);
