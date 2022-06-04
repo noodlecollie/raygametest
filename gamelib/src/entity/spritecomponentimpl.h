@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gamelib/entity/spritecomponent.h"
-#include "resourcepool.h"
+#include "resourcepool/resourcepool.h"
 #include "descriptor/spritesheetdescriptor.h"
 
 struct Entity;

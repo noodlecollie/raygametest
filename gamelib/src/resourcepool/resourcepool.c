@@ -1,4 +1,4 @@
-#include "resourcepool.h"
+#include "resourcepool/resourcepool.h"
 #include "external/uthash_wrapper.h"
 #include "gamelib/gameutil.h"
 #include "descriptor/spritesheetdescriptor.h"

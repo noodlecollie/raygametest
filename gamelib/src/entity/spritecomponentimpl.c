@@ -1,7 +1,7 @@
 #include "entity/spritecomponentimpl.h"
 #include "gamelib/entity/entity.h"
 #include "gamelib/external/raylibheaders.h"
-#include "resourcepool.h"
+#include "resourcepool/resourcepool.h"
 #include "descriptor/spritesheetdescriptor.h"
 #include "rendering/spriterenderer.h"
 

@@ -5,7 +5,7 @@
 #include "external/cJSON_wrapper.h"
 #include "external/cJSON_util.h"
 #include "descriptor/descriptorutil.h"
-#include "resourcepool.h"
+#include "resourcepool/resourcepool.h"
 #include "listmacros.h"
 
 #define SUPPORTED_VERSION 1

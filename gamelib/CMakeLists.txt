@@ -18,10 +18,10 @@ add_library(gamelib STATIC
 	src/rendering/renderutils.c
 	src/rendering/spriterenderer.c
 	src/rendering/terrainrenderer.c
+	src/resourcepool/resourcepool.c
 	src/gameutil.c
 	src/memoryallocator.c
 	src/physics.c
-	src/resourcepool.c
 	src/trace.c
 	src/world.c
 )
