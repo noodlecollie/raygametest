@@ -14,6 +14,7 @@ add_library(gamelib STATIC
 	src/logic/playerlogic.c
 	src/presets/presetmeshes.c
 	src/presets/presettextures.c
+	src/rendering/builtinshaders.c
 	src/rendering/renderutils.c
 	src/rendering/spriterenderer.c
 	src/rendering/terrainrenderer.c

@@ -210,12 +210,6 @@ void World_SetActiveCamera(World* world, struct CameraComponent* camera)
 		camera.up = (Vector3){ 0.0f, -1.0f, 0.0f };
 		camera.fovy = (float)GetScreenHeight(); // To be verified, but looks correct
 
-	There's currently a weird-ass bug with raylib where drawing a certain number of triangles in immediate mode
-	(maybe too many, or a multiple of two?) causes the entire screen to be blank.
-	https://github.com/raysan5/raylib/issues/2489
-
-	We'll probably need to skip the immediate mode exploratory phase and just try rendering meshes.
-
 	In addition, to perform instanced rendering we need to set up a shader that supports it.
 	The following is based off the default shader:
 
@@ -292,7 +286,7 @@ void World_Render(World* world)
 	camera.position.z = CAMERA_FAR_DEPTH;
 
 	camera.up = (Vector3){ 0.0f, -1.0f, 0.0f };
-	camera.fovy = (float)GetScreenHeight(); // To be verified, but looks correct
+	camera.fovy = (float)GetScreenHeight();
 
 	BeginMode3D(camera);
 
