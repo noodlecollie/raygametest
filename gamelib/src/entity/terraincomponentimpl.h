@@ -18,4 +18,4 @@ typedef struct TerrainComponentImpl
 
 TerrainComponentImpl* TerrainComponentImpl_Create(struct Entity* ownerEntity);
 void TerrainComponentImpl_Destroy(TerrainComponentImpl* impl);
-void TerrainComponentImpl_Render(TerrainComponentImpl* impl, Camera2D camera);
+void TerrainComponentImpl_Render(TerrainComponentImpl* impl, Camera3D camera);

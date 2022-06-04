@@ -1,6 +1,8 @@
 #include "rendering/terrainrenderer.h"
+#include "gamelib/drawinglayers.h"
+#include "rendering/renderutils.h"
 
-void TerrainRenderer_Draw(TerrainComponentImpl* impl, Camera2D camera)
+void TerrainRenderer_Draw(TerrainComponentImpl* impl, Camera3D camera)
 {
 	if ( !impl || !impl->layers )
 	{
@@ -32,6 +34,23 @@ void TerrainRenderer_Draw(TerrainComponentImpl* impl, Camera2D camera)
 				Rectangle blockRect = TerrainComponent_GetBlockWorldRectByCoOrds(&impl->component, (Vector2i){ x, y });
 				Color blockColour = TerrainComponent_GetBlockColourByCoOrds(&impl->component, 0, (Vector2i){ x, y });
 				DrawRectangleRec(blockRect, blockColour);
+
+				// TODO: Allow layers to be set manually
+				const float depth = RenderUtils_GetDepthForLayer(DLAYER_BACKGROUND);
+
+				DrawTriangle3D(
+					(Vector3){ blockRect.x, blockRect.y, depth },
+					(Vector3){ blockRect.x, blockRect.y + blockRect.height, depth },
+					(Vector3){ blockRect.x + blockRect.width, blockRect.y + blockRect.height, depth },
+					blockColour
+				);
+
+				DrawTriangle3D(
+					(Vector3){ blockRect.x, blockRect.y, depth },
+					(Vector3){ blockRect.x + blockRect.width, blockRect.y + blockRect.height, depth },
+					(Vector3){ blockRect.x + blockRect.width, blockRect.y, depth },
+					blockColour
+				);
 			}
 		}
 	}

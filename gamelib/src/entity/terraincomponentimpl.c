@@ -49,7 +49,7 @@ void TerrainComponentImpl_Destroy(TerrainComponentImpl* impl)
 	MemFree(impl);
 }
 
-void TerrainComponentImpl_Render(TerrainComponentImpl* impl, Camera2D camera)
+void TerrainComponentImpl_Render(TerrainComponentImpl* impl, Camera3D camera)
 {
 	TerrainRenderer_Draw(impl, camera);
 }

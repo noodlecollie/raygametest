@@ -2,6 +2,8 @@ if(MSVC)
 	add_compile_options(
 		/wd4244
 		/wd4305
+		/wd4267
+		/wd4018
 	)
 endif()
 

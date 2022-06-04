@@ -95,7 +95,7 @@ void SpriteComponentImpl_Update(SpriteComponentImpl* impl)
 	}
 }
 
-void SpriteComponentImpl_Render(SpriteComponentImpl* impl, Camera2D camera)
+void SpriteComponentImpl_Render(SpriteComponentImpl* impl, Camera3D camera)
 {
 	(void)camera;
 
@@ -111,12 +111,13 @@ void SpriteComponentImpl_Render(SpriteComponentImpl* impl, Camera2D camera)
 		return;
 	}
 
-	SpriteRenderer_DrawSpriteFrame(
-		impl->animation,
-		(size_t)(impl->animTime * (float)numFrames),
-		Vector2Add(impl->ownerEntity->position, impl->component.offset),
-		impl->component.scale
-	);
+	// TODO: Fix for 3D
+	// SpriteRenderer_DrawSpriteFrame(
+	// 	impl->animation,
+	// 	(size_t)(impl->animTime * (float)numFrames),
+	// 	Vector2Add(impl->ownerEntity->position, impl->component.offset),
+	// 	impl->component.scale
+	// );
 }
 
 struct Entity* SpriteComponent_GetOwnerEntity(const SpriteComponent* component)

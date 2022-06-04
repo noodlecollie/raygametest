@@ -8,6 +8,7 @@
 #include "gamelib/entity/spritecomponent.h"
 #include "gamelib/entity/terraincomponent.h"
 #include "listmacros.h"
+#include "rendering/renderutils.h"
 
 typedef struct WorldImpl
 {
@@ -282,20 +283,23 @@ void World_Render(World* world)
 	}
 
 	CameraComponentImpl* camImpl = world->impl->activeCamera->impl;
-	Camera2D camera = { 0 };
+	Camera3D camera = { 0 };
 
-	camera.target = camImpl->ownerEntity->position;
-	camera.zoom = camImpl->component.zoom;
+	camera.projection = CAMERA_ORTHOGRAPHIC;
+	camera.target = (Vector3){ camImpl->ownerEntity->position.x, camImpl->ownerEntity->position.y, 0.0f };
 
-	const Vector2 windowDim = (Vector2){ (float)GetScreenWidth(), (float)GetScreenHeight() };
-	camera.offset = Vector2Scale(windowDim, 0.5f);
+	camera.position = camera.target;
+	camera.position.z = CAMERA_FAR_DEPTH;
 
-	BeginMode2D(camera);
+	camera.up = (Vector3){ 0.0f, -1.0f, 0.0f };
+	camera.fovy = (float)GetScreenHeight(); // To be verified, but looks correct
+
+	BeginMode3D(camera);
 
 	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
 	{
 		EntityImpl_Render(ent->impl, camera);
 	}
 
-	EndMode2D();
+	EndMode3D();
 }
