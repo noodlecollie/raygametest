@@ -1,8 +1,8 @@
-#include "resourcepool/resourcepoolnew.h"
-#include "resourcepool/resourcepoolnew_internal.h"
+#include "resourcepool/resourcepool.h"
+#include "resourcepool/resourcepool_internal.h"
 #include "presets/presettextures.h"
 
-struct ResourcePoolTextureNew
+struct ResourcePoolTexture
 {
 	ResourcePoolItemNew* owner;
 	Texture2D texture;
@@ -54,7 +54,7 @@ static void CreateTexturePayloadDelegated(ResourcePoolItemNew* item, bool (* cre
 	SetTextureFilter(texture, TEXTURE_FILTER_POINT);
 	SetTextureWrap(texture, TEXTURE_WRAP_CLAMP);
 
-	ResourcePoolTextureNew* payload = (ResourcePoolTextureNew*)MemAlloc(sizeof(ResourcePoolTextureNew));
+	ResourcePoolTexture* payload = (ResourcePoolTexture*)MemAlloc(sizeof(ResourcePoolTexture));
 	item->payload = payload;
 
 	payload->owner = item;
@@ -73,7 +73,7 @@ static void CreatePresetTexturePayload(ResourcePoolItemNew* item)
 
 static void DestroyTexturePayload(ResourcePoolItemNew* item)
 {
-	ResourcePoolTextureNew* payload = (ResourcePoolTextureNew*)item->payload;
+	ResourcePoolTexture* payload = (ResourcePoolTexture*)item->payload;
 
 	if ( payload )
 	{
@@ -81,7 +81,7 @@ static void DestroyTexturePayload(ResourcePoolItemNew* item)
 	}
 }
 
-ResourcePoolTextureNew* ResourcePoolNew_LoadTextureAndAddRef(const char* path)
+ResourcePoolTexture* ResourcePool_LoadTextureAndAddRef(const char* path)
 {
 	ResourcePoolItemNew* item = ResourcePoolInternal_CreateAndAddRef(
 		&TexturePoolHead,
@@ -89,10 +89,10 @@ ResourcePoolTextureNew* ResourcePoolNew_LoadTextureAndAddRef(const char* path)
 		&CreateTexturePayload
 	);
 
-	return item ? (ResourcePoolTextureNew*)item->payload : NULL;
+	return item ? (ResourcePoolTexture*)item->payload : NULL;
 }
 
-ResourcePoolTextureNew* ResourcePoolNew_LoadPresetTextureAndAddRef(const char* name)
+ResourcePoolTexture* ResourcePool_LoadPresetTextureAndAddRef(const char* name)
 {
 	ResourcePoolItemNew* item = ResourcePoolInternal_CreateAndAddRef(
 		&PresetTexturePoolHead,
@@ -100,10 +100,10 @@ ResourcePoolTextureNew* ResourcePoolNew_LoadPresetTextureAndAddRef(const char* n
 		&CreatePresetTexturePayload
 	);
 
-	return item ? (ResourcePoolTextureNew*)item->payload : NULL;
+	return item ? (ResourcePoolTexture*)item->payload : NULL;
 }
 
-ResourcePoolTextureNew* ResourcePoolNew_AddTextureRef(ResourcePoolTextureNew* item)
+ResourcePoolTexture* ResourcePool_AddTextureRef(ResourcePoolTexture* item)
 {
 	if ( !item )
 	{
@@ -114,7 +114,7 @@ ResourcePoolTextureNew* ResourcePoolNew_AddTextureRef(ResourcePoolTextureNew* it
 	return item;
 }
 
-void ResourcePoolNew_RemoveTextureRef(ResourcePoolTextureNew* item)
+void ResourcePool_RemoveTextureRef(ResourcePoolTexture* item)
 {
 	if ( !item )
 	{
@@ -124,12 +124,12 @@ void ResourcePoolNew_RemoveTextureRef(ResourcePoolTextureNew* item)
 	ResourcePoolInternal_RemoveRef(item->owner, &DestroyTexturePayload);
 }
 
-Texture2D* ResourcePoolNew_GetTexture(ResourcePoolTextureNew* item)
+Texture2D* ResourcePool_GetTexture(ResourcePoolTexture* item)
 {
 	return item ? &item->texture : NULL;
 }
 
-const char* ResourcePoolNew_GetTextureFileKey(ResourcePoolTextureNew* item)
+const char* ResourcePool_GetTextureFileKey(ResourcePoolTexture* item)
 {
 	return item ? item->owner->key : NULL;
 }

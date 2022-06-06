@@ -1,8 +1,8 @@
-#include "resourcepool/resourcepoolnew.h"
-#include "resourcepool/resourcepoolnew_internal.h"
+#include "resourcepool/resourcepool.h"
+#include "resourcepool/resourcepool_internal.h"
 #include "descriptor/spritesheetdescriptor.h"
 
-struct ResourcePoolSpriteSheetNew
+struct ResourcePoolSpriteSheet
 {
 	ResourcePoolItemNew* owner;
 	SpriteSheetDescriptor* descriptor;
@@ -19,7 +19,7 @@ static void CreateSpriteSheetPayload(ResourcePoolItemNew* item)
 		return;
 	}
 
-	ResourcePoolSpriteSheetNew* payload = (ResourcePoolSpriteSheetNew*)MemAlloc(sizeof(ResourcePoolSpriteSheetNew));
+	ResourcePoolSpriteSheet* payload = (ResourcePoolSpriteSheet*)MemAlloc(sizeof(ResourcePoolSpriteSheet));
 	item->payload = payload;
 
 	payload->owner = item;
@@ -28,7 +28,7 @@ static void CreateSpriteSheetPayload(ResourcePoolItemNew* item)
 
 static void DestroySpriteSheetPayload(ResourcePoolItemNew* item)
 {
-	ResourcePoolSpriteSheetNew* payload = (ResourcePoolSpriteSheetNew*)item->payload;
+	ResourcePoolSpriteSheet* payload = (ResourcePoolSpriteSheet*)item->payload;
 
 	if ( payload )
 	{
@@ -36,7 +36,7 @@ static void DestroySpriteSheetPayload(ResourcePoolItemNew* item)
 	}
 }
 
-ResourcePoolSpriteSheetNew* ResourcePoolNew_LoadSpriteSheetAndAddRef(const char* path)
+ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetAndAddRef(const char* path)
 {
 	ResourcePoolItemNew* item = ResourcePoolInternal_CreateAndAddRef(
 		&PoolHead,
@@ -44,10 +44,10 @@ ResourcePoolSpriteSheetNew* ResourcePoolNew_LoadSpriteSheetAndAddRef(const char*
 		&CreateSpriteSheetPayload
 	);
 
-	return item ? (ResourcePoolSpriteSheetNew*)item->payload : NULL;
+	return item ? (ResourcePoolSpriteSheet*)item->payload : NULL;
 }
 
-ResourcePoolSpriteSheetNew* ResourcePoolNew_AddSpriteSheetRef(ResourcePoolSpriteSheetNew* item)
+ResourcePoolSpriteSheet* ResourcePool_AddSpriteSheetRef(ResourcePoolSpriteSheet* item)
 {
 	if ( !item )
 	{
@@ -58,7 +58,7 @@ ResourcePoolSpriteSheetNew* ResourcePoolNew_AddSpriteSheetRef(ResourcePoolSprite
 	return item;
 }
 
-void ResourcePoolNew_RemoveSpriteSheetRef(ResourcePoolSpriteSheetNew* item)
+void ResourcePool_RemoveSpriteSheetRef(ResourcePoolSpriteSheet* item)
 {
 	if ( !item )
 	{
@@ -68,12 +68,12 @@ void ResourcePoolNew_RemoveSpriteSheetRef(ResourcePoolSpriteSheetNew* item)
 	ResourcePoolInternal_RemoveRef(item->owner, &DestroySpriteSheetPayload);
 }
 
-struct SpriteSheetDescriptor* ResourcePoolNew_GetSpriteSheet(ResourcePoolSpriteSheetNew* item)
+struct SpriteSheetDescriptor* ResourcePool_GetSpriteSheet(ResourcePoolSpriteSheet* item)
 {
 	return item ? item->descriptor : NULL;
 }
 
-const char* ResourcePoolNew_GetSpriteSheetKey(ResourcePoolSpriteSheetNew* item)
+const char* ResourcePool_GetSpriteSheetKey(ResourcePoolSpriteSheet* item)
 {
 	return item ? item->owner->key : NULL;
 }

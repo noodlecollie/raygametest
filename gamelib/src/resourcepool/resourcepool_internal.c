@@ -1,4 +1,4 @@
-#include "resourcepool/resourcepoolnew_internal.h"
+#include "resourcepool/resourcepool_internal.h"
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/gameutil.h"
 

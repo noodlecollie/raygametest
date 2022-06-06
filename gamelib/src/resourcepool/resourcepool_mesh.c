@@ -1,8 +1,8 @@
-#include "resourcepool/resourcepoolnew.h"
-#include "resourcepool/resourcepoolnew_internal.h"
+#include "resourcepool/resourcepool.h"
+#include "resourcepool/resourcepool_internal.h"
 #include "presets/presetmeshes.h"
 
-struct ResourcePoolMeshNew
+struct ResourcePoolMesh
 {
 	ResourcePoolItemNew* owner;
 	Mesh mesh;
@@ -19,7 +19,7 @@ static void CreatePresetMeshPayload(ResourcePoolItemNew* item)
 		return;
 	}
 
-	ResourcePoolMeshNew* payload = (ResourcePoolMeshNew*)MemAlloc(sizeof(ResourcePoolMeshNew));
+	ResourcePoolMesh* payload = (ResourcePoolMesh*)MemAlloc(sizeof(ResourcePoolMesh));
 	item->payload = payload;
 
 	payload->owner = item;
@@ -28,7 +28,7 @@ static void CreatePresetMeshPayload(ResourcePoolItemNew* item)
 
 static void DestroyMeshPayload(ResourcePoolItemNew* item)
 {
-	ResourcePoolMeshNew* payload = (ResourcePoolMeshNew*)item->payload;
+	ResourcePoolMesh* payload = (ResourcePoolMesh*)item->payload;
 
 	if ( payload )
 	{
@@ -36,7 +36,7 @@ static void DestroyMeshPayload(ResourcePoolItemNew* item)
 	}
 }
 
-ResourcePoolMeshNew* ResourcePoolNew_LoadPresetMeshAndAddRef(const char* name)
+ResourcePoolMesh* ResourcePool_LoadPresetMeshAndAddRef(const char* name)
 {
 	ResourcePoolItemNew* item = ResourcePoolInternal_CreateAndAddRef(
 		&PresetMeshPoolHead,
@@ -44,10 +44,10 @@ ResourcePoolMeshNew* ResourcePoolNew_LoadPresetMeshAndAddRef(const char* name)
 		&CreatePresetMeshPayload
 	);
 
-	return item ? (ResourcePoolMeshNew*)item->payload : NULL;
+	return item ? (ResourcePoolMesh*)item->payload : NULL;
 }
 
-ResourcePoolMeshNew* ResourcePoolNew_AddMeshRef(ResourcePoolMeshNew* item)
+ResourcePoolMesh* ResourcePool_AddMeshRef(ResourcePoolMesh* item)
 {
 	if ( !item )
 	{
@@ -58,7 +58,7 @@ ResourcePoolMeshNew* ResourcePoolNew_AddMeshRef(ResourcePoolMeshNew* item)
 	return item;
 }
 
-void ResourcePoolNew_RemoveMeshRef(ResourcePoolMeshNew* item)
+void ResourcePool_RemoveMeshRef(ResourcePoolMesh* item)
 {
 	if ( !item )
 	{
@@ -68,12 +68,12 @@ void ResourcePoolNew_RemoveMeshRef(ResourcePoolMeshNew* item)
 	ResourcePoolInternal_RemoveRef(item->owner, &DestroyMeshPayload);
 }
 
-Mesh* ResourcePoolNew_GetMesh(ResourcePoolMeshNew* item)
+Mesh* ResourcePool_GetMesh(ResourcePoolMesh* item)
 {
 	return item ? &item->mesh : NULL;
 }
 
-const char* ResourcePoolNew_GetMeshKey(ResourcePoolMeshNew* item)
+const char* ResourcePool_GetMeshKey(ResourcePoolMesh* item)
 {
 	return item ? item->owner->key : NULL;
 }
