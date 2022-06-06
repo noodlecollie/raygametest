@@ -4,12 +4,12 @@
 
 struct ResourcePoolTexture
 {
-	ResourcePoolItemNew* owner;
+	ResourcePoolItem* owner;
 	Texture2D texture;
 };
 
-static ResourcePoolItemNew* TexturePoolHead = NULL;
-static ResourcePoolItemNew* PresetTexturePoolHead = NULL;
+static ResourcePoolItem* TexturePoolHead = NULL;
+static ResourcePoolItem* PresetTexturePoolHead = NULL;
 
 static bool LocalLoadTexture(Texture2D* texture, const char* path)
 {
@@ -37,7 +37,7 @@ static bool LocalLoadPresetTexture(Texture2D* texture, const char* name)
 	return true;
 }
 
-static void CreateTexturePayloadDelegated(ResourcePoolItemNew* item, bool (* createFunc)(Texture2D*, const char*))
+static void CreateTexturePayloadDelegated(ResourcePoolItem* item, bool (* createFunc)(Texture2D*, const char*))
 {
 	Texture2D texture = { 0 };
 
@@ -61,17 +61,17 @@ static void CreateTexturePayloadDelegated(ResourcePoolItemNew* item, bool (* cre
 	payload->texture = texture;
 }
 
-static void CreateTexturePayload(ResourcePoolItemNew* item)
+static void CreateTexturePayload(ResourcePoolItem* item)
 {
 	CreateTexturePayloadDelegated(item, &LocalLoadTexture);
 }
 
-static void CreatePresetTexturePayload(ResourcePoolItemNew* item)
+static void CreatePresetTexturePayload(ResourcePoolItem* item)
 {
 	CreateTexturePayloadDelegated(item, &LocalLoadPresetTexture);
 }
 
-static void DestroyTexturePayload(ResourcePoolItemNew* item)
+static void DestroyTexturePayload(ResourcePoolItem* item)
 {
 	ResourcePoolTexture* payload = (ResourcePoolTexture*)item->payload;
 
@@ -83,7 +83,7 @@ static void DestroyTexturePayload(ResourcePoolItemNew* item)
 
 ResourcePoolTexture* ResourcePool_LoadTextureAndAddRef(const char* path)
 {
-	ResourcePoolItemNew* item = ResourcePoolInternal_CreateAndAddRef(
+	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
 		&TexturePoolHead,
 		path,
 		&CreateTexturePayload
@@ -94,7 +94,7 @@ ResourcePoolTexture* ResourcePool_LoadTextureAndAddRef(const char* path)
 
 ResourcePoolTexture* ResourcePool_LoadPresetTextureAndAddRef(const char* name)
 {
-	ResourcePoolItemNew* item = ResourcePoolInternal_CreateAndAddRef(
+	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
 		&PresetTexturePoolHead,
 		name,
 		&CreatePresetTexturePayload

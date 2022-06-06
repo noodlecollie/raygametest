@@ -2,29 +2,29 @@
 
 #include "external/uthash_wrapper.h"
 
-typedef struct ResourcePoolItemNew
+typedef struct ResourcePoolItem
 {
 	UT_hash_handle hh;
 	char* key;
 	size_t refCount;
-	struct ResourcePoolItemNew** head;
+	struct ResourcePoolItem** head;
 	void* payload;
-} ResourcePoolItemNew;
+} ResourcePoolItem;
 
-typedef void (* ResourcePoolCreatePayloadFunc)(ResourcePoolItemNew* item);
-typedef void (* ResourcePoolDestroyPayloadFunc)(ResourcePoolItemNew* item);
+typedef void (* ResourcePoolCreatePayloadFunc)(ResourcePoolItem* item);
+typedef void (* ResourcePoolDestroyPayloadFunc)(ResourcePoolItem* item);
 
-ResourcePoolItemNew* ResourcePoolInternal_CreateAndAddRef(
-	ResourcePoolItemNew** head,
+ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
+	ResourcePoolItem** head,
 	const char* key,
 	ResourcePoolCreatePayloadFunc createFunc
 );
 
 void ResourcePoolInternal_AddRef(
-	ResourcePoolItemNew* item
+	ResourcePoolItem* item
 );
 
 void ResourcePoolInternal_RemoveRef(
-	ResourcePoolItemNew* item,
+	ResourcePoolItem* item,
 	ResourcePoolDestroyPayloadFunc destroyFunc
 );

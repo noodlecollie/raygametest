@@ -4,13 +4,13 @@
 
 struct ResourcePoolSpriteSheet
 {
-	ResourcePoolItemNew* owner;
+	ResourcePoolItem* owner;
 	SpriteSheetDescriptor* descriptor;
 };
 
-static ResourcePoolItemNew* PoolHead = NULL;
+static ResourcePoolItem* PoolHead = NULL;
 
-static void CreateSpriteSheetPayload(ResourcePoolItemNew* item)
+static void CreateSpriteSheetPayload(ResourcePoolItem* item)
 {
 	SpriteSheetDescriptor* descriptor = SpriteSheetDescriptor_LoadFromJSON(item->key);
 
@@ -26,7 +26,7 @@ static void CreateSpriteSheetPayload(ResourcePoolItemNew* item)
 	payload->descriptor = descriptor;
 }
 
-static void DestroySpriteSheetPayload(ResourcePoolItemNew* item)
+static void DestroySpriteSheetPayload(ResourcePoolItem* item)
 {
 	ResourcePoolSpriteSheet* payload = (ResourcePoolSpriteSheet*)item->payload;
 
@@ -38,7 +38,7 @@ static void DestroySpriteSheetPayload(ResourcePoolItemNew* item)
 
 ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetAndAddRef(const char* path)
 {
-	ResourcePoolItemNew* item = ResourcePoolInternal_CreateAndAddRef(
+	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
 		&PoolHead,
 		path,
 		&CreateSpriteSheetPayload

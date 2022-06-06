@@ -4,13 +4,13 @@
 
 struct ResourcePoolMesh
 {
-	ResourcePoolItemNew* owner;
+	ResourcePoolItem* owner;
 	Mesh mesh;
 };
 
-ResourcePoolItemNew* PresetMeshPoolHead = NULL;
+ResourcePoolItem* PresetMeshPoolHead = NULL;
 
-static void CreatePresetMeshPayload(ResourcePoolItemNew* item)
+static void CreatePresetMeshPayload(ResourcePoolItem* item)
 {
 	Mesh mesh = PresetMeshes_Create(item->key);
 
@@ -26,7 +26,7 @@ static void CreatePresetMeshPayload(ResourcePoolItemNew* item)
 	payload->mesh = mesh;
 }
 
-static void DestroyMeshPayload(ResourcePoolItemNew* item)
+static void DestroyMeshPayload(ResourcePoolItem* item)
 {
 	ResourcePoolMesh* payload = (ResourcePoolMesh*)item->payload;
 
@@ -38,7 +38,7 @@ static void DestroyMeshPayload(ResourcePoolItemNew* item)
 
 ResourcePoolMesh* ResourcePool_LoadPresetMeshAndAddRef(const char* name)
 {
-	ResourcePoolItemNew* item = ResourcePoolInternal_CreateAndAddRef(
+	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
 		&PresetMeshPoolHead,
 		name,
 		&CreatePresetMeshPayload

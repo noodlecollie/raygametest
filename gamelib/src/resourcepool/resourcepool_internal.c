@@ -2,21 +2,21 @@
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/gameutil.h"
 
-static inline ResourcePoolItemNew* FindItemByPath(ResourcePoolItemNew* head, const char* path)
+static inline ResourcePoolItem* FindItemByPath(ResourcePoolItem* head, const char* path)
 {
-	ResourcePoolItemNew* item = NULL;
+	ResourcePoolItem* item = NULL;
 	HASH_FIND_STR(head, path, item);
 	return item;
 }
 
-static inline ResourcePoolItemNew* CreateItemBase(const char* path)
+static inline ResourcePoolItem* CreateItemBase(const char* path)
 {
-	ResourcePoolItemNew* item = (ResourcePoolItemNew*)MemAlloc(sizeof(ResourcePoolItemNew));
+	ResourcePoolItem* item = (ResourcePoolItem*)MemAlloc(sizeof(ResourcePoolItem));
 	item->key = DuplicateString(path);
 	return item;
 }
 
-static inline void DestroyItemGeneric(ResourcePoolItemNew* item)
+static inline void DestroyItemGeneric(ResourcePoolItem* item)
 {
 	if ( item->payload )
 	{
@@ -27,23 +27,23 @@ static inline void DestroyItemGeneric(ResourcePoolItemNew* item)
 	MemFree(item);
 }
 
-static inline void AddItemToHash(ResourcePoolItemNew** head, ResourcePoolItemNew* item)
+static inline void AddItemToHash(ResourcePoolItem** head, ResourcePoolItem* item)
 {
 	item->head = head;
 	HASH_ADD_STR(*item->head, key, item);
 }
 
-static inline void RemoveItemFromHash(ResourcePoolItemNew* item)
+static inline void RemoveItemFromHash(ResourcePoolItem* item)
 {
 	HASH_DEL(*item->head, item);
 }
 
-static inline void AddRef(ResourcePoolItemNew* item)
+static inline void AddRef(ResourcePoolItem* item)
 {
 	++item->refCount;
 }
 
-static inline void RemoveRef(ResourcePoolItemNew* item)
+static inline void RemoveRef(ResourcePoolItem* item)
 {
 	if ( item->refCount > 0 )
 	{
@@ -51,8 +51,8 @@ static inline void RemoveRef(ResourcePoolItemNew* item)
 	}
 }
 
-ResourcePoolItemNew* ResourcePoolInternal_CreateAndAddRef(
-	ResourcePoolItemNew** head,
+ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
+	ResourcePoolItem** head,
 	const char* key,
 	ResourcePoolCreatePayloadFunc createFunc
 )
@@ -62,7 +62,7 @@ ResourcePoolItemNew* ResourcePoolInternal_CreateAndAddRef(
 		return NULL;
 	}
 
-	ResourcePoolItemNew* item = FindItemByPath(*head, key);
+	ResourcePoolItem* item = FindItemByPath(*head, key);
 
 	if ( !item )
 	{
@@ -84,7 +84,7 @@ ResourcePoolItemNew* ResourcePoolInternal_CreateAndAddRef(
 }
 
 void ResourcePoolInternal_AddRef(
-	ResourcePoolItemNew* item
+	ResourcePoolItem* item
 )
 {
 	if ( item )
@@ -94,7 +94,7 @@ void ResourcePoolInternal_AddRef(
 }
 
 void ResourcePoolInternal_RemoveRef(
-	ResourcePoolItemNew* item,
+	ResourcePoolItem* item,
 	ResourcePoolDestroyPayloadFunc destroyFunc
 )
 {

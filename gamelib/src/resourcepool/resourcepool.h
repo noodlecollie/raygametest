@@ -7,6 +7,7 @@ struct SpriteSheetDescriptor;
 typedef struct ResourcePoolTexture ResourcePoolTexture;
 typedef struct ResourcePoolSpriteSheet ResourcePoolSpriteSheet;
 typedef struct ResourcePoolMesh ResourcePoolMesh;
+typedef struct ResourcePoolShader ResourcePoolShader;
 
 // File paths are case sensitive here!
 // Even on case-insensitive systems, they are used
@@ -30,3 +31,8 @@ ResourcePoolMesh* ResourcePool_AddMeshRef(ResourcePoolMesh* item);
 void ResourcePool_RemoveMeshRef(ResourcePoolMesh* item);
 Mesh* ResourcePool_GetMesh(ResourcePoolMesh* item);
 const char* ResourcePool_GetMeshKey(ResourcePoolMesh* item);
+
+ResourcePoolShader* ResourcePool_LoadPresetShaderAndAddRef(const char* name);
+ResourcePoolShader* ResourcePool_AddShaderRef(ResourcePoolShader* item);
+void ResourcePool_RemoveShaderRef(ResourcePoolShader* item);
+const char* ResourcePool_GetShaderKey(ResourcePoolShader* item);

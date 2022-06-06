@@ -20,6 +20,7 @@ add_library(gamelib STATIC
 	src/rendering/terrainrenderer.c
 	src/resourcepool/resourcepool_internal.c
 	src/resourcepool/resourcepool_mesh.c
+	src/resourcepool/resourcepool_shader.c
 	src/resourcepool/resourcepool_spritesheet.c
 	src/resourcepool/resourcepool_texture.c
 	src/gameutil.c
