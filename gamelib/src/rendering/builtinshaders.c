@@ -29,3 +29,41 @@ const char* SHD_DEFAULT_FS =
 	"	finalColor = texelColor * colDiffuse * fragColor;\n"
 	"}\n"
 ;
+
+const char* SHD_SAMPLERECT_VS =
+	"#version 330\n"
+	"in vec3 vertexPosition;\n"
+	"in vec2 vertexTexCoord;\n"
+	"in vec4 vertexColor;\n"
+	"out vec2 fragTexCoord;\n"
+	"out vec4 fragColor;\n"
+	"uniform mat4 mvp;\n"
+	"void main()\n"
+	"{\n"
+	"	fragTexCoord = vertexTexCoord;\n"
+	"	fragColor = vertexColor;\n"
+	"	gl_Position = mvp*vec4(vertexPosition, 1.0);\n"
+	"}\n"
+;
+
+const char* SHD_SAMPLERECT_FS =
+	"#version 330\n"
+	"in vec2 fragTexCoord;\n"
+	"in vec4 fragColor;\n"
+	"out vec4 finalColor;\n"
+	"uniform sampler2D texture0;\n"
+	"uniform vec4 colDiffuse;\n"
+	"uniform vec4 sampleRect;\n"
+	"vec2 texCoOrdFroSampleRect(in vec4 rect, in vec2 coOrds)\n"
+	"{\n"
+	"	return vec2(\n"
+	"		rect.x + (coOrds.x * rect.z)),\n"
+	"		rect.y + (coOrds.y * rect.w))\n"
+	"	);\n"
+	"}\n"
+	"void main()\n"
+	"{\n"
+	"	vec4 texelColor = texture(texture0, texCoOrdFroSampleRect(sampleRect, fragTexCoord));\n"
+	"	finalColor = texelColor * colDiffuse * fragColor;\n"
+	"}\n"
+;

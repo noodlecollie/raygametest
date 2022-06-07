@@ -11,7 +11,11 @@ typedef struct ResourcePoolItem
 	void* payload;
 } ResourcePoolItem;
 
+// The create function should allocate and initialise the memory for the item payload.
 typedef void (* ResourcePoolCreatePayloadFunc)(ResourcePoolItem* item);
+
+// The destroy function should clea up any resources held in the payload,
+// but should NOT free the payload itself.
 typedef void (* ResourcePoolDestroyPayloadFunc)(ResourcePoolItem* item);
 
 ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(

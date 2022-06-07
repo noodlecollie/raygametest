@@ -5,3 +5,4 @@
 #define PRESET_TEXTURE_DEFAULT "preset_texture_default"
 
 #define PRESET_SHADER_DEFAULT "preset_shader_default"
+#define PRESET_SHADER_SAMPLERECT "preset_shader_samplerect"

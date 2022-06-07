@@ -8,6 +8,10 @@ Shader PresetShaders_Create(const char* name)
 	{
 		return LoadShaderFromMemory(SHD_DEFAULT_VS, SHD_DEFAULT_FS);
 	}
+	else if ( TextIsEqual(name, PRESET_SHADER_SAMPLERECT) )
+	{
+		return LoadShaderFromMemory(SHD_SAMPLERECT_VS, SHD_SAMPLERECT_FS);
+	}
 
 	return (Shader){ 0 };
 }
