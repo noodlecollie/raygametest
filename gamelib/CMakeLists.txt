@@ -13,6 +13,7 @@ add_library(gamelib STATIC
 	src/external/cJSON_wrapper.c
 	src/logic/playerlogic.c
 	src/presets/presetmeshes.c
+	src/presets/presetshaders.c
 	src/presets/presettextures.c
 	src/rendering/builtinshaders.c
 	src/rendering/renderutils.c

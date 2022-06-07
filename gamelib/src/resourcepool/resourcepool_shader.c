@@ -1,5 +1,6 @@
 #include "resourcepool/resourcepool.h"
 #include "resourcepool/resourcepool_internal.h"
+#include "presets/presetshaders.h"
 
 struct ResourcePoolShader
 {
@@ -11,19 +12,28 @@ static ResourcePoolItem* PresetShaderPoolHead = NULL;
 
 static void CreatePresetShaderPayload(ResourcePoolItem* item)
 {
-	// TODO: Load shader here
+	Shader shader = PresetShaders_Create(item->key);
+
+	if ( !shader.id )
+	{
+		return;
+	}
 
 	ResourcePoolShader* payload = (ResourcePoolShader*)MemAlloc(sizeof(ResourcePoolShader));
 	item->payload = payload;
 
 	payload->owner = item;
-	// TODO: Set shader here
+	payload->shader = shader;
 }
 
 static void DestroyShaderPayload(ResourcePoolItem* item)
 {
-	// TODO
-	(void)item;
+	ResourcePoolShader* payload = (ResourcePoolShader*)item->payload;
+
+	if ( payload )
+	{
+		UnloadShader(payload->shader);
+	}
 }
 
 ResourcePoolShader* ResourcePool_LoadPresetShaderAndAddRef(const char* name)
