@@ -16,6 +16,7 @@ static void CreateSpriteSheetPayload(ResourcePoolItem* item)
 
 	if ( !descriptor )
 	{
+		TraceLog(LOG_DEBUG, "RESOURCE POOL: Unable to load sprite sheet descriptor \"%s\"", item->key);
 		return;
 	}
 

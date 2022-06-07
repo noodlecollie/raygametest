@@ -46,7 +46,7 @@ static void ReportParseError(const char* filePath, const char* data)
 	const char* error = cJSON_GetErrorPtr();
 
 	TraceLog(
-		LOG_DEBUG,
+		LOG_ERROR,
 		"JSON: Failed to parse %s. Error at character %zu:\n"
 		"... %sn"
 		"...     Here ^",
@@ -88,7 +88,7 @@ cJSON* cJSONWrapper_ParseFile(const char* filePath)
 	else
 	{
 		TraceLog(
-			LOG_DEBUG,
+			LOG_ERROR,
 			"JSON: Failed to read file %s from disk, or contents were empty.",
 			filePath
 		);

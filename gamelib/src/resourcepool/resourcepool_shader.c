@@ -14,8 +14,9 @@ static void CreatePresetShaderPayload(ResourcePoolItem* item)
 {
 	Shader shader = PresetShaders_Create(item->key);
 
-	if ( !shader.id )
+	if ( shader.id == 0 )
 	{
+		TraceLog(LOG_DEBUG, "RESOURCE POOL: Unable to create preset shader \"%s\"", item->key);
 		return;
 	}
 

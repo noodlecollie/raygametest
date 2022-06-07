@@ -91,9 +91,15 @@ static Mesh CreateQuadMesh()
 
 Mesh PresetMeshes_Create(const char* presetName)
 {
+	TraceLog(LOG_DEBUG, "PRESET MESHES: Attempting to create preset mesh \"%s\"", presetName ? presetName : "");
+
 	if ( TextIsEqual(presetName, PRESET_MESH_QUAD) )
 	{
 		return CreateQuadMesh();
+	}
+	else
+	{
+		TraceLog(LOG_ERROR, "PRESET MESHES: Preset mesh name \"%s\" was not recognised", presetName ? presetName : "");
 	}
 
 	return (Mesh){ 0 };

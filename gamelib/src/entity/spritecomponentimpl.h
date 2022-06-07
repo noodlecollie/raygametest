@@ -12,6 +12,8 @@ typedef struct SpriteComponentImpl
 	SpriteComponent component;
 
 	ResourcePoolSpriteSheet* sprSheetResource;
+	ResourcePoolShader* shaderResource;
+
 	SpriteSheetAnimation* animation;
 	float animTime;
 } SpriteComponentImpl;

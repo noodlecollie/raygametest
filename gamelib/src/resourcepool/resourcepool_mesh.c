@@ -16,6 +16,7 @@ static void CreatePresetMeshPayload(ResourcePoolItem* item)
 
 	if ( mesh.vertexCount == 0 )
 	{
+		TraceLog(LOG_DEBUG, "RESOURCE POOL: Unable to create preset mesh \"%s\"", item->key);
 		return;
 	}
 

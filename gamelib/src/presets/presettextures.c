@@ -8,7 +8,7 @@ static Texture2D CreateDefaultTexture()
 
 	if ( !image.data )
 	{
-		TraceLog(LOG_WARNING, "PRESET TEXTURES: Could not create base image for default texture!");
+		TraceLog(LOG_ERROR, "PRESET TEXTURES: Could not create base image for default texture!");
 		return texture;
 	}
 
@@ -28,7 +28,7 @@ static Texture2D CreateDefaultTexture()
 
 	if ( texture.id == 0 )
 	{
-		TraceLog(LOG_WARNING, "PRESET TEXTURES: Could not create default texture!");
+		TraceLog(LOG_ERROR, "PRESET TEXTURES: Could not create default texture!");
 	}
 
 	return texture;
@@ -36,9 +36,15 @@ static Texture2D CreateDefaultTexture()
 
 Texture2D PresetTextures_Create(const char* presetName)
 {
+	TraceLog(LOG_DEBUG, "PRESET TEXTURES: Attempting to create preset texture \"%s\"", presetName ? presetName : "");
+
 	if ( TextIsEqual(presetName, PRESET_TEXTURE_DEFAULT) )
 	{
 		return CreateDefaultTexture();
+	}
+	else
+	{
+		TraceLog(LOG_ERROR, "PRESET TEXTURES: Preset texture name \"%s\" was not recognised", presetName ? presetName : "");
 	}
 
 	return (Texture2D){ 0 };

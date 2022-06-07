@@ -17,7 +17,7 @@ static bool LocalLoadTexture(Texture2D* texture, const char* path)
 
 	if ( texture->id == 0 )
 	{
-		TraceLog(LOG_DEBUG, "RESOURCE POOL: Unable to create texture for %s", path);
+		TraceLog(LOG_ERROR, "RESOURCE POOL: Unable to create texture for %s", path);
 		return false;
 	}
 
@@ -30,7 +30,7 @@ static bool LocalLoadPresetTexture(Texture2D* texture, const char* name)
 
 	if ( texture->id == 0 )
 	{
-		TraceLog(LOG_DEBUG, "RESOURCE POOL: Unable to create preset texture \"%s\"", name);
+		TraceLog(LOG_ERROR, "RESOURCE POOL: Unable to create preset texture \"%s\"", name);
 		return false;
 	}
 

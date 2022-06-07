@@ -4,6 +4,7 @@
 #include "resourcepool/resourcepool.h"
 #include "descriptor/spritesheetdescriptor.h"
 #include "rendering/spriterenderer.h"
+#include "presets/presetnames.h"
 
 static void ResetSpriteAnimationVars(SpriteComponentImpl* impl)
 {
@@ -30,6 +31,8 @@ SpriteComponentImpl* SpriteComponentImpl_Create(struct Entity* ownerEntity)
 
 	impl->component.impl = impl;
 	impl->ownerEntity = ownerEntity;
+	impl->shaderResource = ResourcePool_LoadPresetShaderAndAddRef(PRESET_SHADER_SAMPLERECT);
+
 	impl->component.scale = (Vector2){ 1.0f, 1.0f };
 	impl->component.animationSpeed = 1.0f;
 
@@ -42,6 +45,9 @@ void SpriteComponentImpl_Destroy(SpriteComponentImpl* impl)
 	{
 		return;
 	}
+
+	ResourcePool_RemoveShaderRef(impl->shaderResource);
+	impl->shaderResource = NULL;
 
 	if ( impl->sprSheetResource )
 	{

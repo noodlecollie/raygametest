@@ -338,7 +338,7 @@ SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSON(const char* filePath)
 
 		LoadAnimations(filePath, content, descriptor);
 
-		TraceLog(LOG_DEBUG, "SPRITESHEET DESCRIPTOR: [%s] Loaded successfully (%zu animations)", filePath, descriptor->numAnimations);
+		TraceLog(LOG_INFO, "SPRITESHEET DESCRIPTOR: [%s] Loaded successfully (%zu animations)", filePath, descriptor->numAnimations);
 	}
 	else
 	{
