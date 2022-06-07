@@ -9,6 +9,7 @@
 #include "gamelib/entity/terraincomponent.h"
 #include "listmacros.h"
 #include "rendering/renderutils.h"
+#include "rendering/spriterenderer.h"
 
 typedef struct WorldImpl
 {
@@ -18,6 +19,16 @@ typedef struct WorldImpl
 
 	CameraComponent* activeCamera;
 } WorldImpl;
+
+static inline void IncreaseSubsystemRefCount()
+{
+	SpriteRenderer_AddRef();
+}
+
+static inline void DecreaseSubsystemRefCount()
+{
+	SpriteRenderer_RemoveRef();
+}
 
 static void DestroyAllEntities(WorldImpl* impl)
 {
@@ -37,6 +48,8 @@ static void DestroyAllEntities(WorldImpl* impl)
 
 World* World_Create(void)
 {
+	IncreaseSubsystemRefCount();
+
 	World* world = (World*)MemAlloc(sizeof(World));
 	world->impl = (WorldImpl*)MemAlloc(sizeof(WorldImpl));
 
@@ -55,6 +68,8 @@ void World_Destroy(World* world)
 	DestroyAllEntities(world->impl);
 	MemFree(world->impl);
 	MemFree(world);
+
+	DecreaseSubsystemRefCount();
 }
 
 struct Entity* World_CreateEntity(World* world)

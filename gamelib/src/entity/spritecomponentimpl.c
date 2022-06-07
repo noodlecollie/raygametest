@@ -31,7 +31,6 @@ SpriteComponentImpl* SpriteComponentImpl_Create(struct Entity* ownerEntity)
 
 	impl->component.impl = impl;
 	impl->ownerEntity = ownerEntity;
-	impl->shaderResource = ResourcePool_LoadPresetShaderAndAddRef(PRESET_SHADER_SAMPLERECT);
 
 	impl->component.scale = (Vector2){ 1.0f, 1.0f };
 	impl->component.animationSpeed = 1.0f;
@@ -45,9 +44,6 @@ void SpriteComponentImpl_Destroy(SpriteComponentImpl* impl)
 	{
 		return;
 	}
-
-	ResourcePool_RemoveShaderRef(impl->shaderResource);
-	impl->shaderResource = NULL;
 
 	if ( impl->sprSheetResource )
 	{
@@ -117,13 +113,12 @@ void SpriteComponentImpl_Render(SpriteComponentImpl* impl, Camera3D camera)
 		return;
 	}
 
-	// TODO: Fix for 3D
-	// SpriteRenderer_DrawSpriteFrame(
-	// 	impl->animation,
-	// 	(size_t)(impl->animTime * (float)numFrames),
-	// 	Vector2Add(impl->ownerEntity->position, impl->component.offset),
-	// 	impl->component.scale
-	// );
+	SpriteRenderer_DrawSpriteFrameNew(
+		impl->animation,
+		(size_t)(impl->animTime * (float)numFrames),
+		Vector2Add(impl->ownerEntity->position, impl->component.offset),
+		impl->component.scale
+	);
 }
 
 struct Entity* SpriteComponent_GetOwnerEntity(const SpriteComponent* component)

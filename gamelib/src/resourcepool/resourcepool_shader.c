@@ -69,6 +69,11 @@ void ResourcePool_RemoveShaderRef(ResourcePoolShader* item)
 	ResourcePoolInternal_RemoveRef(item->owner, &DestroyShaderPayload);
 }
 
+Shader* ResourcePool_GetShader(ResourcePoolShader* item)
+{
+	return item ? &item->shader : NULL;
+}
+
 const char* ResourcePool_GetShaderKey(ResourcePoolShader* item)
 {
 	return item ? item->owner->key : NULL;

@@ -40,15 +40,26 @@ static inline void RemoveItemFromHash(ResourcePoolItem* item)
 
 static inline void AddRef(ResourcePoolItem* item)
 {
+	if ( (item->refCount + 1) < item->refCount )
+	{
+		// Should never happen, better that we know from a fatal log than a crash
+		TraceLog(LOG_FATAL, "RESOURCE POOL: Ref count overflow when adding ref for \"%s\"!", item->key);
+		return;
+	}
+
 	++item->refCount;
 }
 
 static inline void RemoveRef(ResourcePoolItem* item)
 {
-	if ( item->refCount > 0 )
+	if ( item->refCount == 0 )
 	{
-		--item->refCount;
+		// Should never happen, better that we know from a fatal log than a crash
+		TraceLog(LOG_FATAL, "RESOURCE POOL: Ref count underflow when removing ref for \"%s\"!", item->key);
+		return;
 	}
+
+	--item->refCount;
 }
 
 ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(

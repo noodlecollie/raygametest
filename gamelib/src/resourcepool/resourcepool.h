@@ -35,4 +35,5 @@ const char* ResourcePool_GetMeshKey(ResourcePoolMesh* item);
 ResourcePoolShader* ResourcePool_LoadPresetShaderAndAddRef(const char* name);
 ResourcePoolShader* ResourcePool_AddShaderRef(ResourcePoolShader* item);
 void ResourcePool_RemoveShaderRef(ResourcePoolShader* item);
+Shader* ResourcePool_GetShader(ResourcePoolShader* item);
 const char* ResourcePool_GetShaderKey(ResourcePoolShader* item);
