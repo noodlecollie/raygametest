@@ -31,9 +31,14 @@ void TerrainRenderer_Draw(TerrainComponentImpl* impl, Camera3D camera)
 		{
 			for ( int x = 0; x < dims.x; ++x )
 			{
-				Rectangle blockRect = TerrainComponent_GetBlockWorldRectByCoOrds(&impl->component, (Vector2i){ x, y });
 				Color blockColour = TerrainComponent_GetBlockColourByCoOrds(&impl->component, 0, (Vector2i){ x, y });
-				DrawRectangleRec(blockRect, blockColour);
+
+				if ( blockColour.a == 0 )
+				{
+					continue;
+				}
+
+				Rectangle blockRect = TerrainComponent_GetBlockWorldRectByCoOrds(&impl->component, (Vector2i){ x, y });
 
 				// TODO: Allow layers to be set manually
 				const float depth = RenderUtils_GetDepthForLayer(DLAYER_BACKGROUND);

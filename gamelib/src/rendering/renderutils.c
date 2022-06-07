@@ -29,8 +29,10 @@ Rectangle RenderUtils_CalcOpenGLTextureSubRect(Vector2i textureDim, Rectangle su
 
 	if ( fabsf(textureRect.height) >= FLT_EPSILON )
 	{
-		out.y = 1.0f - (subRect.y / textureRect.height);
+		// OpenGL Y is in a different direction to bitmap Y.
+		const float top = 1.0f - (subRect.y / textureRect.height);
 		out.height = subRect.height / textureRect.height;
+		out.y = top - out.height;
 	}
 
 	return out;

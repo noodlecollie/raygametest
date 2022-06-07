@@ -177,9 +177,11 @@ void SpriteRenderer_DrawSpriteFrameNew(SpriteSheetAnimation* animation, size_t f
 	Vector2 sourceOrigin = SpriteSheetDescriptor_GetOrigin(sprDesc);
 
 	// Construct a matrix that represents the sprite mesh's transform.
-	Matrix transform = MatrixIdentity();
+	// We start out with a translation of (0.5, 0.5) so that the top left
+	// corner of the mesh lies at the origin.
+	Matrix transform = MatrixTranslate(0.5f, 0.5f, 0.0f);
 
-	// First of all, we must scale the sprite mesh (which is a square) to be the same size as the source rect.
+	// Then we must scale the sprite mesh (which is a unit square) to be the same size as the source rect.
 	transform = MatrixMultiply(transform, MatrixScale(sourceRect.width, sourceRect.height, 1.0f));
 
 	// Then translate the mesh so that the point specified as the origin is over the entity's position.
@@ -205,6 +207,8 @@ void SpriteRenderer_DrawSpriteFrameNew(SpriteSheetAnimation* animation, size_t f
 
 	Material material = Renderer->material;
 	material.shader = *shader;
+
+	SetMaterialTexture(&material, MATERIAL_MAP_DIFFUSE, *texture);
 
 	DrawMesh(*mesh, material, transform);
 }

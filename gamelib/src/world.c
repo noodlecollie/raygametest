@@ -1,3 +1,5 @@
+#include <math.h>
+#include <float.h>
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/world.h"
 #include "gamelib/physics.h"
@@ -292,6 +294,13 @@ void World_Render(World* world)
 	}
 
 	CameraComponentImpl* camImpl = world->impl->activeCamera->impl;
+
+	if ( fabsf(camImpl->component.zoom) < FLT_EPSILON )
+	{
+		TraceLog(LOG_WARNING, "WORLD: Render camera had zoom of zero!");
+		return;
+	}
+
 	Camera3D camera = { 0 };
 
 	camera.projection = CAMERA_ORTHOGRAPHIC;
@@ -301,7 +310,7 @@ void World_Render(World* world)
 	camera.position.z = CAMERA_FAR_DEPTH;
 
 	camera.up = (Vector3){ 0.0f, -1.0f, 0.0f };
-	camera.fovy = (float)GetScreenHeight();
+	camera.fovy = (float)GetScreenHeight() / camImpl->component.zoom;
 
 	BeginMode3D(camera);
 
