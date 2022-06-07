@@ -126,6 +126,23 @@ Vector2 RectangleMid(Rectangle rect)
 	return (Vector2){ rect.x + (rect.width / 2.0f), rect.y + (rect.height / 2.0f) };
 }
 
+Rectangle ClampRectangle(Rectangle rect, Rectangle bounds)
+{
+	Vector2 min = RectangleMin(rect);
+	Vector2 boundsMin = RectangleMin(bounds);
+
+	min.x = fmaxf(min.x, boundsMin.x);
+	min.y = fmaxf(min.y, boundsMin.y);
+
+	Vector2 max = RectangleMax(rect);
+	Vector2 boundsMax = RectangleMax(bounds);
+
+	max.x = fminf(max.x, boundsMax.x);
+	max.y = fminf(max.y, boundsMax.y);
+
+	return (Rectangle){ min.x, min.y, max.x - min.x, max.y - min.y };
+}
+
 bool RectangleHasNoArea(Rectangle rect)
 {
 	return fabsf(rect.width) < FLT_EPSILON || fabsf(rect.height) < FLT_EPSILON;

@@ -25,6 +25,7 @@ Vector2 Vector2ProjectAlongSurface(Vector2 delta, Vector2 surfaceNormal);
 Vector2 RectangleMin(Rectangle rect);
 Vector2 RectangleMax(Rectangle rect);
 Vector2 RectangleMid(Rectangle rect);
+Rectangle ClampRectangle(Rectangle rect, Rectangle bounds);
 
 bool RectangleHasNoArea(Rectangle rect);
 bool RectangleIsNull(Rectangle rect);
