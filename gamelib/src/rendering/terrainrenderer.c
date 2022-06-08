@@ -40,7 +40,7 @@ void TerrainRenderer_Draw(TerrainComponentImpl* impl, Camera3D camera)
 
 				Rectangle blockRect = TerrainComponent_GetBlockWorldRectByCoOrds(&impl->component, (Vector2i){ x, y });
 
-				// TODO: Allow layers to be set manually
+				// TODO: Allow layers to be set manually in terrain descriptor
 				const float depth = RenderUtils_GetDepthForLayer(DLAYER_BACKGROUND);
 
 				DrawTriangle3D(

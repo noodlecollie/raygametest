@@ -119,7 +119,13 @@ void SpriteRenderer_DrawSpriteFrame(SpriteSheetAnimation* animation, size_t fram
 	DrawTexturePro(*texture, sourceRect, destRect, Vector2Zero(), 0.0f, WHITE);
 }
 
-void SpriteRenderer_DrawSpriteFrameNew(SpriteSheetAnimation* animation, size_t frame, Vector2 position, Vector2 scale)
+void SpriteRenderer_DrawSpriteFrameNew(
+	SpriteSheetAnimation* animation,
+	size_t frame,
+	Vector2 position,
+	Vector2 scale,
+	DrawingLayer layer
+)
 {
 	if ( !Renderer )
 	{
@@ -191,8 +197,8 @@ void SpriteRenderer_DrawSpriteFrameNew(SpriteSheetAnimation* animation, size_t f
 	transform = MatrixMultiply(transform, MatrixScale(scale.x, scale.y, 1.0f));
 
 	// Then translate the sprite to the desired position.
-	// TODO: Layer position on Z
-	transform = MatrixMultiply(transform, MatrixTranslate(position.x, position.y, 0.0f));
+	const float depth = RenderUtils_GetDepthForLayer(layer);
+	transform = MatrixMultiply(transform, MatrixTranslate(position.x, position.y, depth));
 
 	// Set the source rect as a uniform.
 	const float sourceRectVec[4] =

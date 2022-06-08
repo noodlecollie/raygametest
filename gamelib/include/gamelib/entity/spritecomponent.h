@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include "gamelib/external/raylibheaders.h"
+#include "gamelib/drawinglayers.h"
 
 struct Entity;
 struct SpriteComponentImpl;
@@ -20,6 +21,9 @@ typedef struct SpriteComponent
 	// 1.0f is normal speed, 0.5f is half speed,
 	// 2.0f is double speed, etc.
 	float animationSpeed;
+
+	// Layer on which this sprite will be drawn.
+	DrawingLayer layer;
 } SpriteComponent;
 
 struct Entity* SpriteComponent_GetOwnerEntity(const SpriteComponent* component);
