@@ -54,7 +54,7 @@ const char* SHD_SAMPLERECT_FS =
 	"uniform sampler2D texture0;\n"
 	"uniform vec4 colDiffuse;\n"
 	"uniform vec4 sampleRect;\n"
-	"vec2 texCoOrdFroSampleRect(in vec4 rect, in vec2 coOrds)\n"
+	"vec2 texCoOrdFromSampleRect(in vec4 rect, in vec2 coOrds)\n"
 	"{\n"
 	"	return vec2(\n"
 	"		rect.x + (coOrds.x * rect.z),\n"
@@ -63,7 +63,7 @@ const char* SHD_SAMPLERECT_FS =
 	"}\n"
 	"void main()\n"
 	"{\n"
-	"	vec4 texelColor = texture(texture0, texCoOrdFroSampleRect(sampleRect, fragTexCoord));\n"
+	"	vec4 texelColor = texture(texture0, texCoOrdFromSampleRect(sampleRect, fragTexCoord));\n"
 	"	finalColor = texelColor * colDiffuse * fragColor;\n"
 	"}\n"
 ;
