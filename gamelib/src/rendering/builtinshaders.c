@@ -64,6 +64,10 @@ const char* SHD_SAMPLERECT_FS =
 	"void main()\n"
 	"{\n"
 	"	vec4 texelColor = texture(texture0, texCoOrdFromSampleRect(sampleRect, fragTexCoord));\n"
+	"	if ( texelColor.w < 0.5 )\n"
+	"	{\n"
+	"		discard;\n"
+	"	}\n"
 	"	finalColor = texelColor * colDiffuse * fragColor;\n"
 	"}\n"
 ;
