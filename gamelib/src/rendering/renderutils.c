@@ -7,11 +7,11 @@ const float CAMERA_FAR_DEPTH = -500.0f;
 
 float RenderUtils_GetDepthForLayer(DrawingLayer layer)
 {
-	static const float MAX_LAYER_DEPTH = 0.0f;
-	static const float MIN_LAYER_DEPTH = -(float)(((int)DLAYER__COUNT) - 1);
+	static const float FAR_LAYER_DEPTH = 0.0f;
+	static const float NEAR_LAYER_DEPTH = (float)((-(int)DLAYER__COUNT) - 1);
 
-	const float layerAsFloat = -(float)((int)layer);
-	return fmaxf(MIN_LAYER_DEPTH, fminf(layerAsFloat, MAX_LAYER_DEPTH));
+	const float layerAsFloat = (float)(-(int)layer);
+	return fmaxf(NEAR_LAYER_DEPTH, fminf(layerAsFloat, FAR_LAYER_DEPTH));
 }
 
 Rectangle RenderUtils_CalcOpenGLTextureSubRect(Vector2i textureDim, Rectangle subRect)
