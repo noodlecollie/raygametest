@@ -3,13 +3,17 @@
 	"version": 1,
 	"content":
 	{
+		"origin": [ 0, 0 ],
 		"animations":
 		[
 			{
-				"name": "static",
+				"name": "run_right",
+				"fps": 6,
 				"frames":
 				[
-					"res/sprites/raccoon/raccoon.png"
+					"res/sprites/raccoon/raccoon_runcycle_1.png",
+					"res/sprites/raccoon/raccoon_runcycle_2.png",
+					"res/sprites/raccoon/raccoon_runcycle_3.png"
 				]
 			}
 		]

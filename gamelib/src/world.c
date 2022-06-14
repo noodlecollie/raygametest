@@ -12,6 +12,8 @@
 #include "listmacros.h"
 #include "rendering/renderutils.h"
 #include "rendering/spriterenderer.h"
+#include "gamelib/debugging.h"
+#include "rendering/debugrendering.h"
 
 typedef struct WorldImpl
 {
@@ -45,6 +47,14 @@ static void DestroyAllEntities(WorldImpl* impl)
 		EntityImpl* next = slot->next;
 		EntityImpl_Destroy(slot);
 		slot = next;
+	}
+}
+
+static void RenderDebug(World* world, Camera3D camera)
+{
+	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
+	{
+		DebugRender_Entity(ent->impl, camera);
 	}
 }
 
@@ -213,21 +223,7 @@ void World_SetActiveCamera(World* world, struct CameraComponent* camera)
 }
 
 /*
-	New camera should look like the following:
-
-		CameraComponentImpl* camImpl = world->impl->activeCamera->impl;
-		Camera3D camera = { 0 };
-
-		camera.projection = CAMERA_ORTHOGRAPHIC;
-		camera.target = (Vector3){ camImpl->ownerEntity->position.x, camImpl->ownerEntity->position.y, 0.0f };
-
-		camera.position = camera.target;
-		camera.position.z = -500.0f; // This should depend on what world layers we define
-
-		camera.up = (Vector3){ 0.0f, -1.0f, 0.0f };
-		camera.fovy = (float)GetScreenHeight(); // To be verified, but looks correct
-
-	In addition, to perform instanced rendering we need to set up a shader that supports it.
+	To perform instanced rendering we need to set up a shader that supports it.
 	The following is based off the default shader:
 
 		static const char VS_CODE[] =
@@ -317,6 +313,11 @@ void World_Render(World* world)
 	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
 	{
 		EntityImpl_Render(ent->impl, camera);
+	}
+
+	if ( Debugging.debuggingEnabled )
+	{
+		RenderDebug(world, camera);
 	}
 
 	EndMode3D();

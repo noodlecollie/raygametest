@@ -3,13 +3,14 @@
 #include "rendering/renderutils.h"
 #include "gamelib/gameutil.h"
 
+static const float FAR_LAYER_DEPTH = 0.0f;
+static const float NEAR_LAYER_DEPTH = (float)((-(int)DLAYER__COUNT) - 1);
+
 const float CAMERA_FAR_DEPTH = -500.0f;
+const float DEBUG_OVERLAY_DEPTH = (float)(-(int)DLAYER__COUNT);
 
 float RenderUtils_GetDepthForLayer(DrawingLayer layer)
 {
-	static const float FAR_LAYER_DEPTH = 0.0f;
-	static const float NEAR_LAYER_DEPTH = (float)((-(int)DLAYER__COUNT) - 1);
-
 	const float layerAsFloat = (float)(-(int)layer);
 	return fmaxf(NEAR_LAYER_DEPTH, fminf(layerAsFloat, FAR_LAYER_DEPTH));
 }
@@ -36,4 +37,21 @@ Rectangle RenderUtils_CalcOpenGLTextureSubRect(Vector2i textureDim, Rectangle su
 	}
 
 	return out;
+}
+
+void DrawDebugScreenSpaceCross(Camera3D camera, Vector2 pos, float scale, Color colour)
+{
+	const float delta = scale * camera.fovy;
+
+	DrawLine3D(
+		(Vector3){ pos.x - delta, pos.y, DEBUG_OVERLAY_DEPTH },
+		(Vector3){ pos.x + delta, pos.y, DEBUG_OVERLAY_DEPTH },
+		colour
+	);
+
+	DrawLine3D(
+		(Vector3){ pos.x, pos.y - delta, DEBUG_OVERLAY_DEPTH },
+		(Vector3){ pos.x, pos.y + delta, DEBUG_OVERLAY_DEPTH },
+		colour
+	);
 }

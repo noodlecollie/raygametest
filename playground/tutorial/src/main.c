@@ -9,6 +9,7 @@
 #include "gamelib/entity/cameracomponent.h"
 #include "gamelib/logic/playermovementlogic.h"
 #include "gamelib/gameutil.h"
+#include "gamelib/debugging.h"
 
 int main(int argc, char** argv)
 {
@@ -19,6 +20,10 @@ int main(int argc, char** argv)
 	int screenHeight = 450;
 
 	SetTraceLogLevel(LOG_DEBUG);
+
+	Debugging.debuggingEnabled = true;
+	Debugging.renderPhysicsHulls = true;
+
 	InitWindow(screenWidth, screenHeight, "Tutorial");
 
 	const Vector2 dpiScale = GetWindowScaleDPI();
@@ -54,8 +59,6 @@ int main(int argc, char** argv)
 
 	SpriteComponent* playerSprite = Entity_CreateSpriteComponent(playerEnt);
 	SpriteComponent_SetSpriteSheet(playerSprite, "res/sprites/raccoon/raccoon.json");
-	playerSprite->offset.x = -16;
-	playerSprite->offset.y = -22;
 
 	LogicComponent* playerMovementLogic = Entity_AddLogicComponent(playerEnt);
 	PlayerMovementLogic_SetOnComponent(playerMovementLogic);

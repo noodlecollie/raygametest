@@ -1,7 +1,6 @@
 #include "entity/physicscomponentimpl.h"
 #include "gamelib/entity/entity.h"
 #include "gamelib/external/raylibheaders.h"
-
 PhysicsComponentImpl* PhysicsComponentImpl_Create(struct Entity* ownerEntity)
 {
 	if ( !ownerEntity )

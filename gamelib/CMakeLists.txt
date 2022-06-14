@@ -16,6 +16,7 @@ add_library(gamelib STATIC
 	src/presets/presetshaders.c
 	src/presets/presettextures.c
 	src/rendering/builtinshaders.c
+	src/rendering/debugrendering.c
 	src/rendering/renderutils.c
 	src/rendering/spriterenderer.c
 	src/rendering/terrainrenderer.c
@@ -24,6 +25,7 @@ add_library(gamelib STATIC
 	src/resourcepool/resourcepool_shader.c
 	src/resourcepool/resourcepool_spritesheet.c
 	src/resourcepool/resourcepool_texture.c
+	src/debugging.c
 	src/gameutil.c
 	src/memoryallocator.c
 	src/physics.c
