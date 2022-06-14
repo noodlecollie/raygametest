@@ -1,9 +1,10 @@
-#include "gamelib/logic/playerlogic.h"
+#include "gamelib/logic/playermovementlogic.h"
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/entity/entity.h"
 #include "gamelib/trace.h"
 #include "gamelib/entity/physicscomponent.h"
 #include "gamelib/entity/terraincomponent.h"
+#include "gamelib/entity/spritecomponent.h"
 #include "gamelib/physics.h"
 #include "gamelib/world.h"
 
@@ -54,7 +55,7 @@ static void OnComponentCleanup(LogicComponent* component)
 
 static void OnPreThink(LogicComponent* component)
 {
-	PlayerLogicData* data = (PlayerLogicData*)component->userData;
+	PlayerMovementLogicData* data = (PlayerMovementLogicData*)component->userData;
 	Entity* ownerEnt = LogicComponent_GetOwnerEntity(component);
 	PhysicsComponent* playerPhys = Entity_GetPhysicsComponent(ownerEnt);
 
@@ -89,13 +90,28 @@ static void OnPreThink(LogicComponent* component)
 
 static void OnPostThink(LogicComponent* component)
 {
-	PlayerLogicData* data = (PlayerLogicData*)component->userData;
+	PlayerMovementLogicData* data = (PlayerMovementLogicData*)component->userData;
 	Entity* thisEntity = LogicComponent_GetOwnerEntity(component);
 
 	data->onGround = CheckIfStandingOnGround(thisEntity);
+
+	SpriteComponent* playerSprite = Entity_GetSpriteComponent(thisEntity);
+	PhysicsComponent* playerPhys = Entity_GetPhysicsComponent(thisEntity);
+
+	if ( playerSprite && playerPhys )
+	{
+		if ( playerPhys->velocity.x > 0.0f )
+		{
+			playerSprite->transformFlags &= ~SPRITE_TRANS_FLIP_X;
+		}
+		else if ( playerPhys->velocity.x < 0.0f )
+		{
+			playerSprite->transformFlags |= SPRITE_TRANS_FLIP_X;
+		}
+	}
 }
 
-void PlayerLogic_SetOnComponent(LogicComponent* component)
+void PlayerMovementLogic_SetOnComponent(LogicComponent* component)
 {
 	if ( !component )
 	{
@@ -108,11 +124,11 @@ void PlayerLogic_SetOnComponent(LogicComponent* component)
 	component->callbacks.onPreThink = &OnPreThink;
 	component->callbacks.onPostThink = &OnPostThink;
 
-	component->userData = MemAlloc(sizeof(PlayerLogicData));
+	component->userData = MemAlloc(sizeof(PlayerMovementLogicData));
 	component->userDataType = PLAYER_LOGIC_DATA_TYPE_ID;
 }
 
-PlayerLogicData* PlayerLogic_GetDataFromComponent(LogicComponent* component)
+PlayerMovementLogicData* PlayerMovementLogic_GetDataFromComponent(LogicComponent* component)
 {
-	return (component && component->userDataType == PLAYER_LOGIC_DATA_TYPE_ID) ? (PlayerLogicData*)component->userData : NULL;
+	return (component && component->userDataType == PLAYER_LOGIC_DATA_TYPE_ID) ? (PlayerMovementLogicData*)component->userData : NULL;
 }

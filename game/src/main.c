@@ -8,7 +8,7 @@
 #include "gamelib/entity/logiccomponent.h"
 #include "gamelib/entity/cameracomponent.h"
 #include "gamelib/entity/spritecomponent.h"
-#include "gamelib/logic/playerlogic.h"
+#include "gamelib/logic/playermovementlogic.h"
 
 int main(int argc, char** argv)
 {
@@ -41,8 +41,8 @@ int main(int argc, char** argv)
 	SpriteComponent_SetSpriteSheet(playerSprite, "res/sprites/runcycle/runcycle.json");
 	playerSprite->scale = (Vector2){ 0.5f, 0.5f };
 
-	LogicComponent* playerLogic = Entity_AddLogicComponent(playerEnt);
-	PlayerLogic_SetOnComponent(playerLogic);
+	LogicComponent* playerMovementLogic = Entity_AddLogicComponent(playerEnt);
+	PlayerMovementLogic_SetOnComponent(playerMovementLogic);
 
 	Entity* cameraEnt = World_CreateEntity(world);
 	CameraComponent* camComp = Entity_CreateCameraComponent(cameraEnt);

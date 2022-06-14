@@ -7,7 +7,7 @@
 #include "gamelib/entity/physicscomponent.h"
 #include "gamelib/entity/spritecomponent.h"
 #include "gamelib/entity/cameracomponent.h"
-#include "gamelib/logic/playerlogic.h"
+#include "gamelib/logic/playermovementlogic.h"
 #include "gamelib/gameutil.h"
 
 int main(int argc, char** argv)
@@ -56,8 +56,8 @@ int main(int argc, char** argv)
 	playerSprite->offset.x = -16;
 	playerSprite->offset.y = -22;
 
-	LogicComponent* playerLogic = Entity_AddLogicComponent(playerEnt);
-	PlayerLogic_SetOnComponent(playerLogic);
+	LogicComponent* playerMovementLogic = Entity_AddLogicComponent(playerEnt);
+	PlayerMovementLogic_SetOnComponent(playerMovementLogic);
 
 	SetTargetFPS(60);
 
@@ -91,15 +91,6 @@ int main(int argc, char** argv)
 		}
 
 		World_Update(world);
-
-		if ( playerPhys->velocity.x < 0.0f )
-		{
-			playerSprite->transformFlags |= SPRITE_TRANS_FLIP_X;
-		}
-		else if ( playerPhys->velocity.x > 0.0f )
-		{
-			playerSprite->transformFlags &= ~SPRITE_TRANS_FLIP_X;
-		}
 
 		cameraEnt->position = playerEnt->position;
 

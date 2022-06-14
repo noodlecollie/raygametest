@@ -11,7 +11,7 @@ add_library(gamelib STATIC
 	src/entity/spritecomponentimpl.c
 	src/external/cJSON_util.c
 	src/external/cJSON_wrapper.c
-	src/logic/playerlogic.c
+	src/logic/playermovementlogic.c
 	src/presets/presetmeshes.c
 	src/presets/presetshaders.c
 	src/presets/presettextures.c
