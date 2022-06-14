@@ -114,12 +114,13 @@ void SpriteComponentImpl_Render(SpriteComponentImpl* impl, Camera3D camera)
 		return;
 	}
 
-	SpriteRenderer_DrawSpriteFrameNew(
+	SpriteRenderer_DrawSpriteFrame(
 		impl->animation,
 		(size_t)(impl->animTime * (float)numFrames),
 		Vector2Add(impl->ownerEntity->position, impl->component.offset),
 		impl->component.scale,
-		impl->component.layer
+		impl->component.layer,
+		impl->component.transformFlags
 	);
 }
 

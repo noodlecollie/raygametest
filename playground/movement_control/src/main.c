@@ -92,6 +92,15 @@ int main(int argc, char** argv)
 
 		World_Update(world);
 
+		if ( playerPhys->velocity.x < 0.0f )
+		{
+			playerSprite->transformFlags |= SPRITE_TRANS_FLIP_X;
+		}
+		else if ( playerPhys->velocity.x > 0.0f )
+		{
+			playerSprite->transformFlags &= ~SPRITE_TRANS_FLIP_X;
+		}
+
 		cameraEnt->position = playerEnt->position;
 
 		BeginDrawing();

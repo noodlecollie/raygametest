@@ -1,6 +1,7 @@
 #include "rendering/spriterenderer.h"
 #include "rendering/renderutils.h"
 #include "gamelib/external/raylibheaders.h"
+#include "gamelib/entity/spritecomponent.h"
 #include "resourcepool/resourcepool.h"
 #include "presets/presetnames.h"
 
@@ -70,61 +71,13 @@ void SpriteRenderer_RemoveRef(void)
 	}
 }
 
-void SpriteRenderer_DrawSpriteFrame(SpriteSheetAnimation* animation, size_t frame, Vector2 position, Vector2 scale)
-{
-	if ( !animation )
-	{
-		return;
-	}
-
-	Texture2D* texture = SpriteSheetDescriptor_GetAnimationTexture(animation);
-
-	if ( !texture )
-	{
-		return;
-	}
-
-	size_t frameCount = SpriteSheetDescriptor_GetAnimationFrameCount(animation);
-
-	if ( frameCount < 1 )
-	{
-		return;
-	}
-
-	if ( frame >= frameCount )
-	{
-		frame = frameCount - 1;
-	}
-
-	// Define the source rect from the texture image that we're going to draw.
-	Vector2i sourceRectDim = SpriteSheetDescriptor_GetAnimationFrameBounds(animation);
-	Rectangle sourceRect = (Rectangle){ (float)(frame * sourceRectDim.x), 0.0f, (float)sourceRectDim.x, (float)sourceRectDim.y };
-
-	// The size of the desination rectangle is affected by the scale.
-	Vector2 destRectDim = (Vector2){ (float)sourceRectDim.x * scale.x, (float)sourceRectDim.y * scale.y };
-
-	// This is the point on the source rectangle that should be lined up with the provided position when drawn.
-	SpriteSheetDescriptor* sprDesc = SpriteSheetDescriptor_GetAnimationOwner(animation);
-	Vector2 sourceOrigin = SpriteSheetDescriptor_GetOrigin(sprDesc);
-
-	// The dest rect position must be adjusted to cater for the source origin.
-	// The scale of the sprite affects this adjustment.
-	Vector2 destRectPos = Vector2Subtract(position, Vector2Multiply(sourceOrigin, scale));
-
-	// Now we can construct the dest rectangle.
-	Rectangle destRect = (Rectangle){ destRectPos.x, destRectPos.y, destRectDim.x, destRectDim.y };
-
-	// It's easier to explicitly do the above than to provide a value for the
-	// "origin" argument to this function.
-	DrawTexturePro(*texture, sourceRect, destRect, Vector2Zero(), 0.0f, WHITE);
-}
-
-void SpriteRenderer_DrawSpriteFrameNew(
+void SpriteRenderer_DrawSpriteFrame(
 	SpriteSheetAnimation* animation,
 	size_t frame,
 	Vector2 position,
 	Vector2 scale,
-	DrawingLayer layer
+	DrawingLayer layer,
+	uint32_t flags
 )
 {
 	if ( !Renderer )
@@ -177,6 +130,18 @@ void SpriteRenderer_DrawSpriteFrameNew(
 
 	// Convert this to a rectangle in OpenGL texture co-ordinate space.
 	Rectangle openGLSourceRect = RenderUtils_CalcOpenGLTextureSubRect((Vector2i){ texture->width, texture->height }, sourceRect);
+
+	if ( flags & SPRITE_TRANS_FLIP_X )
+	{
+		openGLSourceRect.x += openGLSourceRect.width;
+		openGLSourceRect.width *= -1.0f;
+	}
+
+	if ( flags & SPRITE_TRANS_FLIP_Y )
+	{
+		openGLSourceRect.y += openGLSourceRect.height;
+		openGLSourceRect.height *= -1.0f;
+	}
 
 	// This is the point on the source rectangle that should be lined up with the provided position when drawn.
 	SpriteSheetDescriptor* sprDesc = SpriteSheetDescriptor_GetAnimationOwner(animation);
