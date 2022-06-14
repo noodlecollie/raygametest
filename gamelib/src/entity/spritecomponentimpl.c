@@ -167,8 +167,13 @@ bool SpriteComponent_SetAnimationByName(SpriteComponent* component, const char* 
 	}
 
 	SpriteSheetDescriptor* sprDesc = ResourcePool_GetSpriteSheet(component->impl->sprSheetResource);
-	component->impl->animation = SpriteSheetDescriptor_GetAnimation(sprDesc, animName);
-	component->impl->animTime = 0.0f;
+	SpriteSheetAnimation* animation = SpriteSheetDescriptor_GetAnimation(sprDesc, animName);
+
+	if ( animation != component->impl->animation )
+	{
+		component->impl->animation = animation;
+		component->impl->animTime = 0.0f;
+	}
 
 	return component->impl->animation != NULL;
 }

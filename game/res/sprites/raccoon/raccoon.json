@@ -3,13 +3,41 @@
 	"version": 1,
 	"content":
 	{
+		"origin": [ 16, 32 ],
 		"animations":
 		[
 			{
-				"name": "static",
+				"name": "run_right",
+				"fps": 6,
 				"frames":
 				[
-					"res/sprites/raccoon/raccoon.png"
+					"res/sprites/raccoon/runcycle_leap.png",
+					"res/sprites/raccoon/runcycle_land.png",
+					"res/sprites/raccoon/runcycle_crouch.png"
+				]
+			},
+			{
+				"name": "jump_right",
+				"fps": 1,
+				"frames":
+				[
+					"res/sprites/raccoon/runcycle_leap.png"
+				]
+			},
+			{
+				"name": "fall_right",
+				"fps": 1,
+				"frames":
+				[
+					"res/sprites/raccoon/runcycle_land.png"
+				]
+			},
+			{
+				"name": "stand_right",
+				"fps": 1,
+				"frames":
+				[
+					"res/sprites/raccoon/stand_1.png"
 				]
 			}
 		]

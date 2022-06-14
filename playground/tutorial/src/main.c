@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <float.h>
 #include "gamelib/external/raylibheaders.h"
 #include "raygui.h"
 #include "gamelib/world.h"
@@ -20,9 +21,6 @@ int main(int argc, char** argv)
 	int screenHeight = 450;
 
 	SetTraceLogLevel(LOG_DEBUG);
-
-	Debugging.debuggingEnabled = true;
-	Debugging.renderPhysicsHulls = true;
 
 	InitWindow(screenWidth, screenHeight, "Tutorial");
 
@@ -53,7 +51,7 @@ int main(int argc, char** argv)
 
 	PhysicsComponent* playerPhys = Entity_CreatePhysicsComponent(playerEnt);
 	playerPhys->collisionMask = 0xFFFFFFFF;
-	playerPhys->collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
+	playerPhys->collisionHull = (Rectangle){ -10.0f, -16.0f, 20.0f, 16.0f };
 	playerPhys->enabled = true;
 	playerPhys->movementType = PHYSMOVE_SLIDE;
 
@@ -95,6 +93,32 @@ int main(int argc, char** argv)
 		}
 
 		World_Update(world);
+
+		// TODO: Move to player logic in a generic way
+		if ( PlayerMovementLogic_GetDataFromComponent(playerMovementLogic)->onGround )
+		{
+			float speed = Vector2Length(playerPhys->velocity);
+
+			if ( speed < FLT_EPSILON )
+			{
+				SpriteComponent_SetAnimationByName(playerSprite, "stand_right");
+			}
+			else
+			{
+				SpriteComponent_SetAnimationByName(playerSprite, "run_right");
+			}
+		}
+		else
+		{
+			if ( playerPhys->velocity.y < 0.0f )
+			{
+				SpriteComponent_SetAnimationByName(playerSprite, "jump_right");
+			}
+			else
+			{
+				SpriteComponent_SetAnimationByName(playerSprite, "fall_right");
+			}
+		}
 
 		cameraEnt->position = playerEnt->position;
 
