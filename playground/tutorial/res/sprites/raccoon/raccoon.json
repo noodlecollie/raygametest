@@ -18,6 +18,7 @@
 			},
 			{
 				"name": "jump_right",
+				"origin": [ 16, 30 ],
 				"fps": 1,
 				"frames":
 				[
@@ -26,6 +27,7 @@
 			},
 			{
 				"name": "fall_right",
+				"origin": [ 16, 30 ],
 				"fps": 1,
 				"frames":
 				[

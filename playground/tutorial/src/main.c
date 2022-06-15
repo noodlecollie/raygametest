@@ -114,7 +114,7 @@ int main(int argc, char** argv)
 			{
 				SpriteComponent_SetAnimationByName(playerSprite, "jump_right");
 			}
-			else
+			else if ( playerPhys->velocity.y > 150.0f )
 			{
 				SpriteComponent_SetAnimationByName(playerSprite, "fall_right");
 			}
@@ -126,6 +126,10 @@ int main(int argc, char** argv)
 
 		ClearBackground(LIGHTGRAY);
 		World_Render(world);
+
+		char vel[32];
+		snprintf(vel, sizeof(vel), "Vel: %.2f", playerPhys->velocity.y);
+		DrawText(vel, 10, 10, 10, BLACK);
 
 		EndDrawing();
 	}

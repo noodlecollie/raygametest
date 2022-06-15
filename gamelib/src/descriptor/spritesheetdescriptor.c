@@ -24,11 +24,12 @@ struct SpriteSheetAnimation
 	Vector2i frameBounds;
 	size_t numFrames;
 	float fps;
+	Vector2 origin;
 };
 
 struct SpriteSheetDescriptor
 {
-	Vector2 origin;
+	Vector2 defaultOrigin;
 	SpriteSheetAnimation* animListHead;
 	SpriteSheetAnimation* animListTail;
 	size_t numAnimations;
@@ -221,9 +222,13 @@ static void LoadAnimation(const char* filePath, cJSON* animation, size_t index, 
 
 	animData->owner = descriptor;
 	animData->name = DuplicateString(name);
+	animData->origin = descriptor->defaultOrigin;
 
 	cJSON* fpsItem = cJSONWrapper_GetObjectItemOfType(animation, "fps", cJSON_Number);
 	animData->fps = fpsItem ? (float)fpsItem->valuedouble : V1_DEFAULT_ANIM_FPS;
+
+	// Optional:
+	cJSONUtil_GetVector2Item(animation, "origin", &animData->origin);
 
 	TraceLog(LOG_DEBUG, "SPRITESHEET DESCRIPTOR: [%s] Animation \"%s\" has FPS of %.2f", filePath, name, animData->fps);
 
@@ -334,7 +339,7 @@ SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSON(const char* filePath)
 		descriptor = (SpriteSheetDescriptor*)MemAlloc(sizeof(SpriteSheetDescriptor));
 
 		// Optional:
-		cJSONUtil_GetVector2Item(content, "origin", &descriptor->origin);
+		cJSONUtil_GetVector2Item(content, "origin", &descriptor->defaultOrigin);
 
 		LoadAnimations(filePath, content, descriptor);
 
@@ -367,11 +372,6 @@ void SpriteSheetDescriptor_Destroy(SpriteSheetDescriptor* descriptor)
 	}
 
 	MemFree(descriptor);
-}
-
-Vector2 SpriteSheetDescriptor_GetOrigin(SpriteSheetDescriptor* descriptor)
-{
-	return descriptor ? descriptor->origin : (Vector2){ 0.0f, 0.0f };
 }
 
 SpriteSheetAnimation* SpriteSheetDescriptor_GetAnimation(SpriteSheetDescriptor* descriptor, const char* animName)
@@ -425,4 +425,9 @@ size_t SpriteSheetDescriptor_GetAnimationFrameCount(SpriteSheetAnimation* anim)
 float SpriteSheetDescriptor_GetAnimationFPS(SpriteSheetAnimation* anim)
 {
 	return anim ? anim->fps : 0.0f;
+}
+
+Vector2 SpriteSheetDescriptor_GetAnimationOrigin(SpriteSheetAnimation* anim)
+{
+	return anim ? anim->origin : Vector2Zero();
 }

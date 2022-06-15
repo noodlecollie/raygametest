@@ -144,8 +144,7 @@ void SpriteRenderer_DrawSpriteFrame(
 	}
 
 	// This is the point on the source rectangle that should be lined up with the provided position when drawn.
-	SpriteSheetDescriptor* sprDesc = SpriteSheetDescriptor_GetAnimationOwner(animation);
-	Vector2 sourceOrigin = SpriteSheetDescriptor_GetOrigin(sprDesc);
+	Vector2 sourceOrigin = SpriteSheetDescriptor_GetAnimationOrigin(animation);
 
 	// Construct a matrix that represents the sprite mesh's transform.
 	// We start out with a translation of (0.5, 0.5) so that the top left
