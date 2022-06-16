@@ -11,6 +11,7 @@
 #include "gamelib/logic/playermovementlogic.h"
 #include "gamelib/gameutil.h"
 #include "gamelib/debugging.h"
+#include "gamelib/stringutil.h"
 
 int main(int argc, char** argv)
 {
@@ -61,6 +62,15 @@ int main(int argc, char** argv)
 	LogicComponent* playerMovementLogic = Entity_AddLogicComponent(playerEnt);
 	PlayerMovementLogic_SetOnComponent(playerMovementLogic);
 
+	PlayerMovementLogicData* movementData = PlayerMovementLogic_GetDataFromComponent(playerMovementLogic);
+
+	CopyString(movementData->animRunning, ARRAY_SIZE(movementData->animRunning), "run_right");
+	CopyString(movementData->animStanding, ARRAY_SIZE(movementData->animStanding), "stand_right");
+	CopyString(movementData->animJumping, ARRAY_SIZE(movementData->animJumping), "jump_right");
+	CopyString(movementData->animFalling, ARRAY_SIZE(movementData->animFalling), "fall_right");
+
+	movementData->fallSpeedThreshold = 150.0f;
+
 	SetTargetFPS(60);
 
 	while ( !WindowShouldClose() )
@@ -93,32 +103,6 @@ int main(int argc, char** argv)
 		}
 
 		World_Update(world);
-
-		// TODO: Move to player logic in a generic way
-		if ( PlayerMovementLogic_GetDataFromComponent(playerMovementLogic)->onGround )
-		{
-			float speed = Vector2Length(playerPhys->velocity);
-
-			if ( speed < FLT_EPSILON )
-			{
-				SpriteComponent_SetAnimationByName(playerSprite, "stand_right");
-			}
-			else
-			{
-				SpriteComponent_SetAnimationByName(playerSprite, "run_right");
-			}
-		}
-		else
-		{
-			if ( playerPhys->velocity.y < 0.0f )
-			{
-				SpriteComponent_SetAnimationByName(playerSprite, "jump_right");
-			}
-			else if ( playerPhys->velocity.y > 150.0f )
-			{
-				SpriteComponent_SetAnimationByName(playerSprite, "fall_right");
-			}
-		}
 
 		cameraEnt->position = playerEnt->position;
 

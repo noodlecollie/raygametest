@@ -1,3 +1,4 @@
+#include <float.h>
 #include "gamelib/logic/playermovementlogic.h"
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/entity/entity.h"
@@ -107,6 +108,43 @@ static void OnPostThink(LogicComponent* component)
 		else if ( playerPhys->velocity.x < 0.0f )
 		{
 			playerSprite->transformFlags |= SPRITE_TRANS_FLIP_X;
+		}
+	}
+
+	if ( data->onGround )
+	{
+		float speed = Vector2Length(playerPhys->velocity);
+
+		if ( speed < FLT_EPSILON )
+		{
+			if ( data->animStanding[0] )
+			{
+				SpriteComponent_SetAnimationByName(playerSprite, data->animStanding);
+			}
+		}
+		else
+		{
+			if ( data->animRunning[0] )
+			{
+				SpriteComponent_SetAnimationByName(playerSprite, data->animRunning);
+			}
+		}
+	}
+	else
+	{
+		if ( playerPhys->velocity.y < 0.0f )
+		{
+			if ( data->animJumping[0] )
+			{
+				SpriteComponent_SetAnimationByName(playerSprite, data->animJumping);
+			}
+		}
+		else if ( playerPhys->velocity.y > data->fallSpeedThreshold )
+		{
+			if ( data->animFalling[0] )
+			{
+				SpriteComponent_SetAnimationByName(playerSprite, data->animFalling);
+			}
 		}
 	}
 }

@@ -1,6 +1,7 @@
 #include "descriptor/spritesheetdescriptor.h"
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/gameutil.h"
+#include "gamelib/stringutil.h"
 #include "gamelib/gametypes.h"
 #include "external/cJSON_wrapper.h"
 #include "external/cJSON_util.h"

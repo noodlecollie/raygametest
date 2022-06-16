@@ -1,6 +1,6 @@
 #include "resourcepool/resourcepool_internal.h"
 #include "gamelib/external/raylibheaders.h"
-#include "gamelib/gameutil.h"
+#include "gamelib/stringutil.h"
 
 static inline ResourcePoolItem* FindItemByPath(ResourcePoolItem* head, const char* path)
 {

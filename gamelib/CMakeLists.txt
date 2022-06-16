@@ -29,6 +29,7 @@ add_library(gamelib STATIC
 	src/gameutil.c
 	src/memoryallocator.c
 	src/physics.c
+	src/stringutil.c
 	src/trace.c
 	src/world.c
 )
