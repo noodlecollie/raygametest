@@ -9,11 +9,17 @@
 #include "resourcepool/resourcepool.h"
 
 #define SUPPORTED_VERSION 1
-#define TERRAIN_MAX_LAYERS MASK32_BITS
 
 typedef struct TerrainLayer
 {
+	TerrainDescriptor* owner;
+
 	char* name;
+	size_t layerIndex;
+
+	// TODO: We need to keep the image around as well,
+	// so that we can index it for colours. We may need
+	// to modify the resource pool to do this efficiently.
 	ResourcePoolTexture* imageResource;
 } TerrainLayer;
 
@@ -213,6 +219,12 @@ TerrainDescriptor* TerrainDescriptor_LoadFromJSON(const char* filePath)
 		descriptor->layers = MemAlloc(TERRAIN_MAX_LAYERS * sizeof(TerrainLayer));
 		descriptor->defaultDrawingLayer = DLAYER_TERRAIN;
 
+		for ( size_t index = 0; index < TERRAIN_MAX_LAYERS; ++index )
+		{
+			descriptor->layers[index].owner = descriptor;
+			descriptor->layers[index].layerIndex = index;
+		}
+
 		// Optional:
 		cJSON* drawingLayer = cJSONWrapper_GetObjectItemOfType(content, "drawing_layer", cJSON_String);
 
@@ -257,4 +269,9 @@ void TerrainDescriptor_Destroy(TerrainDescriptor* descriptor)
 	}
 
 	MemFree(descriptor);
+}
+
+Vector2i TerrainDescriptor_GetDimensions(TerrainDescriptor* descriptor)
+{
+	return descriptor ? descriptor->dimensions : (Vector2i){ 0, 0 };
 }
