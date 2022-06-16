@@ -3,6 +3,7 @@ include(compile_options)
 add_library(gamelib STATIC
 	src/descriptor/descriptorutil.c
 	src/descriptor/spritesheetdescriptor.c
+	src/descriptor/terraindescriptor.c
 	src/entity/cameracomponentimpl.c
 	src/entity/entityimpl.c
 	src/entity/logiccomponentimpl.c
@@ -26,6 +27,7 @@ add_library(gamelib STATIC
 	src/resourcepool/resourcepool_spritesheet.c
 	src/resourcepool/resourcepool_texture.c
 	src/debugging.c
+	src/drawinglayers.c
 	src/gameutil.c
 	src/memoryallocator.c
 	src/physics.c
