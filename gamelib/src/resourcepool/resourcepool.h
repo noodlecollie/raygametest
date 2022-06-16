@@ -3,9 +3,11 @@
 #include "gamelib/external/raylibheaders.h"
 
 struct SpriteSheetDescriptor;
+struct TerrainDescriptor;
 
 typedef struct ResourcePoolTexture ResourcePoolTexture;
 typedef struct ResourcePoolSpriteSheet ResourcePoolSpriteSheet;
+typedef struct ResourcePoolTerrain ResourcePoolTerrain;
 typedef struct ResourcePoolMesh ResourcePoolMesh;
 typedef struct ResourcePoolShader ResourcePoolShader;
 
@@ -25,6 +27,12 @@ ResourcePoolSpriteSheet* ResourcePool_AddSpriteSheetRef(ResourcePoolSpriteSheet*
 void ResourcePool_RemoveSpriteSheetRef(ResourcePoolSpriteSheet* item);
 struct SpriteSheetDescriptor* ResourcePool_GetSpriteSheet(ResourcePoolSpriteSheet* item);
 const char* ResourcePool_GetSpriteSheetKey(ResourcePoolSpriteSheet* item);
+
+ResourcePoolTerrain* ResourcePool_LoadTerrainAndAddRef(const char* path);
+ResourcePoolTerrain* ResourcePool_AddTerrainRef(ResourcePoolTerrain* item);
+void ResourcePool_RemoveTerrainRef(ResourcePoolTerrain* item);
+struct TerrainDescriptor* ResourcePool_GetTerrain(ResourcePoolTerrain* item);
+const char* ResourcePool_GetTerrainKey(ResourcePoolTerrain* item);
 
 ResourcePoolMesh* ResourcePool_LoadPresetMeshAndAddRef(const char* name);
 ResourcePoolMesh* ResourcePool_AddMeshRef(ResourcePoolMesh* item);

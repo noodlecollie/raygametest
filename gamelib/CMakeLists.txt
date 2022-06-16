@@ -25,6 +25,7 @@ add_library(gamelib STATIC
 	src/resourcepool/resourcepool_mesh.c
 	src/resourcepool/resourcepool_shader.c
 	src/resourcepool/resourcepool_spritesheet.c
+	src/resourcepool/resourcepool_terrain.c
 	src/resourcepool/resourcepool_texture.c
 	src/debugging.c
 	src/drawinglayers.c
