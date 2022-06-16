@@ -85,7 +85,7 @@ static void LoadLayer(const char* filePath, cJSON* content, TerrainDescriptor* d
 		return;
 	}
 
-	TraceLog(LOG_WARNING, "TERRAIN DESCRIPTOR: [%s] Successfully loaded terrain layer \"%s\"", filePath, name ? name : "unnamed");
+	TraceLog(LOG_DEBUG, "TERRAIN DESCRIPTOR: [%s] Successfully loaded terrain layer \"%s\"", filePath, name ? name : "unnamed");
 }
 
 static void LoadLayers(const char* filePath, cJSON* content, TerrainDescriptor* descriptor)

@@ -1,0 +1,17 @@
+{
+	"descriptor": "terrain",
+	"version": 1,
+	"content":
+	{
+		"drawing_layer": "terrain",
+		"terrain_layers":
+		[
+			{
+				"name": "background",
+				"terrain_layer_index": 0,
+				"image": "res/terrain/sample/sample_0.png",
+				"drawing_layer": "background"
+			}
+		]
+	}
+}

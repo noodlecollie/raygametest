@@ -111,10 +111,6 @@ int main(int argc, char** argv)
 		ClearBackground(LIGHTGRAY);
 		World_Render(world);
 
-		char vel[32];
-		snprintf(vel, sizeof(vel), "Vel: %.2f", playerPhys->velocity.y);
-		DrawText(vel, 10, 10, 10, BLACK);
-
 		EndDrawing();
 	}
 
