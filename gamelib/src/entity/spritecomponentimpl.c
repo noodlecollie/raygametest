@@ -131,7 +131,7 @@ struct Entity* SpriteComponent_GetOwnerEntity(const SpriteComponent* component)
 
 bool SpriteComponent_SetSpriteSheet(SpriteComponent* component, const char* filePath)
 {
-	if ( !component || !filePath || !(*filePath) )
+	if ( !component )
 	{
 		return false;
 	}
@@ -150,6 +150,7 @@ bool SpriteComponent_SetSpriteSheet(SpriteComponent* component, const char* file
 	}
 	else
 	{
+		// Item is same, so remove the ref we just added.
 		if ( item )
 		{
 			ResourcePool_RemoveSpriteSheetRef(item);

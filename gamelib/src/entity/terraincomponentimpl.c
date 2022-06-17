@@ -171,3 +171,33 @@ Vector2i TerrainComponent_PositionToCoOrds(const TerrainComponent* component, Ve
 
 	return (Vector2i){ (int)(world.x / component->scale), (int)(world.y / component->scale) };
 }
+
+bool TerrainComponent_SetTerrain(TerrainComponent* component, const char* filePath)
+{
+	if ( !component )
+	{
+		return false;
+	}
+
+	ResourcePoolTerrain* terrain = ResourcePool_LoadTerrainAndAddRef(filePath);
+
+	if ( terrain != component->impl->terrainResource )
+	{
+		if ( component->impl->terrainResource )
+		{
+			ResourcePool_RemoveTerrainRef(component->impl->terrainResource);
+		}
+
+		component->impl->terrainResource = terrain;
+	}
+	else
+	{
+		// Terrain is the same, so remove the ref we just added.
+		if ( terrain )
+		{
+			ResourcePool_RemoveTerrainRef(terrain);
+		}
+	}
+
+	return component->impl->terrainResource != NULL;
+}

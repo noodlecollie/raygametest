@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include "gamelib/gametypes.h"
 #include "gamelib/external/raylibheaders.h"
 
@@ -27,3 +28,5 @@ Color TerrainComponent_GetBlockColourByCoOrds(const TerrainComponent* component,
 Rectangle TerrainComponent_GetBlockWorldRectByCoOrds(const TerrainComponent* component, Vector2i coOrds);
 
 Vector2i TerrainComponent_PositionToCoOrds(const TerrainComponent* component, Vector2 world);
+
+bool TerrainComponent_SetTerrain(TerrainComponent* component, const char* filePath);

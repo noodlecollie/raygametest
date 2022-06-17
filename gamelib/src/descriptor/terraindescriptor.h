@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include "gamelib/gametypes.h"
 #include "gamelib/external/raylibheaders.h"
+#include "gamelib/drawinglayers.h"
 
 #define TERRAIN_MAX_LAYERS MASK32_BITS
 
