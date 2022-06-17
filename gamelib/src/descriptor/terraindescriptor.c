@@ -16,11 +16,9 @@ typedef struct TerrainLayer
 
 	char* name;
 	size_t layerIndex;
-
-	// TODO: We need to keep the image around as well,
-	// so that we can index it for colours. We may need
-	// to modify the resource pool to do this efficiently.
-	ResourcePoolTexture* imageResource;
+	DrawingLayer drawingLayer;
+	Image image;
+	Texture2D texture;
 } TerrainLayer;
 
 struct TerrainDescriptor
@@ -43,21 +41,23 @@ static void DeallocateLayer(TerrainLayer* layer)
 		layer->name = NULL;
 	}
 
-	if ( layer->imageResource )
+	if ( layer->texture.id != 0 )
 	{
-		ResourcePool_RemoveTextureRef(layer->imageResource);
-		layer->imageResource = NULL;
+		UnloadTexture(layer->texture);
+	}
+
+	if ( layer->image.data )
+	{
+		UnloadImage(layer->image);
 	}
 }
 
 static bool CheckLayerImageDimensions(const char* filePath, TerrainDescriptor* descriptor, TerrainLayer* layerEntry)
 {
-	Texture2D* tex = ResourcePool_GetTexture(layerEntry->imageResource);
-
 	if ( !DimensionsAreValid(descriptor) )
 	{
-		descriptor->dimensions.x = tex->width;
-		descriptor->dimensions.y = tex->height;
+		descriptor->dimensions.x = layerEntry->image.width;
+		descriptor->dimensions.y = layerEntry->image.height;
 
 		TraceLog(
 			LOG_DEBUG,
@@ -70,15 +70,15 @@ static bool CheckLayerImageDimensions(const char* filePath, TerrainDescriptor* d
 		return true;
 	}
 
-	if ( tex->width != descriptor->dimensions.x || tex->height != descriptor->dimensions.y )
+	if ( layerEntry->image.width != descriptor->dimensions.x || layerEntry->image.height != descriptor->dimensions.y )
 	{
 		TraceLog(
 			LOG_ERROR,
 			"TERRAIN DESCRIPTOR: [%s] Terrain layer \"%s\" dimensions of %dx%d did not match terrain dimensions of %dx%d, not loading.",
 			filePath,
 			layerEntry->name ? layerEntry->name : "unnamed",
-			tex->width,
-			tex->height,
+			layerEntry->image.width,
+			layerEntry->image.height,
 			descriptor->dimensions.x,
 			descriptor->dimensions.y
 		);
@@ -138,9 +138,9 @@ static void LoadLayer(const char* filePath, cJSON* content, TerrainDescriptor* d
 			layerEntry->name = DuplicateString(name);
 		}
 
-		layerEntry->imageResource = ResourcePool_LoadTextureAndAddRef(imageItem->valuestring);
+		layerEntry->image = LoadImage(imageItem->valuestring);
 
-		if ( !layerEntry->imageResource )
+		if ( !layerEntry->image.data )
 		{
 			TraceLog(
 				LOG_ERROR,
@@ -156,6 +156,34 @@ static void LoadLayer(const char* filePath, cJSON* content, TerrainDescriptor* d
 		if ( !CheckLayerImageDimensions(filePath, descriptor, layerEntry) )
 		{
 			break;
+		}
+
+		layerEntry->texture = LoadTextureFromImage(layerEntry->image);
+
+		if ( layerEntry->texture.id == 0 )
+		{
+			TraceLog(
+				LOG_ERROR,
+				"TERRAIN DESCRIPTOR: [%s] Terrain layer \"%s\" could not create texture from image.",
+				filePath,
+				logName
+			);
+
+			break;
+		}
+
+		layerEntry->drawingLayer = descriptor->defaultDrawingLayer;
+
+		cJSON* drawingLayerOverride = cJSONWrapper_GetObjectItemOfType(content, "drawing_layer", cJSON_String);
+
+		if ( drawingLayerOverride )
+		{
+			DrawingLayer dLayer = DrawingLayer_GetLayerFromName(drawingLayerOverride->valuestring);
+
+			if ( dLayer != DLAYER__INVALID )
+			{
+				layerEntry->drawingLayer = dLayer;
+			}
 		}
 
 		TraceLog(LOG_DEBUG, "TERRAIN DESCRIPTOR: [%s] Successfully loaded terrain layer \"%s\"", filePath, logName);
@@ -228,7 +256,7 @@ TerrainDescriptor* TerrainDescriptor_LoadFromJSON(const char* filePath)
 		// Optional:
 		cJSON* drawingLayer = cJSONWrapper_GetObjectItemOfType(content, "drawing_layer", cJSON_String);
 
-		if ( drawingLayer && drawingLayer->valuestring )
+		if ( drawingLayer )
 		{
 			DrawingLayer dLayer = DrawingLayer_GetLayerFromName(drawingLayer->valuestring);
 
@@ -240,7 +268,7 @@ TerrainDescriptor* TerrainDescriptor_LoadFromJSON(const char* filePath)
 
 		LoadLayers(filePath, content, descriptor);
 
-		TraceLog(LOG_INFO, "TERRAIN DESCRIPTOR: [%s] Loaded successfully", filePath);
+		TraceLog(LOG_INFO, "TERRAIN DESCRIPTOR: [%s] Loaded successfully, dimensions %dx%d", filePath, descriptor->dimensions.x, descriptor->dimensions.y);
 	}
 	else
 	{
@@ -274,4 +302,34 @@ void TerrainDescriptor_Destroy(TerrainDescriptor* descriptor)
 Vector2i TerrainDescriptor_GetDimensions(TerrainDescriptor* descriptor)
 {
 	return descriptor ? descriptor->dimensions : (Vector2i){ 0, 0 };
+}
+
+Color TerrainDescriptor_GetLayerColour(TerrainDescriptor* descriptor, size_t layer, Vector2i pos)
+{
+	if ( !descriptor || !DimensionsAreValid(descriptor) || layer >= TERRAIN_MAX_LAYERS )
+	{
+		return (Color){ 0, 0, 0, 0 };
+	}
+
+	return GetImageColor(descriptor->layers[layer].image, pos.x, pos.y);
+}
+
+Image* TerrainDescriptor_GetLayerImage(TerrainDescriptor* descriptor, size_t layer)
+{
+	if ( !descriptor || layer >= TERRAIN_MAX_LAYERS )
+	{
+		return NULL;
+	}
+
+	return &descriptor->layers[layer].image;
+}
+
+Texture2D* TerrainDescriptor_GetLayerTexture(TerrainDescriptor* descriptor, size_t layer)
+{
+	if ( !descriptor || layer >= TERRAIN_MAX_LAYERS )
+	{
+		return NULL;
+	}
+
+	return &descriptor->layers[layer].texture;
 }
