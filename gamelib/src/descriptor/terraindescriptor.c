@@ -333,3 +333,13 @@ Texture2D* TerrainDescriptor_GetLayerTexture(TerrainDescriptor* descriptor, size
 
 	return &descriptor->layers[layer].texture;
 }
+
+DrawingLayer TerrainDescriptor_GetLayerDrawingLayer(TerrainDescriptor* descriptor, size_t layer)
+{
+	if ( !descriptor || layer >= TERRAIN_MAX_LAYERS )
+	{
+		return DLAYER__INVALID;
+	}
+
+	return descriptor->layers[layer].drawingLayer;
+}
