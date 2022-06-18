@@ -19,7 +19,7 @@ void TerrainRenderer_Draw(TerrainComponentImpl* impl, Camera3D camera)
 			continue;
 		}
 
-		Vector2i dims = TerrainComponent_GetLayerDimensions(&impl->component, layer);
+		Vector2i dims = TerrainComponent_GetLayerDimensionsInPixels(&impl->component, layer);
 
 		// TODO: This should be improved as time goes on.
 		// We could make use of instanced meshes here,

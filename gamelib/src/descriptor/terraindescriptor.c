@@ -299,7 +299,7 @@ void TerrainDescriptor_Destroy(TerrainDescriptor* descriptor)
 	MemFree(descriptor);
 }
 
-Vector2i TerrainDescriptor_GetDimensions(TerrainDescriptor* descriptor)
+Vector2i TerrainDescriptor_GetDimensionsInPixels(TerrainDescriptor* descriptor)
 {
 	return descriptor ? descriptor->dimensions : (Vector2i){ 0, 0 };
 }

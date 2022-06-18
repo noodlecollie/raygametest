@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 
 	terrainComponent->scale = (float)guiValues.levelScale;
 	TerrainComponent_LoadLayer(terrainComponent, 0, "res/maps/test.png");
-	Vector2i levelDim = TerrainComponent_GetLayerDimensions(terrainComponent, 0);
+	Vector2i levelDim = TerrainComponent_GetLayerDimensionsInPixels(terrainComponent, 0);
 
 	Camera2D camera = { 0 };
 	camera.target = (Vector2){ ((float)levelDim.x / 2.0f) * terrainComponent->scale, ((float)levelDim.y / 2.0f) * terrainComponent->scale };
@@ -158,7 +158,7 @@ int main(int argc, char** argv)
 
 		BeginMode2D(camera);
 
-		Vector2i dims = TerrainComponent_GetLayerDimensions(terrainComponent, 0);
+		Vector2i dims = TerrainComponent_GetLayerDimensionsInPixels(terrainComponent, 0);
 
 		for ( int y = 0; y < dims.y; ++y )
 		{

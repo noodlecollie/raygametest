@@ -106,7 +106,7 @@ void TerrainComponent_UnloadLayer(TerrainComponent* component, size_t layer)
 	component->impl->layers[layer].image = (Image){ 0 };
 }
 
-Vector2i TerrainComponent_GetLayerDimensions(const TerrainComponent* component, size_t layer)
+Vector2i TerrainComponent_GetLayerDimensionsInPixels(const TerrainComponent* component, size_t layer)
 {
 	if ( layer >= TERRAIN_MAX_LAYERS || !component->impl->layers )
 	{
@@ -137,7 +137,6 @@ Rectangle TerrainComponent_GetBlockWorldRectByCoOrds(const TerrainComponent* com
 
 	if ( component->scale == 0.0f )
 	{
-		TraceLog(LOG_WARNING, "TERRAIN: Scale was zero!");
 		return rect;
 	}
 
@@ -163,7 +162,6 @@ Vector2i TerrainComponent_PositionToCoOrds(const TerrainComponent* component, Ve
 
 	if ( component->scale == 0.0f )
 	{
-		TraceLog(LOG_WARNING, "TERRAIN: Scale was zero!");
 		return (Vector2i){ -1, -1 };
 	}
 
