@@ -30,7 +30,7 @@ void TerrainRenderer_Draw(TerrainComponentImpl* impl, Camera3D camera)
 		{
 			for ( int x = 0; x < dims.x; ++x )
 			{
-				Color blockColour = TerrainComponent_GetBlockColourByPixelLoc(&impl->component, 0, (Vector2i){ x, y });
+				Color blockColour = TerrainComponent_GetBlockColourByPixelLoc(&impl->component, layer, (Vector2i){ x, y });
 
 				if ( blockColour.a == 0 )
 				{
