@@ -24,9 +24,9 @@ void TerrainComponent_LoadLayer(TerrainComponent* component, size_t layer, const
 void TerrainComponent_UnloadLayer(TerrainComponent* component, size_t layer);
 Vector2i TerrainComponent_GetLayerDimensionsInPixels(const TerrainComponent* component, size_t layer);
 
-Color TerrainComponent_GetBlockColourByCoOrds(const TerrainComponent* component, size_t layer, Vector2i coOrds);
-Rectangle TerrainComponent_GetBlockWorldRectByCoOrds(const TerrainComponent* component, Vector2i coOrds);
+Color TerrainComponent_GetBlockColourByPixelLoc(const TerrainComponent* component, size_t layer, Vector2i loc);
+Rectangle TerrainComponent_GetBlockWorldRectByPixelLoc(const TerrainComponent* component, Vector2i loc);
 
-Vector2i TerrainComponent_PositionToCoOrds(const TerrainComponent* component, Vector2 world);
+Vector2i TerrainComponent_PositionToPixelLoc(const TerrainComponent* component, Vector2 world);
 
 bool TerrainComponent_SetTerrain(TerrainComponent* component, const char* filePath);

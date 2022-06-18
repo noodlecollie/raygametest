@@ -164,8 +164,8 @@ int main(int argc, char** argv)
 		{
 			for ( int x = 0; x < dims.x; ++x )
 			{
-				Rectangle blockRect = TerrainComponent_GetBlockWorldRectByCoOrds(terrainComponent, (Vector2i){ x, y });
-				Color blockColour = TerrainComponent_GetBlockColourByCoOrds(terrainComponent, 0, (Vector2i){ x, y });
+				Rectangle blockRect = TerrainComponent_GetBlockWorldRectByPixelLoc(terrainComponent, (Vector2i){ x, y });
+				Color blockColour = TerrainComponent_GetBlockColourByPixelLoc(terrainComponent, 0, (Vector2i){ x, y });
 				DrawRectangleRec(blockRect, blockColour);
 			}
 

@@ -13,15 +13,15 @@ static void ClipTraceToTerrainLayer(const Rectangle* hull, const Vector2* delta,
 		return;
 	}
 
-	Vector2i blockMin = TerrainComponent_PositionToCoOrds(terrain, RectangleMin(movementBounds));
-	Vector2i blockMax = TerrainComponent_PositionToCoOrds(terrain, RectangleMax(movementBounds));
+	Vector2i blockMin = TerrainComponent_PositionToPixelLoc(terrain, RectangleMin(movementBounds));
+	Vector2i blockMax = TerrainComponent_PositionToPixelLoc(terrain, RectangleMax(movementBounds));
 
 	for ( int y = blockMin.y; y <= blockMax.y; ++y )
 	{
 		for ( int x = blockMin.x; x <= blockMax.x; ++x )
 		{
-			Vector2i blockCoOrds = { x, y };
-			Color blockColour = TerrainComponent_GetBlockColourByCoOrds(terrain, layer, blockCoOrds);
+			Vector2i loc = { x, y };
+			Color blockColour = TerrainComponent_GetBlockColourByPixelLoc(terrain, layer, loc);
 
 			if ( blockColour.a == 0 )
 			{
@@ -29,7 +29,7 @@ static void ClipTraceToTerrainLayer(const Rectangle* hull, const Vector2* delta,
 				continue;
 			}
 
-			Rectangle blockHull = TerrainComponent_GetBlockWorldRectByCoOrds(terrain, blockCoOrds);
+			Rectangle blockHull = TerrainComponent_GetBlockWorldRectByPixelLoc(terrain, loc);
 			Rectangle contact = { 0 };
 			Vector2 contactNormal = { 0.0f, 0.0f };
 			float fraction = 0.0f;

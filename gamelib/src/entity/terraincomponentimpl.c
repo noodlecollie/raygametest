@@ -2,16 +2,16 @@
 #include "gamelib/entity/entity.h"
 #include "rendering/terrainrenderer.h"
 
-static inline bool CoOrdsValid(const TerrainComponentImpl* impl, size_t layer, const Vector2i* coOrds)
+static inline bool LocValidForLayer(const TerrainComponentImpl* impl, size_t layer, Vector2i loc)
 {
 	return
 		impl &&
 		impl->layers &&
 		layer < TERRAIN_MAX_LAYERS &&
-		coOrds->x >= 0 &&
-		coOrds->x < impl->layers[layer].image.width &&
-		coOrds->y >= 0 &&
-		coOrds->y < impl->layers[layer].image.height;
+		loc.x >= 0 &&
+		loc.x < impl->layers[layer].image.width &&
+		loc.y >= 0 &&
+		loc.y < impl->layers[layer].image.height;
 }
 
 static inline void InitLayersIfRequired(TerrainComponentImpl* impl)
@@ -116,17 +116,17 @@ Vector2i TerrainComponent_GetLayerDimensionsInPixels(const TerrainComponent* com
 	return (Vector2i){ component->impl->layers[layer].image.width, component->impl->layers[layer].image.height };
 }
 
-Color TerrainComponent_GetBlockColourByCoOrds(const TerrainComponent* component, size_t layer, Vector2i coOrds)
+Color TerrainComponent_GetBlockColourByPixelLoc(const TerrainComponent* component, size_t layer, Vector2i loc)
 {
-	if ( !component || !CoOrdsValid(component->impl, layer, &coOrds) )
+	if ( !component || !LocValidForLayer(component->impl, layer, loc) )
 	{
 		return (Color){ 0, 0, 0, 0 };
 	}
 
-	return GetImageColor(component->impl->layers[layer].image, coOrds.x, coOrds.y);
+	return GetImageColor(component->impl->layers[layer].image, loc.x, loc.y);
 }
 
-Rectangle TerrainComponent_GetBlockWorldRectByCoOrds(const TerrainComponent* component, Vector2i coOrds)
+Rectangle TerrainComponent_GetBlockWorldRectByPixelLoc(const TerrainComponent* component, Vector2i loc)
 {
 	Rectangle rect = (Rectangle){ 0 };
 
@@ -140,20 +140,20 @@ Rectangle TerrainComponent_GetBlockWorldRectByCoOrds(const TerrainComponent* com
 		return rect;
 	}
 
-	if ( coOrds.x < 0 || coOrds.y < 0 )
+	if ( loc.x < 0 || loc.y < 0 )
 	{
 		return rect;
 	}
 
-	rect.x = component->scale * (float)coOrds.x;
-	rect.y = component->scale * (float)coOrds.y;
+	rect.x = component->scale * (float)loc.x;
+	rect.y = component->scale * (float)loc.y;
 	rect.width = component->scale;
 	rect.height = component->scale;
 
 	return rect;
 }
 
-Vector2i TerrainComponent_PositionToCoOrds(const TerrainComponent* component, Vector2 world)
+Vector2i TerrainComponent_PositionToPixelLoc(const TerrainComponent* component, Vector2 world)
 {
 	if ( !component )
 	{
