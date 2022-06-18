@@ -4,22 +4,16 @@
 
 static inline bool LocValidForLayer(const TerrainComponentImpl* impl, size_t layer, Vector2i loc)
 {
+	TerrainDescriptor* descriptor = impl ? ResourcePool_GetTerrain(impl->terrainResource) : NULL;
+	Vector2i dims = TerrainDescriptor_GetDimensionsInPixels(descriptor);
+
 	return
-		impl &&
-		impl->layers &&
+		descriptor &&
 		layer < TERRAIN_MAX_LAYERS &&
 		loc.x >= 0 &&
-		loc.x < impl->layers[layer].image.width &&
+		loc.x < dims.x &&
 		loc.y >= 0 &&
-		loc.y < impl->layers[layer].image.height;
-}
-
-static inline void InitLayersIfRequired(TerrainComponentImpl* impl)
-{
-	if ( !impl->layers )
-	{
-		impl->layers = (TerrainLayer*)MemAlloc(TERRAIN_MAX_LAYERS * sizeof(TerrainLayer));
-	}
+		loc.y < dims.y;
 }
 
 TerrainComponentImpl* TerrainComponentImpl_Create(struct Entity* ownerEntity)
@@ -45,7 +39,12 @@ void TerrainComponentImpl_Destroy(TerrainComponentImpl* impl)
 		return;
 	}
 
-	TerrainComponent_Unload(&impl->component);
+	if ( impl->terrainResource )
+	{
+		ResourcePool_RemoveTerrainRef(impl->terrainResource);
+		impl->terrainResource = NULL;
+	}
+
 	MemFree(impl);
 }
 
@@ -59,61 +58,14 @@ struct Entity* TerrainComponent_GetOwnerEntity(const TerrainComponent* component
 	return component ? component->impl->ownerEntity : NULL;
 }
 
-void TerrainComponent_Unload(TerrainComponent* component)
-{
-	if ( !component || !component->impl->layers )
-	{
-		return;
-	}
-
-	for ( size_t index = 0; index < TERRAIN_MAX_LAYERS; ++index )
-	{
-		TerrainComponent_UnloadLayer(component, index);
-	}
-
-	MemFree(component->impl->layers);
-}
-
-void TerrainComponent_LoadLayer(TerrainComponent* component, size_t layer, const char* fileName)
-{
-	if ( !component || layer >= TERRAIN_MAX_LAYERS || !fileName || !(*fileName) )
-	{
-		return;
-	}
-
-	InitLayersIfRequired(component->impl);
-	TerrainComponent_UnloadLayer(component, layer);
-	component->impl->layers[layer].image = LoadImage(fileName);
-
-	TraceLog(
-		LOG_INFO,
-		"TERRAIN: Loaded layer %zu (%dx%d) from %s",
-		layer,
-		component->impl->layers[layer].image.width,
-		component->impl->layers[layer].image.height,
-		fileName
-	);
-}
-
-void TerrainComponent_UnloadLayer(TerrainComponent* component, size_t layer)
-{
-	if ( !component || layer >= TERRAIN_MAX_LAYERS || !component->impl->layers || !component->impl->layers[layer].image.data )
-	{
-		return;
-	}
-
-	UnloadImage(component->impl->layers[layer].image);
-	component->impl->layers[layer].image = (Image){ 0 };
-}
-
 Vector2i TerrainComponent_GetLayerDimensionsInPixels(const TerrainComponent* component, size_t layer)
 {
-	if ( layer >= TERRAIN_MAX_LAYERS || !component->impl->layers )
+	if ( !component || layer >= TERRAIN_MAX_LAYERS )
 	{
 		return (Vector2i){ 0, 0 };
 	}
 
-	return (Vector2i){ component->impl->layers[layer].image.width, component->impl->layers[layer].image.height };
+	return TerrainDescriptor_GetDimensionsInPixels(ResourcePool_GetTerrain(component->impl->terrainResource));
 }
 
 Color TerrainComponent_GetBlockColourByPixelLoc(const TerrainComponent* component, size_t layer, Vector2i loc)
@@ -123,7 +75,7 @@ Color TerrainComponent_GetBlockColourByPixelLoc(const TerrainComponent* componen
 		return (Color){ 0, 0, 0, 0 };
 	}
 
-	return GetImageColor(component->impl->layers[layer].image, loc.x, loc.y);
+	return TerrainDescriptor_GetLayerColour(ResourcePool_GetTerrain(component->impl->terrainResource), layer, loc);
 }
 
 Rectangle TerrainComponent_GetBlockWorldRectByPixelLoc(const TerrainComponent* component, Vector2i loc)
@@ -140,7 +92,16 @@ Rectangle TerrainComponent_GetBlockWorldRectByPixelLoc(const TerrainComponent* c
 		return rect;
 	}
 
-	if ( loc.x < 0 || loc.y < 0 )
+	TerrainDescriptor* descriptor = ResourcePool_GetTerrain(component->impl->terrainResource);
+
+	if ( !descriptor )
+	{
+		return rect;
+	}
+
+	Vector2i dims = TerrainDescriptor_GetDimensionsInPixels(descriptor);
+
+	if ( loc.x < 0 || loc.x >= dims.x || loc.y < 0 || loc.y >= dims.y )
 	{
 		return rect;
 	}
@@ -165,9 +126,24 @@ Vector2i TerrainComponent_PositionToPixelLoc(const TerrainComponent* component, 
 		return (Vector2i){ -1, -1 };
 	}
 
+	TerrainDescriptor* descriptor = ResourcePool_GetTerrain(component->impl->terrainResource);
+
+	if ( !descriptor )
+	{
+		return (Vector2i){ -1, -1 };
+	}
+
 	world = Vector2Subtract(world, component->impl->ownerEntity->position);
 
-	return (Vector2i){ (int)(world.x / component->scale), (int)(world.y / component->scale) };
+	Vector2i loc = (Vector2i){ (int)(world.x / component->scale), (int)(world.y / component->scale) };
+	Vector2i dims = TerrainDescriptor_GetDimensionsInPixels(descriptor);
+
+	if ( loc.x >= dims.x || loc.y >= dims.y )
+	{
+		return (Vector2i){ -1, -1 };
+	}
+
+	return loc;
 }
 
 bool TerrainComponent_SetTerrain(TerrainComponent* component, const char* filePath)

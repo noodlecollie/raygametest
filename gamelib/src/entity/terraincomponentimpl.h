@@ -6,16 +6,10 @@
 
 struct Entity;
 
-typedef struct TerrainLayer
-{
-	Image image;
-} TerrainLayer;
-
 typedef struct TerrainComponentImpl
 {
 	struct Entity* ownerEntity;
 	TerrainComponent component;
-	TerrainLayer* layers;
 	ResourcePoolTerrain* terrainResource;
 } TerrainComponentImpl;
 

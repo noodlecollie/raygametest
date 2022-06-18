@@ -306,7 +306,12 @@ Vector2i TerrainDescriptor_GetDimensionsInPixels(TerrainDescriptor* descriptor)
 
 Color TerrainDescriptor_GetLayerColour(TerrainDescriptor* descriptor, size_t layer, Vector2i pos)
 {
-	if ( !descriptor || !DimensionsAreValid(descriptor) || layer >= TERRAIN_MAX_LAYERS )
+	if ( !descriptor || !DimensionsAreValid(descriptor) || layer >= TERRAIN_MAX_LAYERS || !descriptor->layers[layer].image.data )
+	{
+		return (Color){ 0, 0, 0, 0 };
+	}
+
+	if ( pos.x < 0 || pos.x > descriptor->dimensions.x || pos.y < 0 || pos.y > descriptor->dimensions.y )
 	{
 		return (Color){ 0, 0, 0, 0 };
 	}

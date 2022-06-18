@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 	TerrainComponent* terrainComponent = Entity_CreateTerrainComponent(terrainEnt);
 
 	terrainComponent->scale = (float)guiValues.levelScale;
-	TerrainComponent_LoadLayer(terrainComponent, 0, "res/maps/test.png");
+	TerrainComponent_SetTerrain(terrainComponent, "res/terrain/test.json");
 	Vector2i levelDim = TerrainComponent_GetLayerDimensionsInPixels(terrainComponent, 0);
 
 	Camera2D camera = { 0 };

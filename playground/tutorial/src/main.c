@@ -39,13 +39,13 @@ int main(int argc, char** argv)
 	TerrainComponent* terrain = Entity_CreateTerrainComponent(terrainEnt);
 	terrain->scale = 12.0f;
 
-	TerrainComponent_LoadLayer(terrain, 0, "res/terrain/terrain.png");
+	TerrainComponent_SetTerrain(terrain, "res/terrain/sample/sample.json");
 
 	Entity* cameraEnt = World_CreateEntity(world);
 	CameraComponent* camComp = Entity_CreateCameraComponent(cameraEnt);
 	World_SetActiveCamera(world, camComp);
 
-	const Vector2 playerStartPos = (Vector2){ 0.0f, 0.0f };
+	const Vector2 playerStartPos = (Vector2){ 60.0f, 0.0f };
 
 	Entity* playerEnt = World_CreateEntity(world);
 	playerEnt->position = playerStartPos;

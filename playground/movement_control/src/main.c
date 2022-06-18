@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 	TerrainComponent* terrain = Entity_CreateTerrainComponent(terrainEnt);
 	terrain->scale = 10.0f;
 
-	TerrainComponent_LoadLayer(terrain, 0, "res/maps/test.png");
+	TerrainComponent_SetTerrain(terrain, "res/terrain/test.json");
 
 	Entity* cameraEnt = World_CreateEntity(world);
 	CameraComponent* camComp = Entity_CreateCameraComponent(cameraEnt);

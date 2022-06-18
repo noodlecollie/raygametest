@@ -1,0 +1,14 @@
+{
+	"descriptor": "terrain",
+	"version": 1,
+	"content":
+	{
+		"terrain_layers":
+		[
+			{
+				"terrain_layer_index": 0,
+				"image": "res/terrain/test.png"
+			}
+		]
+	}
+}

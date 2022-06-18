@@ -4,29 +4,28 @@
 
 void TerrainRenderer_Draw(TerrainComponentImpl* impl, Camera3D camera)
 {
-	if ( !impl || !impl->layers )
+	if ( !impl || !impl->terrainResource )
 	{
 		return;
 	}
+
+	TerrainDescriptor* descriptor = ResourcePool_GetTerrain(impl->terrainResource);
+
+	if ( !descriptor )
+	{
+		return;
+	}
+
+	Vector2i dims = TerrainDescriptor_GetDimensionsInPixels(descriptor);
 
 	// TODO: Work out bounds of camera and only render blocks that intersect with these bounds.
 	(void)camera;
 
 	for ( size_t layer = 0; layer < TERRAIN_MAX_LAYERS; ++layer )
 	{
-		if ( !impl->layers[layer].image.data )
-		{
-			continue;
-		}
-
-		Vector2i dims = TerrainComponent_GetLayerDimensionsInPixels(&impl->component, layer);
-
 		// TODO: This should be improved as time goes on.
 		// We could make use of instanced meshes here,
 		// and we need things like textures etc. for blocks.
-		// However, we will need to use 3D rendering rather
-		// than 2D to make use of instancing, and to allow
-		// proper depth checking.
 		for ( int y = 0; y < dims.y; ++y )
 		{
 			for ( int x = 0; x < dims.x; ++x )
@@ -39,9 +38,8 @@ void TerrainRenderer_Draw(TerrainComponentImpl* impl, Camera3D camera)
 				}
 
 				Rectangle blockRect = TerrainComponent_GetBlockWorldRectByPixelLoc(&impl->component, (Vector2i){ x, y });
-
-				// TODO: Allow layers to be set manually in terrain descriptor
-				const float depth = RenderUtils_GetDepthForLayer(DLAYER_BACKGROUND);
+				DrawingLayer dLayer = TerrainDescriptor_GetLayerDrawingLayer(descriptor, layer);
+				const float depth = RenderUtils_GetDepthForLayer(dLayer);
 
 				DrawTriangle3D(
 					(Vector3){ blockRect.x, blockRect.y, depth },
