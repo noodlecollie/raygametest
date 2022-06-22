@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 	CopyString(movementData->animJumping, ARRAY_SIZE(movementData->animJumping), "jump_right");
 	CopyString(movementData->animFalling, ARRAY_SIZE(movementData->animFalling), "fall_right");
 
-	movementData->fallSpeedThreshold = 150.0f;
+	movementData->fallSpeedAnimThreshold = 150.0f;
 
 	SetTargetFPS(60);
 

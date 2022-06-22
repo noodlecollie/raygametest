@@ -8,9 +8,12 @@
 #include "gamelib/entity/spritecomponent.h"
 #include "gamelib/physics.h"
 #include "gamelib/world.h"
+#include "gamelib/parametric.h"
 
 #define PLAYER_LOGIC_DATA_TYPE_ID 12345
 #define PLAYER_MOVEMENT_VEL_SCALE (Vector2){ 200.0f, 450.0f }
+#define ZIP_VELOCITY_SCALE 3.0f
+#define ZIP_PERIOD 0.2f
 
 static inline bool SurfaceNormalIsGround(Vector2 normal)
 {
@@ -59,6 +62,7 @@ static void OnPreThink(LogicComponent* component)
 	PlayerMovementLogicData* data = (PlayerMovementLogicData*)component->userData;
 	Entity* ownerEnt = LogicComponent_GetOwnerEntity(component);
 	PhysicsComponent* playerPhys = Entity_GetPhysicsComponent(ownerEnt);
+	const double currentTime = GetTime();
 
 	if ( playerPhys )
 	{
@@ -77,9 +81,21 @@ static void OnPreThink(LogicComponent* component)
 		if ( IsKeyPressed(KEY_UP) && data->onGround )
 		{
 			movement.y -= 1.0f;
+			data->lastJumpTime = currentTime;
 		}
 
 		movement = Vector2Multiply(movement, PLAYER_MOVEMENT_VEL_SCALE);
+
+		if ( data->lastJumpTime > 0.0f )
+		{
+			double elapsed = currentTime - data->lastJumpTime;
+
+			// TODO: Make this only apply on a wall jump
+			if ( elapsed >= 0.0f && elapsed < ZIP_PERIOD )
+			{
+				movement.x += Parametric_SinePeak(elapsed / ZIP_PERIOD) * ZIP_VELOCITY_SCALE * movement.x;
+			}
+		}
 
 		playerPhys->velocity.x = movement.x;
 		playerPhys->velocity.y += movement.y;
@@ -139,7 +155,7 @@ static void OnPostThink(LogicComponent* component)
 				SpriteComponent_SetAnimationByName(playerSprite, data->animJumping);
 			}
 		}
-		else if ( playerPhys->velocity.y > data->fallSpeedThreshold )
+		else if ( playerPhys->velocity.y > data->fallSpeedAnimThreshold )
 		{
 			if ( data->animFalling[0] )
 			{
@@ -164,6 +180,9 @@ void PlayerMovementLogic_SetOnComponent(LogicComponent* component)
 
 	component->userData = MemAlloc(sizeof(PlayerMovementLogicData));
 	component->userDataType = PLAYER_LOGIC_DATA_TYPE_ID;
+
+	PlayerMovementLogicData* data = (PlayerMovementLogicData*)component->userData;
+	data->velocityMultiplier = 1.0f;
 }
 
 PlayerMovementLogicData* PlayerMovementLogic_GetDataFromComponent(LogicComponent* component)

@@ -31,6 +31,7 @@ add_library(gamelib STATIC
 	src/drawinglayers.c
 	src/gameutil.c
 	src/memoryallocator.c
+	src/parametric.c
 	src/physics.c
 	src/stringutil.c
 	src/trace.c
