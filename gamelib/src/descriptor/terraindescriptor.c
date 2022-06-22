@@ -17,6 +17,7 @@ typedef struct TerrainLayer
 	char* name;
 	size_t layerIndex;
 	DrawingLayer drawingLayer;
+	uint32_t collisionLayer;
 	Image image;
 	Texture2D texture;
 } TerrainLayer;
@@ -184,6 +185,38 @@ static void LoadLayer(const char* filePath, cJSON* content, TerrainDescriptor* d
 			{
 				layerEntry->drawingLayer = dLayer;
 			}
+			else
+			{
+				TraceLog(
+					LOG_WARNING,
+					"TERRAIN DESCRIPTOR: [%s] Terrain layer \"%s\" drawing layer \"%s\" was not recognised, ignoring.",
+					filePath,
+					logName,
+					drawingLayerOverride->valuestring
+				);
+			}
+		}
+
+		cJSON* collisionLayerOverride = cJSONWrapper_GetObjectItemOfType(content, "collision_layer", cJSON_Number);
+
+		if ( collisionLayerOverride )
+		{
+			if ( collisionLayerOverride->valueint >= 0 && collisionLayerOverride->valueint < (int)MASK32_BITS )
+			{
+				layerEntry->collisionLayer = (uint32_t)collisionLayerOverride->valueint;
+			}
+			else
+			{
+				TraceLog(
+					LOG_WARNING,
+					"TERRAIN DESCRIPTOR: [%s] Terrain layer \"%s\" collision layer value %d was out of range [%d %d], ignoring.",
+					filePath,
+					logName,
+					collisionLayerOverride->valueint,
+					0,
+					MASK32_BITS - 1
+				);
+			}
 		}
 
 		TraceLog(LOG_DEBUG, "TERRAIN DESCRIPTOR: [%s] Successfully loaded terrain layer \"%s\"", filePath, logName);
@@ -347,4 +380,14 @@ DrawingLayer TerrainDescriptor_GetLayerDrawingLayer(TerrainDescriptor* descripto
 	}
 
 	return descriptor->layers[layer].drawingLayer;
+}
+
+uint32_t TerrainDescriptor_GetLayerCollisionLayer(TerrainDescriptor* descriptor, size_t layer)
+{
+	if ( !descriptor || layer >= TERRAIN_MAX_LAYERS )
+	{
+		return 0;
+	}
+
+	return descriptor->layers[layer].collisionLayer;
 }

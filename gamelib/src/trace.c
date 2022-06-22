@@ -2,6 +2,7 @@
 #include "gamelib/gameutil.h"
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/entity/terraincomponent.h"
+#include "descriptor/terraindescriptor.h"
 
 static void ClipTraceToTerrainLayer(const Rectangle* hull, const Vector2* delta, const TerrainComponent* terrain, size_t layer, TraceResult* result)
 {
@@ -77,7 +78,9 @@ TraceResult TraceRectangleMovementAgainstTerrain(Rectangle hull, Vector2 delta, 
 	{
 		for ( size_t layer = 0; layer < TERRAIN_MAX_LAYERS; ++layer )
 		{
-			if ( !(collisionLayers & (1 << layer)) )
+			uint32_t collisionLayer = TerrainComponent_GetLayerCollisionLayer(terrain, layer);
+
+			if ( !(collisionLayers & (1 << collisionLayer)) )
 			{
 				continue;
 			}

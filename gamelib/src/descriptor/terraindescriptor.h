@@ -5,7 +5,7 @@
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/drawinglayers.h"
 
-#define TERRAIN_MAX_LAYERS MASK32_BITS
+#define TERRAIN_MAX_LAYERS 32
 
 typedef struct TerrainDescriptor TerrainDescriptor;
 
@@ -18,3 +18,4 @@ Color TerrainDescriptor_GetLayerColour(TerrainDescriptor* descriptor, size_t lay
 Image* TerrainDescriptor_GetLayerImage(TerrainDescriptor* descriptor, size_t layer);
 Texture2D* TerrainDescriptor_GetLayerTexture(TerrainDescriptor* descriptor, size_t layer);
 DrawingLayer TerrainDescriptor_GetLayerDrawingLayer(TerrainDescriptor* descriptor, size_t layer);
+uint32_t TerrainDescriptor_GetLayerCollisionLayer(TerrainDescriptor* descriptor, size_t layer);

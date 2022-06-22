@@ -16,7 +16,8 @@
 				"name": "layer1",
 				"terrain_layer_index": 1,
 				"image": "res/terrain/sample/sample_1.png",
-				"drawing_layer": "background"
+				"drawing_layer": "background",
+				"collision_layer": 1
 			}
 		]
 	}
