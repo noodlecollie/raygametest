@@ -39,26 +39,50 @@ float Parametric_HalfSineDown(float t)
 	return UNIT_SINE(t, 1.0f, 1.0f);
 }
 
-float Parametric_ParabolaUp(float t)
+float Parametric_ParabolaEaseInUp(float t)
 {
 	t = PCLAMP(t);
 	return t * t;
 }
 
-float Parametric_ParabolaDown(float t)
+float Parametric_ParabolaEaseOutUp(float t)
+{
+	t = PCLAMP(t);
+	return (-1.0f * ((t - 1.0f) * (t - 1.0f))) + 1.0f;
+}
+
+float Parametric_ParabolaEaseInDown(float t)
 {
 	t = PCLAMP(t);
 	return (-1.0f * t * t) + 1.0f;
 }
 
-float Parametric_CubicUp(float t)
+float Parametric_ParabolaEaseOutDown(float t)
+{
+	t = PCLAMP(t);
+	return (t - 1.0f) * (t - 1.0f);
+}
+
+float Parametric_CubicEaseInUp(float t)
 {
 	t = PCLAMP(t);
 	return t * t * t;
 }
 
-float Parametric_CubicDown(float t)
+float Parametric_CubicEaseOutUp(float t)
+{
+	t = PCLAMP(t);
+	return ((t - 1.0f) * (t - 1.0f) * (t - 1.0f)) + 1;
+}
+
+float Parametric_CubicEaseInDown(float t)
 {
 	t = PCLAMP(t);
 	return (-1.0f * t * t * t) + 1.0f;
+}
+
+float Parametric_CubicEaseOutDown(float t)
+{
+	t = PCLAMP(t);
+	return -1.0f * ((t - 1.0f) * (t - 1.0f) * (t - 1.0f));
 }

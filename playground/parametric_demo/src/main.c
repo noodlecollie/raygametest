@@ -8,6 +8,14 @@ static inline bool PanKeyPressed()
 	return IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_SPACE);
 }
 
+static void DrawNumber(float t)
+{
+	char number[16];
+	snprintf(number, sizeof(number), "%.2f", t);
+
+	DrawText(number, 10, -30, 20, BLACK);
+}
+
 static void DrawScale(int row, float t, const char* label, float(* parametricFunc)(float))
 {
 	const float dotRadius = 8.0f;
@@ -29,7 +37,7 @@ static void DrawScale(int row, float t, const char* label, float(* parametricFun
 	float x = parametricFunc(t);
 	DrawCircle(left + (int)roundf(x * (float)width), mid, dotRadius, BLUE);
 
-	DrawText(label, right + textMargin, mid - (textSize / 2), 20, BLACK);
+	DrawText(label, right + textMargin, mid - (textSize / 2), textSize, BLACK);
 }
 
 int main(int argc, char** argv)
@@ -38,7 +46,7 @@ int main(int argc, char** argv)
 	(void)argv;
 
 	int screenWidth = 800;
-	int screenHeight = 450;
+	int screenHeight = 600;
 	const double periodSecs = 2.0f;
 
 	SetTraceLogLevel(LOG_DEBUG);
@@ -102,16 +110,21 @@ int main(int argc, char** argv)
 		float t = (float)fmodl(GetTime(), periodSecs) / periodSecs;
 		float row = 0;
 
+		DrawNumber(t);
 		DrawScale(row++, t, "Linear ramp up", &Parametric_LinearRampUp);
 		DrawScale(row++, t, "Linear ramp down", &Parametric_LinearRampDown);
 		DrawScale(row++, t, "Sine peak", &Parametric_SinePeak);
 		DrawScale(row++, t, "Sine trough", &Parametric_SineTrough);
 		DrawScale(row++, t, "Half sine up", &Parametric_HalfSineUp);
 		DrawScale(row++, t, "Half sine down", &Parametric_HalfSineDown);
-		DrawScale(row++, t, "Parabola up", &Parametric_ParabolaUp);
-		DrawScale(row++, t, "Parabola down", &Parametric_ParabolaDown);
-		DrawScale(row++, t, "Cubic up", &Parametric_CubicUp);
-		DrawScale(row++, t, "Cubic down", &Parametric_CubicDown);
+		DrawScale(row++, t, "Parabola ease in up", &Parametric_ParabolaEaseInUp);
+		DrawScale(row++, t, "Parabola ease out up", &Parametric_ParabolaEaseOutUp);
+		DrawScale(row++, t, "Parabola ease in down", &Parametric_ParabolaEaseInDown);
+		DrawScale(row++, t, "Parabola ease out down", &Parametric_ParabolaEaseOutDown);
+		DrawScale(row++, t, "Cubic ease in up", &Parametric_CubicEaseInUp);
+		DrawScale(row++, t, "Cubic ease out up", &Parametric_CubicEaseOutUp);
+		DrawScale(row++, t, "Cubic ease in down", &Parametric_CubicEaseInDown);
+		DrawScale(row++, t, "Cubic ease out down", &Parametric_CubicEaseOutDown);
 
 		EndMode2D();
 

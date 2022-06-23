@@ -29,16 +29,32 @@ float Parametric_HalfSineDown(float t);
 
 // y = t^2
 // http://www.fooplot.com/#W3sidHlwZSI6MCwiZXEiOiJ4XjIiLCJjb2xvciI6IiMwMDAwMDAifSx7InR5cGUiOjEwMDB9XQ--
-float Parametric_ParabolaUp(float t);
+float Parametric_ParabolaEaseInUp(float t);
+
+// y = -((t - 1)^2) + 1
+// http://www.fooplot.com/#W3sidHlwZSI6MCwiZXEiOiItKCh4LTEpXjIpKzEiLCJjb2xvciI6IiMwMDAwMDAifSx7InR5cGUiOjEwMDB9XQ--
+float Parametric_ParabolaEaseOutUp(float t);
 
 // y = -(t^2) + 1
 // http://www.fooplot.com/#W3sidHlwZSI6MCwiZXEiOiItKHheMikrMSIsImNvbG9yIjoiIzAwMDAwMCJ9LHsidHlwZSI6MTAwMH1d
-float Parametric_ParabolaDown(float t);
+float Parametric_ParabolaEaseInDown(float t);
+
+// y = (t - 1)^2
+// http://www.fooplot.com/#W3sidHlwZSI6MCwiZXEiOiIoeC0xKV4yIiwiY29sb3IiOiIjMDAwMDAwIn0seyJ0eXBlIjoxMDAwfV0-
+float Parametric_ParabolaEaseOutDown(float t);
 
 // y = t^3
 // http://www.fooplot.com/#W3sidHlwZSI6MCwiZXEiOiJ4XjMiLCJjb2xvciI6IiMwMDAwMDAifSx7InR5cGUiOjEwMDB9XQ--
-float Parametric_CubicUp(float t);
+float Parametric_CubicEaseInUp(float t);
+
+// y = ((t - 1)^3) + 1
+// http://www.fooplot.com/#W3sidHlwZSI6MCwiZXEiOiIoKHgtMSleMykrMSIsImNvbG9yIjoiIzAwMDAwMCJ9LHsidHlwZSI6MTAwMH1d
+float Parametric_CubicEaseOutUp(float t);
 
 // y = -(t^3) + 1
 // http://www.fooplot.com/#W3sidHlwZSI6MCwiZXEiOiItKHheMykrMSIsImNvbG9yIjoiIzAwMDAwMCJ9LHsidHlwZSI6MTAwMH1d
-float Parametric_CubicDown(float t);
+float Parametric_CubicEaseInDown(float t);
+
+// y = -((t - 1)^3)
+// http://www.fooplot.com/#W3sidHlwZSI6MCwiZXEiOiItKCh4LTEpXjMpIiwiY29sb3IiOiIjMDAwMDAwIn0seyJ0eXBlIjoxMDAwfV0-
+float Parametric_CubicEaseOutDown(float t);
