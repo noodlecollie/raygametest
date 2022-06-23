@@ -12,8 +12,7 @@
 
 #define PLAYER_LOGIC_DATA_TYPE_ID 12345
 #define PLAYER_MOVEMENT_VEL_SCALE (Vector2){ 200.0f, 450.0f }
-#define ZIP_VELOCITY_SCALE 3.0f
-#define ZIP_PERIOD 0.2f
+#define WALLJUMP_CHECK_DIST 8.0f
 
 static inline bool SurfaceNormalIsGround(Vector2 normal)
 {
@@ -57,6 +56,27 @@ static void OnComponentCleanup(LogicComponent* component)
 	}
 }
 
+static bool CheckActivateZipJump(PlayerMovementLogicData* data, Entity* ent)
+{
+	if ( !IsKeyPressed(KEY_UP) || data->onGround || fabsf(data->inputDir.x) < FLT_EPSILON )
+	{
+		return false;
+	}
+
+	Vector2 backwards = Vector2Zero();
+	backwards.x = (data->inputDir.x < 0.0f ? 1.0f : -1.0f) * WALLJUMP_CHECK_DIST;
+
+	TraceResult result = Physics_TraceHullInWorld(
+		Entity_GetWorld(ent),
+		PhysicsComponent_GetWorldCollisionHull(Entity_GetPhysicsComponent(ent)),
+		backwards,
+		1, // TODO: Define collision layers properly - do they belong to physics or to trace?
+		ent
+	);
+
+	return result.collided && !result.beganColliding && !SurfaceNormalIsGround(result.contactNormal);
+}
+
 static void OnPreThink(LogicComponent* component)
 {
 	PlayerMovementLogicData* data = (PlayerMovementLogicData*)component->userData;
@@ -66,39 +86,43 @@ static void OnPreThink(LogicComponent* component)
 
 	if ( playerPhys )
 	{
-		Vector2 movement = Vector2Zero();
+		data->inputDir = Vector2Zero();
 
 		if ( IsKeyDown(KEY_RIGHT) )
 		{
-			movement.x += 1.0f;
+			data->inputDir.x += 1.0f;
 		}
 
 		if ( IsKeyDown(KEY_LEFT) )
 		{
-			movement.x -= 1.0f;
+			data->inputDir.x -= 1.0f;
 		}
 
 		if ( IsKeyPressed(KEY_UP) && data->onGround )
 		{
-			movement.y -= 1.0f;
-			data->lastJumpTime = currentTime;
+			data->inputDir.y -= 1.0f;
 		}
 
-		movement = Vector2Multiply(movement, PLAYER_MOVEMENT_VEL_SCALE);
-
-		if ( data->lastJumpTime > 0.0f )
+		if ( CheckActivateZipJump(data, ownerEnt) )
 		{
-			double elapsed = currentTime - data->lastJumpTime;
+			data->lastZipJumpTime = currentTime;
+		}
+
+		data->inputDir = Vector2Multiply(data->inputDir, PLAYER_MOVEMENT_VEL_SCALE);
+
+		if ( data->lastZipJumpTime > 0.0f )
+		{
+			double elapsed = currentTime - data->lastZipJumpTime;
 
 			// TODO: Make this only apply on a wall jump
-			if ( elapsed >= 0.0f && elapsed < ZIP_PERIOD )
+			if ( elapsed >= 0.0f && elapsed < data->zipDuration )
 			{
-				movement.x += Parametric_SinePeak(elapsed / ZIP_PERIOD) * ZIP_VELOCITY_SCALE * movement.x;
+				data->inputDir.x += Parametric_SinePeak(elapsed / data->zipDuration) * data->zipVelocityMultiplier * data->inputDir.x;
 			}
 		}
 
-		playerPhys->velocity.x = movement.x;
-		playerPhys->velocity.y += movement.y;
+		playerPhys->velocity.x = data->inputDir.x;
+		playerPhys->velocity.y += data->inputDir.y;
 	}
 
 	// Before physics sim, assume the player will not be on the ground.
@@ -182,7 +206,8 @@ void PlayerMovementLogic_SetOnComponent(LogicComponent* component)
 	component->userDataType = PLAYER_LOGIC_DATA_TYPE_ID;
 
 	PlayerMovementLogicData* data = (PlayerMovementLogicData*)component->userData;
-	data->velocityMultiplier = 1.0f;
+	data->zipVelocityMultiplier = 3.0f;
+	data->zipDuration = 0.2f;
 }
 
 PlayerMovementLogicData* PlayerMovementLogic_GetDataFromComponent(LogicComponent* component)

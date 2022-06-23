@@ -31,7 +31,6 @@ int main(int argc, char** argv)
 	SetWindowSize(screenWidth, screenHeight);
 	GuiSetStyle(DEFAULT, TEXT_SIZE, (int)((float)GuiGetStyle(DEFAULT, TEXT_SIZE) * dpiScale.x));
 
-
 	World* world = World_Create();
 	world->gravity = 1000.0f;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gamelib/entity/logiccomponent.h"
+#include "gamelib/external/raylibheaders.h"
 
 #define PLAYERLOGIC_ANIM_NAME_MAX_LENGTH 32
 
@@ -15,9 +16,13 @@ typedef struct PlayerLogicData
 	char animFalling[PLAYERLOGIC_ANIM_NAME_MAX_LENGTH];
 	float fallSpeedAnimThreshold;
 
+	// General movement
+	Vector2 inputDir;	// Recalculated per frame
+
 	// Zip movement
-	float velocityMultiplier;
-	double lastJumpTime;
+	float zipVelocityMultiplier;
+	float zipDuration;
+	double lastZipJumpTime;
 } PlayerMovementLogicData;
 
 void PlayerMovementLogic_SetOnComponent(LogicComponent* component);
