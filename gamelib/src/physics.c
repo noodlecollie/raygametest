@@ -81,6 +81,7 @@ static void FireCollisionCallbacks(PhysicsComponent* physComp, const TraceResult
 	callbackArgs.recipient = result->collisionEnt;
 	callbackArgs.recipientComponentType = result->collisionComponentType;
 	callbackArgs.simIteration = iteration;
+	callbackArgs.traceResult = result;
 
 	for ( LogicComponent* logic = Entity_GetLogicComponentListHead(callbackArgs.initiator); logic; logic = Entity_GetNextLogicComponent(logic) )
 	{

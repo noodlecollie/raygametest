@@ -11,7 +11,6 @@
 #include "gamelib/parametric.h"
 
 #define PLAYER_LOGIC_DATA_TYPE_ID 12345
-#define PLAYER_MOVEMENT_VEL_SCALE (Vector2){ 200.0f, 450.0f }
 #define WALLJUMP_CHECK_DIST 8.0f
 
 static inline bool SurfaceNormalIsGround(Vector2 normal)
@@ -56,11 +55,16 @@ static void OnComponentCleanup(LogicComponent* component)
 	}
 }
 
-static bool CheckActivateZipJump(PlayerMovementLogicData* data, Entity* ent)
+static void CheckActivateZipJump(PlayerMovementLogicData* data, Entity* ent, double currentTime)
 {
-	if ( !IsKeyPressed(KEY_UP) || data->onGround || fabsf(data->inputDir.x) < FLT_EPSILON )
+	data->activatedZipJump = false;
+
+	if ( !IsKeyDown(KEY_UP) ||
+	     data->onGround ||
+	     fabsf(data->inputDir.x) < FLT_EPSILON ||
+	     currentTime - data->lastZipJumpTime < data->zipDuration )
 	{
-		return false;
+		return;
 	}
 
 	Vector2 backwards = Vector2Zero();
@@ -74,7 +78,33 @@ static bool CheckActivateZipJump(PlayerMovementLogicData* data, Entity* ent)
 		ent
 	);
 
-	return result.collided && !result.beganColliding && !SurfaceNormalIsGround(result.contactNormal);
+	data->activatedZipJump = result.collided && !result.beganColliding && !SurfaceNormalIsGround(result.contactNormal);
+
+	if ( data->activatedZipJump )
+	{
+		data->lastZipJumpTime = currentTime;
+	}
+}
+
+static void ApplyZipJump(PlayerMovementLogicData* data, double currentTime)
+{
+	if ( data->lastZipJumpTime <= 0.0f )
+	{
+		return;
+	}
+
+	double elapsed = currentTime - data->lastZipJumpTime;
+
+	if ( elapsed >= 0.0f && elapsed < data->zipDuration )
+	{
+		data->wishVel.x *= 1.0f + (Parametric_SinePeak(elapsed / data->zipDuration) * data->zipVelocityMultiplier);
+	}
+
+	if ( data->activatedZipJump )
+	{
+		// Activated this frame, so add a vertical velocity bump too.
+		data->wishVel.y -= data->zipJumpImpulse;
+	}
 }
 
 static void OnPreThink(LogicComponent* component)
@@ -87,6 +117,7 @@ static void OnPreThink(LogicComponent* component)
 	if ( playerPhys )
 	{
 		data->inputDir = Vector2Zero();
+		data->wishVel = Vector2Zero();
 
 		if ( IsKeyDown(KEY_RIGHT) )
 		{
@@ -103,26 +134,14 @@ static void OnPreThink(LogicComponent* component)
 			data->inputDir.y -= 1.0f;
 		}
 
-		if ( CheckActivateZipJump(data, ownerEnt) )
-		{
-			data->lastZipJumpTime = currentTime;
-		}
+		CheckActivateZipJump(data, ownerEnt, currentTime);
 
-		data->inputDir = Vector2Multiply(data->inputDir, PLAYER_MOVEMENT_VEL_SCALE);
+		data->wishVel = Vector2Multiply(data->inputDir, (Vector2){ data->horizontalInputSpeed, data->jumpImpulse });
 
-		if ( data->lastZipJumpTime > 0.0f )
-		{
-			double elapsed = currentTime - data->lastZipJumpTime;
+		ApplyZipJump(data, currentTime);
 
-			// TODO: Make this only apply on a wall jump
-			if ( elapsed >= 0.0f && elapsed < data->zipDuration )
-			{
-				data->inputDir.x += Parametric_SinePeak(elapsed / data->zipDuration) * data->zipVelocityMultiplier * data->inputDir.x;
-			}
-		}
-
-		playerPhys->velocity.x = data->inputDir.x;
-		playerPhys->velocity.y += data->inputDir.y;
+		playerPhys->velocity.x = data->wishVel.x;
+		playerPhys->velocity.y += data->wishVel.y;
 	}
 
 	// Before physics sim, assume the player will not be on the ground.
@@ -189,6 +208,17 @@ static void OnPostThink(LogicComponent* component)
 	}
 }
 
+static void OnPhysicsCollided(struct LogicComponent* component, const OnPhysicsCollidedArgs* args)
+{
+	PlayerMovementLogicData* data = (PlayerMovementLogicData*)component->userData;
+
+	if ( SurfaceNormalIsGround(args->traceResult->contactNormal) )
+	{
+		// If we hit the ground, stop any zip in progress.
+		data->lastZipJumpTime = 0.0f;
+	}
+}
+
 void PlayerMovementLogic_SetOnComponent(LogicComponent* component)
 {
 	if ( !component )
@@ -201,13 +231,19 @@ void PlayerMovementLogic_SetOnComponent(LogicComponent* component)
 	component->callbacks.onComponentCleanup = &OnComponentCleanup;
 	component->callbacks.onPreThink = &OnPreThink;
 	component->callbacks.onPostThink = &OnPostThink;
+	component->callbacks.onPhysicsCollided = &OnPhysicsCollided;
 
 	component->userData = MemAlloc(sizeof(PlayerMovementLogicData));
 	component->userDataType = PLAYER_LOGIC_DATA_TYPE_ID;
 
 	PlayerMovementLogicData* data = (PlayerMovementLogicData*)component->userData;
+
+	// Defaults:
+	data->horizontalInputSpeed = 200.0f;
+	data->jumpImpulse = 450.0f;
 	data->zipVelocityMultiplier = 3.0f;
 	data->zipDuration = 0.2f;
+	data->zipJumpImpulse = 200.0f;
 }
 
 PlayerMovementLogicData* PlayerMovementLogic_GetDataFromComponent(LogicComponent* component)

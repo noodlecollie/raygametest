@@ -8,6 +8,7 @@
 struct Entity;
 struct LogicComponent;
 struct LogicComponentImpl;
+struct TraceResult;
 
 typedef struct OnPhysicsCollidedArgs
 {
@@ -18,6 +19,7 @@ typedef struct OnPhysicsCollidedArgs
 	ComponentType recipientComponentType;
 
 	size_t simIteration;
+	const struct TraceResult* traceResult;
 } OnPhysicsCollidedArgs;
 
 typedef struct LogicComponentCallbacks

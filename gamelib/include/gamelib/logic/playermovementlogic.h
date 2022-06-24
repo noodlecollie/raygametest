@@ -16,12 +16,19 @@ typedef struct PlayerLogicData
 	char animFalling[PLAYERLOGIC_ANIM_NAME_MAX_LENGTH];
 	float fallSpeedAnimThreshold;
 
-	// General movement
-	Vector2 inputDir;	// Recalculated per frame
+	// Movement speed
+	float horizontalInputSpeed;
+	float jumpImpulse;
+
+	// General movement, recalculated per frame
+	Vector2 inputDir;
+	Vector2 wishVel;
 
 	// Zip movement
 	float zipVelocityMultiplier;
+	float zipJumpImpulse;
 	float zipDuration;
+	bool activatedZipJump;
 	double lastZipJumpTime;
 } PlayerMovementLogicData;
 
