@@ -223,7 +223,7 @@ static void LoadLayer(const char* filePath, cJSON* content, TerrainDescriptor* d
 			}
 			else if ( collisionClassOverride->type == cJSON_Number )
 			{
-				if ( collisionClassOverride->valueint >= 0 && collisionClassOverride->valueint < COLLISIONCLASS_MAX_CLASSES )
+				if ( collisionClassOverride->valueint >= 0 && collisionClassOverride->valueint < (int)COLLISIONCLASS_MAX_CLASSES )
 				{
 					layerEntry->collisionClass = (CollisionClass)collisionClassOverride->valueint;
 				}
