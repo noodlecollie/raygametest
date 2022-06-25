@@ -82,7 +82,7 @@ static bool LocationAllowsNewZipJump(PlayerMovementLogicData* data, Entity* ent)
 		world,
 		hull,
 		backwards,
-		1, // TODO: Define collision layers properly - do they belong to physics or to trace?
+		COLLISIONMASK_TERRAIN,
 		ent
 	);
 
@@ -96,7 +96,7 @@ static bool LocationAllowsNewZipJump(PlayerMovementLogicData* data, Entity* ent)
 		world,
 		hull,
 		downwards,
-		1, // TODO: Define collision layers properly - do they belong to physics or to trace?
+		COLLISIONMASK_TERRAIN,
 		ent
 	);
 

@@ -68,14 +68,14 @@ Vector2i TerrainComponent_GetLayerDimensionsInPixels(const TerrainComponent* com
 	return TerrainDescriptor_GetDimensionsInPixels(ResourcePool_GetTerrain(component->impl->terrainResource));
 }
 
-uint32_t TerrainComponent_GetLayerCollisionLayer(const TerrainComponent* component, size_t layer)
+CollisionClass TerrainComponent_GetLayerCollisionClass(const TerrainComponent* component, size_t layer)
 {
 	if ( !component || layer >= TERRAIN_MAX_LAYERS )
 	{
 		return 0;
 	}
 
-	return TerrainDescriptor_GetLayerCollisionLayer(ResourcePool_GetTerrain(component->impl->terrainResource), layer);
+	return TerrainDescriptor_GetLayerCollisionClass(ResourcePool_GetTerrain(component->impl->terrainResource), layer);
 }
 
 Color TerrainComponent_GetBlockColourByPixelLoc(const TerrainComponent* component, size_t layer, Vector2i loc)

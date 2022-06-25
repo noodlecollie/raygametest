@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 	playerEnt->position = playerStartPos;
 
 	PhysicsComponent* playerPhys = Entity_CreatePhysicsComponent(playerEnt);
-	playerPhys->collisionMask = 0x00000001;
+	playerPhys->collisionMask = COLLISIONMASK_TERRAIN;
 	playerPhys->collisionHull = (Rectangle){ -10.0f, -16.0f, 20.0f, 16.0f };
 	playerPhys->enabled = true;
 	playerPhys->movementType = PHYSMOVE_SLIDE;

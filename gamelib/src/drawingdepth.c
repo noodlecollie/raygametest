@@ -8,7 +8,7 @@ typedef struct
 	DrawingDepth depth;
 } NameToDepthMapping;
 
-const NameToDepthMapping MAPPINGS[] =
+static const NameToDepthMapping MAPPINGS[] =
 {
 	{ "default", DRAWDEPTH_DEFAULT },
 	{ "background", DRAWDEPTH_DEFAULT },

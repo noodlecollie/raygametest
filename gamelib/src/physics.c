@@ -153,7 +153,7 @@ TraceResult Physics_TraceHullInWorld(
 	struct World* world,
 	Rectangle hull,
 	Vector2 delta,
-	Mask32 collisionMask,
+	CollisionMask collisionMask,
 	struct Entity* hullOwner
 )
 {

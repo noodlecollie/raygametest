@@ -17,7 +17,7 @@
 				"terrain_layer_index": 1,
 				"image": "res/terrain/sample/sample_1.png",
 				"drawing_depth": "background",
-				"collision_layer": 1
+				"collision_class": "detail"
 			}
 		]
 	}

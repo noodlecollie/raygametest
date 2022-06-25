@@ -161,7 +161,8 @@ void SpriteRenderer_DrawSpriteFrame(
 	transform = MatrixMultiply(transform, MatrixScale(scale.x, scale.y, 1.0f));
 
 	// Then translate the sprite to the desired position.
-	transform = MatrixMultiply(transform, MatrixTranslate(position.x, position.y, (float)depth));
+	const float worldDepth = RenderUtils_GetWorldDepthFromDrawingDepth(depth);
+	transform = MatrixMultiply(transform, MatrixTranslate(position.x, position.y, worldDepth));
 
 	// Set the source rect as a uniform.
 	const float sourceRectVec[4] =

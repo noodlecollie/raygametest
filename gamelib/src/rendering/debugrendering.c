@@ -31,28 +31,29 @@ void DebugRender_Rectangle(Rectangle rect, Color colour)
 {
 	Vector2 min = RectangleMin(rect);
 	Vector2 max = RectangleMax(rect);
+	const float depth = RenderUtils_GetWorldDepthFromDrawingDepth(DRAWDEPTH_DEBUG);
 
 	DrawLine3D(
-		(Vector3){ min.x, min.y, (float)DRAWDEPTH_DEBUG },
-		(Vector3){ max.x, min.y, (float)DRAWDEPTH_DEBUG },
+		(Vector3){ min.x, min.y, depth },
+		(Vector3){ max.x, min.y, depth },
 		colour
 	);
 
 	DrawLine3D(
-		(Vector3){ max.x, min.y, (float)DRAWDEPTH_DEBUG },
-		(Vector3){ max.x, max.y, (float)DRAWDEPTH_DEBUG },
+		(Vector3){ max.x, min.y, depth },
+		(Vector3){ max.x, max.y, depth },
 		colour
 	);
 
 	DrawLine3D(
-		(Vector3){ max.x, max.y, (float)DRAWDEPTH_DEBUG },
-		(Vector3){ min.x, max.y, (float)DRAWDEPTH_DEBUG },
+		(Vector3){ max.x, max.y, depth },
+		(Vector3){ min.x, max.y, depth },
 		colour
 	);
 
 	DrawLine3D(
-		(Vector3){ min.x, max.y, (float)DRAWDEPTH_DEBUG },
-		(Vector3){ min.x, min.y, (float)DRAWDEPTH_DEBUG },
+		(Vector3){ min.x, max.y, depth },
+		(Vector3){ min.x, min.y, depth },
 		colour
 	);
 }

@@ -17,7 +17,7 @@ typedef struct TerrainLayer
 	char* name;
 	size_t layerIndex;
 	DrawingDepth drawingDepth;
-	uint32_t collisionLayer;
+	CollisionClass collisionClass;
 	Image image;
 	Texture2D texture;
 } TerrainLayer;
@@ -133,6 +133,7 @@ static void LoadLayer(const char* filePath, cJSON* content, TerrainDescriptor* d
 		}
 
 		layerEntry = &descriptor->layers[layerIndex];
+		layerEntry->collisionClass = COLLISIONCLASS_TERRAIN;
 
 		if ( name && *name )
 		{
@@ -197,25 +198,47 @@ static void LoadLayer(const char* filePath, cJSON* content, TerrainDescriptor* d
 			}
 		}
 
-		cJSON* collisionLayerOverride = cJSONWrapper_GetObjectItemOfType(content, "collision_layer", cJSON_Number);
+		cJSON* collisionClassOverride = cJSON_GetObjectItem(content, "collision_class");
 
-		if ( collisionLayerOverride )
+		if ( collisionClassOverride )
 		{
-			if ( collisionLayerOverride->valueint >= 0 && collisionLayerOverride->valueint < (int)MASK32_BITS )
+			if ( collisionClassOverride->type == cJSON_String )
 			{
-				layerEntry->collisionLayer = (uint32_t)collisionLayerOverride->valueint;
+				CollisionClass cClass = COLLISIONCLASS_TERRAIN;
+
+				if ( CollisionClass_FromString(collisionClassOverride->valuestring, &cClass) )
+				{
+					layerEntry->collisionClass = cClass;
+				}
+				else
+				{
+					TraceLog(
+						LOG_WARNING,
+						"TERRAIN DESCRIPTOR: [%s] Terrain layer \"%s\" has unrecognised collision class override \"%s\", ignoring.",
+						filePath,
+						logName,
+						collisionClassOverride->valuestring
+					);
+				}
 			}
-			else
+			else if ( collisionClassOverride->type == cJSON_Number )
 			{
-				TraceLog(
-					LOG_WARNING,
-					"TERRAIN DESCRIPTOR: [%s] Terrain layer \"%s\" collision layer value %d was out of range [%d %d], ignoring.",
-					filePath,
-					logName,
-					collisionLayerOverride->valueint,
-					0,
-					MASK32_BITS - 1
-				);
+				if ( collisionClassOverride->valueint >= 0 && collisionClassOverride->valueint < COLLISIONCLASS_MAX_CLASSES )
+				{
+					layerEntry->collisionClass = (CollisionClass)collisionClassOverride->valueint;
+				}
+				else
+				{
+					TraceLog(
+						LOG_WARNING,
+						"TERRAIN DESCRIPTOR: [%s] Terrain layer \"%s\" collision class override value %d was out of range [%d %d], ignoring.",
+						filePath,
+						logName,
+						collisionClassOverride->valueint,
+						0,
+						COLLISIONCLASS_MAX_CLASSES - 1
+					);
+				}
 			}
 		}
 
@@ -382,12 +405,12 @@ DrawingDepth TerrainDescriptor_GetLayerDrawingDepth(TerrainDescriptor* descripto
 	return descriptor->layers[layer].drawingDepth;
 }
 
-uint32_t TerrainDescriptor_GetLayerCollisionLayer(TerrainDescriptor* descriptor, size_t layer)
+CollisionClass TerrainDescriptor_GetLayerCollisionClass(TerrainDescriptor* descriptor, size_t layer)
 {
 	if ( !descriptor || layer >= TERRAIN_MAX_LAYERS )
 	{
 		return 0;
 	}
 
-	return descriptor->layers[layer].collisionLayer;
+	return descriptor->layers[layer].collisionClass;
 }

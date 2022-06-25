@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/gametypes.h"
+#include "gamelib/collisionclasses.h"
 
 struct Entity;
 struct PhysicsComponentImpl;
@@ -22,7 +23,7 @@ typedef struct PhysicsComponent
 	Vector2 velocity;
 	Rectangle collisionHull;
 	float gravityModifier;
-	Mask32 collisionMask;
+	CollisionMask collisionMask;
 	PhysicsMovementType movementType;
 } PhysicsComponent;
 

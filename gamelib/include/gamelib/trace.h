@@ -5,6 +5,7 @@
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/gametypes.h"
 #include "gamelib/entity/componenttypes.h"
+#include "gamelib/collisionclasses.h"
 
 struct TerrainComponent;
 struct Entity;
@@ -28,5 +29,5 @@ TraceResult TraceRectangleMovementAgainstTerrain(
 	Rectangle hull,
 	Vector2 delta,
 	const struct TerrainComponent* terrain,
-	Mask32 collisionLayers
+	CollisionMask collisionMask
 );

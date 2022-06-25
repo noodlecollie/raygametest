@@ -6,6 +6,13 @@
 const float CAMERA_NEAR_DEPTH = -500.0f;
 const float CAMERA_FAR_DEPTH = 500.0f;
 
+float RenderUtils_GetWorldDepthFromDrawingDepth(DrawingDepth drawingDepth)
+{
+	// When rendering, negative values are closer to the camera,
+	// so we need to invert the depth.
+	return -1.0f * drawingDepth;
+}
+
 Rectangle RenderUtils_CalcOpenGLTextureSubRect(Vector2i textureDim, Rectangle subRect)
 {
 	Rectangle textureRect = NormaliseRectangle((Rectangle){ 0.0f, 0.0f, (float)textureDim.x, (float)textureDim.y });

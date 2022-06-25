@@ -4,6 +4,7 @@
 #include "gamelib/gametypes.h"
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/drawingdepth.h"
+#include "gamelib/collisionclasses.h"
 
 #define TERRAIN_MAX_LAYERS 32
 
@@ -18,4 +19,4 @@ Color TerrainDescriptor_GetLayerColour(TerrainDescriptor* descriptor, size_t lay
 Image* TerrainDescriptor_GetLayerImage(TerrainDescriptor* descriptor, size_t layer);
 Texture2D* TerrainDescriptor_GetLayerTexture(TerrainDescriptor* descriptor, size_t layer);
 DrawingDepth TerrainDescriptor_GetLayerDrawingDepth(TerrainDescriptor* descriptor, size_t layer);
-uint32_t TerrainDescriptor_GetLayerCollisionLayer(TerrainDescriptor* descriptor, size_t layer);
+CollisionClass TerrainDescriptor_GetLayerCollisionClass(TerrainDescriptor* descriptor, size_t layer);

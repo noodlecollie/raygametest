@@ -28,6 +28,7 @@ add_library(gamelib STATIC
 	src/resourcepool/resourcepool_spritesheet.c
 	src/resourcepool/resourcepool_terrain.c
 	src/resourcepool/resourcepool_texture.c
+	src/collisionclasses.c
 	src/debugging.c
 	src/drawingdepth.c
 	src/gameutil.c

@@ -70,17 +70,17 @@ TraceResult TraceResultNoCollision(Vector2 hullEndPos)
 	return result;
 }
 
-TraceResult TraceRectangleMovementAgainstTerrain(Rectangle hull, Vector2 delta, const struct TerrainComponent* terrain, Mask32 collisionLayers)
+TraceResult TraceRectangleMovementAgainstTerrain(Rectangle hull, Vector2 delta, const struct TerrainComponent* terrain, CollisionMask collisionMask)
 {
 	TraceResult result = TraceResultNoCollision((Vector2){ hull.x + delta.x, hull.y + delta.y });
 
-	if ( terrain && collisionLayers != 0 )
+	if ( terrain && collisionMask != 0 )
 	{
 		for ( size_t layer = 0; layer < TERRAIN_MAX_LAYERS; ++layer )
 		{
-			uint32_t collisionLayer = TerrainComponent_GetLayerCollisionLayer(terrain, layer);
+			CollisionClass collisionClass = TerrainComponent_GetLayerCollisionClass(terrain, layer);
 
-			if ( !(collisionLayers & (1 << collisionLayer)) )
+			if ( !(collisionMask & (1 << collisionClass)) )
 			{
 				continue;
 			}

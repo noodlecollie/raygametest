@@ -38,7 +38,8 @@ void TerrainRenderer_Draw(TerrainComponentImpl* impl, Camera3D camera)
 				}
 
 				Rectangle blockRect = TerrainComponent_GetBlockWorldRectByPixelLoc(&impl->component, (Vector2i){ x, y });
-				const float depth = (float)TerrainDescriptor_GetLayerDrawingDepth(descriptor, layer);
+				const DrawingDepth drawingDepth = TerrainDescriptor_GetLayerDrawingDepth(descriptor, layer);
+				const float depth = RenderUtils_GetWorldDepthFromDrawingDepth(drawingDepth);
 
 				DrawTriangle3D(
 					(Vector3){ blockRect.x, blockRect.y, depth },
