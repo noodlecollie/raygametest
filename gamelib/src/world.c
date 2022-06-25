@@ -28,10 +28,12 @@ typedef struct WorldImpl
 static inline void IncreaseSubsystemRefCount()
 {
 	SpriteRenderer_AddRef();
+	DebugRenderCustom_AddRef();
 }
 
 static inline void DecreaseSubsystemRefCount()
 {
+	DebugRenderCustom_RemoveRef();
 	SpriteRenderer_RemoveRef();
 }
 

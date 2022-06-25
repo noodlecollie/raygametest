@@ -1,3 +1,4 @@
+#include "rendering/debugrendercustom_impl.h"
 #include "gamelib/debugging/debugging.h"
 #include "gamelib/debugging/debugrendercustom.h"
 #include "rendering/debugrendering.h"
@@ -27,6 +28,7 @@ typedef struct DebugRenderList
 } DebugRenderList;
 
 static DebugRenderList RenderList;
+static size_t RefCount = 0;
 
 static DebugRenderItem* CreateNewItem(float lifetime)
 {
@@ -70,6 +72,33 @@ void DebugRenderCustom_Rectangle(Rectangle rect, Color colour, float lifetime)
 	item->colour = colour;
 }
 
+void DebugRenderCustom_AddRef(void)
+{
+	if ( (RefCount + 1) < RefCount )
+	{
+		TraceLog(LOG_FATAL, "DEBUG RENDER CUSTOM: Ref count overflow!");
+		return;
+	}
+
+	++RefCount;
+}
+
+void DebugRenderCustom_RemoveRef(void)
+{
+	if ( RefCount < 1 )
+	{
+		TraceLog(LOG_FATAL, "DEBUG RENDER CUSTOM: Ref count underflow!");
+		return;
+	}
+
+	--RefCount;
+
+	if ( RefCount < 1 )
+	{
+		DebugRenderCustom_ClearAll();
+	}
+}
+
 void DebugRenderCustom_RenderAll(void)
 {
 	if ( !Debugging.debuggingEnabled || !Debugging.renderCustomDebugItems )
@@ -97,5 +126,20 @@ void DebugRenderCustom_RenderAll(void)
 		{
 			item = item->next;
 		}
+	}
+}
+
+void DebugRenderCustom_ClearAll(void)
+{
+	DebugRenderItem* item = RenderList.head;
+
+	while ( item )
+	{
+		DebugRenderItem* next = item->next;
+
+		DBL_LL_REMOVE(item, prev, next, &RenderList, head, tail);
+		MemFree(item);
+
+		item = next;
 	}
 }

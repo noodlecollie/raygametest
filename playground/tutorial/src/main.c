@@ -1,3 +1,5 @@
+#include "gamelib/debugging/leakcheck_includefirst.h"
+
 #include <stdio.h>
 #include <float.h>
 #include "gamelib/external/raylibheaders.h"
@@ -15,6 +17,8 @@
 
 int main(int argc, char** argv)
 {
+	LEAKCHECK_INIT();
+
 	(void)argc;
 	(void)argv;
 
@@ -119,5 +123,6 @@ int main(int argc, char** argv)
 	World_Destroy(world);
 	CloseWindow();
 
+	LEAKCHECK_DUMP();
 	return 0;
 }
