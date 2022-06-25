@@ -107,8 +107,8 @@ int main(int argc, char** argv)
 
 		BeginMode2D(camera);
 
-		float t = (float)fmodl(GetTime(), periodSecs) / periodSecs;
-		float row = 0;
+		float t = (float)(fmodl(GetTime(), periodSecs) / periodSecs);
+		int row = 0;
 
 		DrawNumber(t);
 		DrawScale(row++, t, "Linear ramp up", &Parametric_LinearRampUp);

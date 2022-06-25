@@ -33,8 +33,12 @@ void CopyString(char* dest, size_t destSize, const char* source)
 		return;
 	}
 
+#ifdef _MSC_VER
+	strncpy_s(dest, destSize, source, destSize - 1);
+#else
 	strncpy(dest, source, destSize);
 
 	// Cheap way to stay safe:
 	dest[destSize - 1] = '\0';
+#endif
 }

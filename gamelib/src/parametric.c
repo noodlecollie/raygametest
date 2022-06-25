@@ -1,13 +1,14 @@
+#include <math.h>
 #include "gamelib/parametric.h"
 #include "gamelib/gameutil.h"
 
 #define PCLAMP(x) Clamp(x, 0.0f, 1.0f)
 
-// y = (0.5f * sinf( (2 * M_PI * t) + (-1.0f * M_PI_2) )) + 0.5f  Peak
-// y = (0.5f * sinf( (2 * M_PI * t) + ( 1.0f * M_PI_2) )) + 0.5f  Trough
-// y = (0.5f * sinf( (1 * M_PI * t) + (-1.0f * M_PI_2) )) + 0.5f  Half up
-// y = (0.5f * sinf( (1 * M_PI * t) + ( 1.0f * M_PI_2) )) + 0.5f  Half down
-#define UNIT_SINE(t, freq, polarity) ( (0.5f * sinf(((freq) * M_PI * PCLAMP(t)) + ((polarity) * M_PI_2))) + 0.5f )
+// y = (0.5f * sinf( (2 * PI * t) + (-1.0f * M_PI_2) )) + 0.5f  Peak
+// y = (0.5f * sinf( (2 * PI * t) + ( 1.0f * M_PI_2) )) + 0.5f  Trough
+// y = (0.5f * sinf( (1 * PI * t) + (-1.0f * M_PI_2) )) + 0.5f  Half up
+// y = (0.5f * sinf( (1 * PI * t) + ( 1.0f * M_PI_2) )) + 0.5f  Half down
+#define UNIT_SINE(t, freq, polarity) ( (0.5f * sinf(((freq) * PI * PCLAMP(t)) + ((polarity) * 0.5f * PI))) + 0.5f )
 
 float Parametric_LinearRampUp(float normCoefficient)
 {

@@ -97,7 +97,7 @@ static void ApplyZipJump(PlayerMovementLogicData* data, double currentTime)
 
 	if ( elapsed >= 0.0f && elapsed < data->zipDuration )
 	{
-		data->wishVel.x *= 1.0f + (Parametric_SinePeak(elapsed / data->zipDuration) * data->zipVelocityMultiplier);
+		data->wishVel.x *= 1.0f + (Parametric_SinePeak((float)elapsed / data->zipDuration) * data->zipVelocityMultiplier);
 	}
 
 	if ( data->activatedZipJump )
