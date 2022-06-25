@@ -12,7 +12,7 @@
 #include "listmacros.h"
 #include "rendering/renderutils.h"
 #include "rendering/spriterenderer.h"
-#include "gamelib/debugging.h"
+#include "gamelib/debugging/debugging.h"
 #include "rendering/debugrendering.h"
 #include "rendering/debugrendercustom_impl.h"
 

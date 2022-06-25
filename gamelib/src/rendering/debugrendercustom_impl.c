@@ -1,5 +1,5 @@
-#include "gamelib/debugging.h"
-#include "gamelib/debugrendercustom.h"
+#include "gamelib/debugging/debugging.h"
+#include "gamelib/debugging/debugrendercustom.h"
 #include "rendering/debugrendering.h"
 #include "listmacros.h"
 

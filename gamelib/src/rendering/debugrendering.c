@@ -1,5 +1,5 @@
 #include "rendering/debugrendering.h"
-#include "gamelib/debugging.h"
+#include "gamelib/debugging/debugging.h"
 #include "rendering/renderutils.h"
 #include "gamelib/gameutil.h"
 

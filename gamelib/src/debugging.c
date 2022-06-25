@@ -1,3 +1,3 @@
-#include "gamelib/debugging.h"
+#include "gamelib/debugging/debugging.h"
 
 Debugging_Properties Debugging;

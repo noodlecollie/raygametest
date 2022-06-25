@@ -10,9 +10,8 @@
 #include "gamelib/entity/cameracomponent.h"
 #include "gamelib/logic/playermovementlogic.h"
 #include "gamelib/gameutil.h"
-#include "gamelib/debugging.h"
+#include "gamelib/debugging/debugging.h"
 #include "gamelib/stringutil.h"
-#include "gamelib/debugging.h"
 
 int main(int argc, char** argv)
 {

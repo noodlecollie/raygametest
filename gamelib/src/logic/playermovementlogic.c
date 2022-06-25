@@ -9,8 +9,8 @@
 #include "gamelib/physics.h"
 #include "gamelib/world.h"
 #include "gamelib/parametric.h"
-#include "gamelib/debugging.h"
-#include "gamelib/debugrendercustom.h"
+#include "gamelib/debugging/debugging.h"
+#include "gamelib/debugging/debugrendercustom.h"
 
 #define PLAYER_LOGIC_DATA_TYPE_ID 12345
 #define WALLJUMP_CHECK_DIST 8.0f
