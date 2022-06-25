@@ -2,7 +2,7 @@
 #include "descriptor/descriptorutil.h"
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/gametypes.h"
-#include "gamelib/drawinglayers.h"
+#include "gamelib/drawingdepth.h"
 #include "gamelib/stringutil.h"
 #include "external/cJSON_wrapper.h"
 #include "external/cJSON_util.h"
@@ -16,7 +16,7 @@ typedef struct TerrainLayer
 
 	char* name;
 	size_t layerIndex;
-	DrawingLayer drawingLayer;
+	DrawingDepth drawingDepth;
 	uint32_t collisionLayer;
 	Image image;
 	Texture2D texture;
@@ -25,7 +25,7 @@ typedef struct TerrainLayer
 struct TerrainDescriptor
 {
 	TerrainLayer* layers;
-	DrawingLayer defaultDrawingLayer;
+	DrawingDepth defaultDrawingDepth;
 	Vector2i dimensions;
 };
 
@@ -173,17 +173,17 @@ static void LoadLayer(const char* filePath, cJSON* content, TerrainDescriptor* d
 			break;
 		}
 
-		layerEntry->drawingLayer = descriptor->defaultDrawingLayer;
+		layerEntry->drawingDepth = descriptor->defaultDrawingDepth;
 
-		cJSON* drawingLayerOverride = cJSONWrapper_GetObjectItemOfType(content, "drawing_layer", cJSON_String);
+		cJSON* drawingDepthOverride = cJSONWrapper_GetObjectItemOfType(content, "drawing_depth", cJSON_String);
 
-		if ( drawingLayerOverride )
+		if ( drawingDepthOverride )
 		{
-			DrawingLayer dLayer = DrawingLayer_GetLayerFromName(drawingLayerOverride->valuestring);
+			DrawingDepth depth = DRAWDEPTH_DEFAULT;
 
-			if ( dLayer != DLAYER__INVALID )
+			if ( DrawingDepth_FromString(drawingDepthOverride->valuestring, &depth) )
 			{
-				layerEntry->drawingLayer = dLayer;
+				layerEntry->drawingDepth = depth;
 			}
 			else
 			{
@@ -192,7 +192,7 @@ static void LoadLayer(const char* filePath, cJSON* content, TerrainDescriptor* d
 					"TERRAIN DESCRIPTOR: [%s] Terrain layer \"%s\" drawing layer \"%s\" was not recognised, ignoring.",
 					filePath,
 					logName,
-					drawingLayerOverride->valuestring
+					drawingDepthOverride->valuestring
 				);
 			}
 		}
@@ -278,7 +278,7 @@ TerrainDescriptor* TerrainDescriptor_LoadFromJSON(const char* filePath)
 	{
 		descriptor = (TerrainDescriptor*)MemAlloc(sizeof(TerrainDescriptor));
 		descriptor->layers = MemAlloc(TERRAIN_MAX_LAYERS * sizeof(TerrainLayer));
-		descriptor->defaultDrawingLayer = DLAYER_TERRAIN;
+		descriptor->defaultDrawingDepth = DRAWDEPTH_TERRAIN;
 
 		for ( size_t index = 0; index < TERRAIN_MAX_LAYERS; ++index )
 		{
@@ -287,15 +287,15 @@ TerrainDescriptor* TerrainDescriptor_LoadFromJSON(const char* filePath)
 		}
 
 		// Optional:
-		cJSON* drawingLayer = cJSONWrapper_GetObjectItemOfType(content, "drawing_layer", cJSON_String);
+		cJSON* drawingDepth = cJSONWrapper_GetObjectItemOfType(content, "drawing_depth", cJSON_String);
 
-		if ( drawingLayer )
+		if ( drawingDepth )
 		{
-			DrawingLayer dLayer = DrawingLayer_GetLayerFromName(drawingLayer->valuestring);
+			DrawingDepth depth = DRAWDEPTH_DEFAULT;
 
-			if ( dLayer != DLAYER__INVALID )
+			if ( DrawingDepth_FromString(drawingDepth->valuestring, &depth) )
 			{
-				descriptor->defaultDrawingLayer = dLayer;
+				descriptor->defaultDrawingDepth = depth;
 			}
 		}
 
@@ -372,14 +372,14 @@ Texture2D* TerrainDescriptor_GetLayerTexture(TerrainDescriptor* descriptor, size
 	return &descriptor->layers[layer].texture;
 }
 
-DrawingLayer TerrainDescriptor_GetLayerDrawingLayer(TerrainDescriptor* descriptor, size_t layer)
+DrawingDepth TerrainDescriptor_GetLayerDrawingDepth(TerrainDescriptor* descriptor, size_t layer)
 {
 	if ( !descriptor || layer >= TERRAIN_MAX_LAYERS )
 	{
-		return DLAYER__INVALID;
+		return DRAWDEPTH_TERRAIN;
 	}
 
-	return descriptor->layers[layer].drawingLayer;
+	return descriptor->layers[layer].drawingDepth;
 }
 
 uint32_t TerrainDescriptor_GetLayerCollisionLayer(TerrainDescriptor* descriptor, size_t layer)

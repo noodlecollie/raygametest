@@ -1,5 +1,5 @@
 #include "rendering/terrainrenderer.h"
-#include "gamelib/drawinglayers.h"
+#include "gamelib/drawingdepth.h"
 #include "rendering/renderutils.h"
 
 void TerrainRenderer_Draw(TerrainComponentImpl* impl, Camera3D camera)
@@ -38,8 +38,7 @@ void TerrainRenderer_Draw(TerrainComponentImpl* impl, Camera3D camera)
 				}
 
 				Rectangle blockRect = TerrainComponent_GetBlockWorldRectByPixelLoc(&impl->component, (Vector2i){ x, y });
-				DrawingLayer dLayer = TerrainDescriptor_GetLayerDrawingLayer(descriptor, layer);
-				const float depth = RenderUtils_GetDepthForLayer(dLayer);
+				const float depth = (float)TerrainDescriptor_GetLayerDrawingDepth(descriptor, layer);
 
 				DrawTriangle3D(
 					(Vector3){ blockRect.x, blockRect.y, depth },

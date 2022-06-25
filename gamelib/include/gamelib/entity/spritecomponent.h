@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "gamelib/external/raylibheaders.h"
-#include "gamelib/drawinglayers.h"
+#include "gamelib/drawingdepth.h"
 
 struct Entity;
 struct SpriteComponentImpl;
@@ -30,8 +30,8 @@ typedef struct SpriteComponent
 	// 2.0f is double speed, etc.
 	float animationSpeed;
 
-	// Layer on which this sprite will be drawn.
-	DrawingLayer layer;
+	// Depth at which this sprite will be drawn.
+	DrawingDepth depth;
 
 	int32_t transformFlags;
 } SpriteComponent;

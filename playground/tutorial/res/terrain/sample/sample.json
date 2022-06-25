@@ -3,20 +3,20 @@
 	"version": 1,
 	"content":
 	{
-		"drawing_layer": "terrain",
+		"drawing_depth": "terrain",
 		"terrain_layers":
 		[
 			{
 				"name": "background",
 				"terrain_layer_index": 0,
 				"image": "res/terrain/sample/sample_0.png",
-				"drawing_layer": "background"
+				"drawing_depth": "background"
 			},
 			{
 				"name": "layer1",
 				"terrain_layer_index": 1,
 				"image": "res/terrain/sample/sample_1.png",
-				"drawing_layer": "background",
+				"drawing_depth": "background",
 				"collision_layer": 1
 			}
 		]

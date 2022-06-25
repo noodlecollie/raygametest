@@ -308,10 +308,10 @@ void World_Render(World* world)
 	Camera3D camera = { 0 };
 
 	camera.projection = CAMERA_ORTHOGRAPHIC;
-	camera.target = (Vector3){ camImpl->ownerEntity->position.x, camImpl->ownerEntity->position.y, 0.0f };
+	camera.target = (Vector3){ camImpl->ownerEntity->position.x, camImpl->ownerEntity->position.y, CAMERA_FAR_DEPTH };
 
 	camera.position = camera.target;
-	camera.position.z = CAMERA_FAR_DEPTH;
+	camera.position.z = CAMERA_NEAR_DEPTH;
 
 	camera.up = (Vector3){ 0.0f, -1.0f, 0.0f };
 	camera.fovy = (float)GetScreenHeight() / camImpl->component.zoom;

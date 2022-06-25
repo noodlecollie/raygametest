@@ -76,7 +76,7 @@ void SpriteRenderer_DrawSpriteFrame(
 	size_t frame,
 	Vector2 position,
 	Vector2 scale,
-	DrawingLayer layer,
+	DrawingDepth depth,
 	uint32_t flags
 )
 {
@@ -161,8 +161,7 @@ void SpriteRenderer_DrawSpriteFrame(
 	transform = MatrixMultiply(transform, MatrixScale(scale.x, scale.y, 1.0f));
 
 	// Then translate the sprite to the desired position.
-	const float depth = RenderUtils_GetDepthForLayer(layer);
-	transform = MatrixMultiply(transform, MatrixTranslate(position.x, position.y, depth));
+	transform = MatrixMultiply(transform, MatrixTranslate(position.x, position.y, (float)depth));
 
 	// Set the source rect as a uniform.
 	const float sourceRectVec[4] =

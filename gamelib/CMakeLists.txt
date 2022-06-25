@@ -29,7 +29,7 @@ add_library(gamelib STATIC
 	src/resourcepool/resourcepool_terrain.c
 	src/resourcepool/resourcepool_texture.c
 	src/debugging.c
-	src/drawinglayers.c
+	src/drawingdepth.c
 	src/gameutil.c
 	src/memoryallocator.c
 	src/parametric.c
@@ -54,9 +54,5 @@ target_link_libraries(gamelib PUBLIC
 target_link_libraries(gamelib PRIVATE
 	cJSON
 )
-
-if(WIN32 AND WIN32_DEBUG_MEMORY_LEAKS)
-	target_compile_definitions(gamelib PUBLIC -DWIN32_DEBUG_MEMORY_LEAKS)
-endif()
 
 apply_pedantic_compile_options(gamelib)

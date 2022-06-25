@@ -34,7 +34,7 @@ SpriteComponentImpl* SpriteComponentImpl_Create(struct Entity* ownerEntity)
 
 	impl->component.scale = (Vector2){ 1.0f, 1.0f };
 	impl->component.animationSpeed = 1.0f;
-	impl->component.layer = DLAYER_ITEM;
+	impl->component.depth = DRAWDEPTH_ITEM;
 
 	return impl;
 }
@@ -119,7 +119,7 @@ void SpriteComponentImpl_Render(SpriteComponentImpl* impl, Camera3D camera)
 		(size_t)(impl->animTime * (float)numFrames),
 		Vector2Add(impl->ownerEntity->position, impl->component.offset),
 		impl->component.scale,
-		impl->component.layer,
+		impl->component.depth,
 		impl->component.transformFlags
 	);
 }

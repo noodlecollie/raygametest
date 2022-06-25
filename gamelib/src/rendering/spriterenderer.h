@@ -1,7 +1,7 @@
 #pragma once
 
 #include "descriptor/spritesheetdescriptor.h"
-#include "gamelib/drawinglayers.h"
+#include "gamelib/drawingdepth.h"
 
 void SpriteRenderer_AddRef(void);
 void SpriteRenderer_RemoveRef(void);
@@ -11,6 +11,6 @@ void SpriteRenderer_DrawSpriteFrame(
 	size_t frame,
 	Vector2 position,
 	Vector2 scale,
-	DrawingLayer layer,
+	DrawingDepth depth,
 	uint32_t flags
 );

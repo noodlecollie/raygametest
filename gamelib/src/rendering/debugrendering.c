@@ -33,26 +33,26 @@ void DebugRender_Rectangle(Rectangle rect, Color colour)
 	Vector2 max = RectangleMax(rect);
 
 	DrawLine3D(
-		(Vector3){ min.x, min.y, DEBUG_OVERLAY_DEPTH },
-		(Vector3){ max.x, min.y, DEBUG_OVERLAY_DEPTH },
+		(Vector3){ min.x, min.y, (float)DRAWDEPTH_DEBUG },
+		(Vector3){ max.x, min.y, (float)DRAWDEPTH_DEBUG },
 		colour
 	);
 
 	DrawLine3D(
-		(Vector3){ max.x, min.y, DEBUG_OVERLAY_DEPTH },
-		(Vector3){ max.x, max.y, DEBUG_OVERLAY_DEPTH },
+		(Vector3){ max.x, min.y, (float)DRAWDEPTH_DEBUG },
+		(Vector3){ max.x, max.y, (float)DRAWDEPTH_DEBUG },
 		colour
 	);
 
 	DrawLine3D(
-		(Vector3){ max.x, max.y, DEBUG_OVERLAY_DEPTH },
-		(Vector3){ min.x, max.y, DEBUG_OVERLAY_DEPTH },
+		(Vector3){ max.x, max.y, (float)DRAWDEPTH_DEBUG },
+		(Vector3){ min.x, max.y, (float)DRAWDEPTH_DEBUG },
 		colour
 	);
 
 	DrawLine3D(
-		(Vector3){ min.x, max.y, DEBUG_OVERLAY_DEPTH },
-		(Vector3){ min.x, min.y, DEBUG_OVERLAY_DEPTH },
+		(Vector3){ min.x, max.y, (float)DRAWDEPTH_DEBUG },
+		(Vector3){ min.x, min.y, (float)DRAWDEPTH_DEBUG },
 		colour
 	);
 }
