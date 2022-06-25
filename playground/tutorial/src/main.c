@@ -12,6 +12,7 @@
 #include "gamelib/gameutil.h"
 #include "gamelib/debugging.h"
 #include "gamelib/stringutil.h"
+#include "gamelib/debugging.h"
 
 int main(int argc, char** argv)
 {
@@ -30,6 +31,9 @@ int main(int argc, char** argv)
 	screenHeight = (int)((float)screenHeight * dpiScale.y);
 	SetWindowSize(screenWidth, screenHeight);
 	GuiSetStyle(DEFAULT, TEXT_SIZE, (int)((float)GuiGetStyle(DEFAULT, TEXT_SIZE) * dpiScale.x));
+
+	Debugging.debuggingEnabled = true;
+	Debugging.renderCustomDebugItems = true;
 
 	World* world = World_Create();
 	world->gravity = 1000.0f;

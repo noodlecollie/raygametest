@@ -29,7 +29,7 @@ typedef struct PlayerLogicData
 	float zipVelocityMultiplier;
 	float zipJumpImpulse;
 	float zipDuration;
-	bool activatedZipJump;
+	bool activatedZipJumpThisFrame;
 	double lastZipJumpTime;
 } PlayerMovementLogicData;
 

@@ -14,6 +14,7 @@
 #include "rendering/spriterenderer.h"
 #include "gamelib/debugging.h"
 #include "rendering/debugrendering.h"
+#include "rendering/debugrendercustom_impl.h"
 
 typedef struct WorldImpl
 {
@@ -55,6 +56,11 @@ static void RenderDebug(World* world, Camera3D camera)
 	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
 	{
 		DebugRender_Entity(ent->impl, camera);
+	}
+
+	if ( Debugging.renderCustomDebugItems )
+	{
+		DebugRenderCustom_RenderAll();
 	}
 }
 

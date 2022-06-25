@@ -17,6 +17,7 @@ add_library(gamelib STATIC
 	src/presets/presetshaders.c
 	src/presets/presettextures.c
 	src/rendering/builtinshaders.c
+	src/rendering/debugrendercustom_impl.c
 	src/rendering/debugrendering.c
 	src/rendering/renderutils.c
 	src/rendering/spriterenderer.c

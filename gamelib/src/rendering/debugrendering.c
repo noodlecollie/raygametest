@@ -6,32 +6,7 @@
 static void DrawPhysicsHull(PhysicsComponentImpl* impl)
 {
 	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(&impl->component);
-	Vector2 min = RectangleMin(hull);
-	Vector2 max = RectangleMax(hull);
-
-	DrawLine3D(
-		(Vector3){ min.x, min.y, DEBUG_OVERLAY_DEPTH },
-		(Vector3){ max.x, min.y, DEBUG_OVERLAY_DEPTH },
-		DEBUG_COLOUR_PHYSICS
-	);
-
-	DrawLine3D(
-		(Vector3){ max.x, min.y, DEBUG_OVERLAY_DEPTH },
-		(Vector3){ max.x, max.y, DEBUG_OVERLAY_DEPTH },
-		DEBUG_COLOUR_PHYSICS
-	);
-
-	DrawLine3D(
-		(Vector3){ max.x, max.y, DEBUG_OVERLAY_DEPTH },
-		(Vector3){ min.x, max.y, DEBUG_OVERLAY_DEPTH },
-		DEBUG_COLOUR_PHYSICS
-	);
-
-	DrawLine3D(
-		(Vector3){ min.x, max.y, DEBUG_OVERLAY_DEPTH },
-		(Vector3){ min.x, min.y, DEBUG_OVERLAY_DEPTH },
-		DEBUG_COLOUR_PHYSICS
-	);
+	DebugRender_Rectangle(hull, DEBUG_COLOUR_PHYSICS);
 }
 
 void DebugRender_Entity(EntityImpl* impl, Camera3D camera)
@@ -50,4 +25,34 @@ void DebugRender_Entity(EntityImpl* impl, Camera3D camera)
 	{
 		DrawPhysicsHull(impl->physicsImpl);
 	}
+}
+
+void DebugRender_Rectangle(Rectangle rect, Color colour)
+{
+	Vector2 min = RectangleMin(rect);
+	Vector2 max = RectangleMax(rect);
+
+	DrawLine3D(
+		(Vector3){ min.x, min.y, DEBUG_OVERLAY_DEPTH },
+		(Vector3){ max.x, min.y, DEBUG_OVERLAY_DEPTH },
+		colour
+	);
+
+	DrawLine3D(
+		(Vector3){ max.x, min.y, DEBUG_OVERLAY_DEPTH },
+		(Vector3){ max.x, max.y, DEBUG_OVERLAY_DEPTH },
+		colour
+	);
+
+	DrawLine3D(
+		(Vector3){ max.x, max.y, DEBUG_OVERLAY_DEPTH },
+		(Vector3){ min.x, max.y, DEBUG_OVERLAY_DEPTH },
+		colour
+	);
+
+	DrawLine3D(
+		(Vector3){ min.x, max.y, DEBUG_OVERLAY_DEPTH },
+		(Vector3){ min.x, min.y, DEBUG_OVERLAY_DEPTH },
+		colour
+	);
 }

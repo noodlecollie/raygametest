@@ -9,6 +9,8 @@
 #include "gamelib/physics.h"
 #include "gamelib/world.h"
 #include "gamelib/parametric.h"
+#include "gamelib/debugging.h"
+#include "gamelib/debugrendercustom.h"
 
 #define PLAYER_LOGIC_DATA_TYPE_ID 12345
 #define WALLJUMP_CHECK_DIST 8.0f
@@ -55,36 +57,67 @@ static void OnComponentCleanup(LogicComponent* component)
 	}
 }
 
-static void CheckActivateZipJump(PlayerMovementLogicData* data, Entity* ent, double currentTime)
+static inline bool StateAllowsNewZipJump(PlayerMovementLogicData* data)
 {
-	data->activatedZipJump = false;
+	return
+		IsKeyDown(KEY_UP) &&						// We are holding jump
+		!data->onGround &&							// We are not on the ground
+		data->inJump &&								// We are in a jump (as opposed to simply falling)
+		fabsf(data->inputDir.x) > FLT_EPSILON &&	// We have some movement input on X
+		data->lastZipJumpTime <= 0.0f				// We are not in the middle of an unterminated zip jump
+	;
 
-	if ( !IsKeyDown(KEY_UP) ||
-	     data->onGround ||
-	     !data->inJump ||
-	     fabsf(data->inputDir.x) < FLT_EPSILON ||
-	     currentTime - data->lastZipJumpTime < data->zipDuration )
-	{
-		return;
-	}
+}
 
+static bool LocationAllowsNewZipJump(PlayerMovementLogicData* data, Entity* ent)
+{
+	World* world = Entity_GetWorld(ent);
+	Rectangle hull = PhysicsComponent_GetWorldCollisionHull(Entity_GetPhysicsComponent(ent));
+
+	// Firstly, trace backwards to see if there's a surface to spring off.
 	Vector2 backwards = Vector2Zero();
 	backwards.x = (data->inputDir.x < 0.0f ? 1.0f : -1.0f) * WALLJUMP_CHECK_DIST;
 
 	TraceResult result = Physics_TraceHullInWorld(
-		Entity_GetWorld(ent),
-		PhysicsComponent_GetWorldCollisionHull(Entity_GetPhysicsComponent(ent)),
+		world,
+		hull,
 		backwards,
 		1, // TODO: Define collision layers properly - do they belong to physics or to trace?
 		ent
 	);
 
-	data->activatedZipJump = result.collided && !result.beganColliding && !SurfaceNormalIsGround(result.contactNormal);
+	bool surfaceToSpringboardOff = result.collided && !result.beganColliding && !SurfaceNormalIsGround(result.contactNormal);
 
-	if ( data->activatedZipJump )
+	// Then also trace downwards. We want the player to have jumped at least a little bit in the
+	// air before they can zip.
+	Vector2 downwards = (Vector2){ 0.0f, hull.height };
+
+	result = Physics_TraceHullInWorld(
+		world,
+		hull,
+		downwards,
+		1, // TODO: Define collision layers properly - do they belong to physics or to trace?
+		ent
+	);
+
+	bool tooCloseToGround = result.collided && SurfaceNormalIsGround(result.contactNormal);
+
+	if ( Debugging.debuggingEnabled && Debugging.renderCustomDebugItems )
 	{
-		data->lastZipJumpTime = currentTime;
+		DebugRenderCustom_Rectangle(
+			(Rectangle){ hull.x + backwards.x, hull.y + backwards.y, hull.width, hull.height },
+			surfaceToSpringboardOff ? GREEN : RED,
+			1.0f
+		);
+
+		DebugRenderCustom_Rectangle(
+			(Rectangle){ hull.x + downwards.x, hull.y + downwards.y, hull.width, hull.height },
+			tooCloseToGround ? RED : GREEN,
+			1.0f
+		);
 	}
+
+	return surfaceToSpringboardOff && !tooCloseToGround;
 }
 
 static void ApplyZipJump(PlayerMovementLogicData* data, double currentTime)
@@ -101,7 +134,7 @@ static void ApplyZipJump(PlayerMovementLogicData* data, double currentTime)
 		data->wishVel.x *= 1.0f + (Parametric_SinePeak((float)elapsed / data->zipDuration) * data->zipVelocityMultiplier);
 	}
 
-	if ( data->activatedZipJump )
+	if ( data->activatedZipJumpThisFrame )
 	{
 		// Activated this frame, so add a vertical velocity bump too.
 		data->wishVel.y -= data->zipJumpImpulse;
@@ -136,7 +169,13 @@ static void OnPreThink(LogicComponent* component)
 			data->inJump = true;
 		}
 
-		CheckActivateZipJump(data, ownerEnt, currentTime);
+		data->activatedZipJumpThisFrame = false;
+
+		if ( StateAllowsNewZipJump(data) && LocationAllowsNewZipJump(data, ownerEnt) )
+		{
+			data->activatedZipJumpThisFrame = true;
+			data->lastZipJumpTime = currentTime;
+		}
 
 		data->wishVel = Vector2Multiply(data->inputDir, (Vector2){ data->horizontalInputSpeed, data->jumpImpulse });
 
@@ -160,6 +199,9 @@ static void OnPostThink(LogicComponent* component)
 	if ( data->onGround )
 	{
 		data->inJump = false;
+
+		// Reset so that we can re-zip.
+		data->lastZipJumpTime = 0.0f;
 	}
 
 	SpriteComponent* playerSprite = Entity_GetSpriteComponent(thisEntity);
@@ -219,9 +261,9 @@ static void OnPhysicsCollided(struct LogicComponent* component, const OnPhysicsC
 {
 	PlayerMovementLogicData* data = (PlayerMovementLogicData*)component->userData;
 
-	if ( SurfaceNormalIsGround(args->traceResult->contactNormal) )
+	if ( args->recipientComponentType == COMPONENT_TERRAIN )
 	{
-		// If we hit the ground, stop any zip in progress.
+		// If we hit anything, stop any zip in progress.
 		data->lastZipJumpTime = 0.0f;
 	}
 }
