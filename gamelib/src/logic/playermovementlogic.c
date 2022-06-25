@@ -131,7 +131,19 @@ static void ApplyZipJump(PlayerMovementLogicData* data, double currentTime)
 
 	if ( elapsed >= 0.0f && elapsed < data->zipDuration )
 	{
-		data->wishVel.x *= 1.0f + (Parametric_SinePeak((float)elapsed / data->zipDuration) * data->zipVelocityMultiplier);
+		float boostFactor = 0.0f;
+
+		// If neither of these passes, no boost is applied.
+		if ( fabsf(data->inputDir.x) > FLT_EPSILON )
+		{
+			boostFactor = data->inputDir.x > 0.0f ? 1.0f : -1.0f;
+		}
+		else if ( fabsf(data->wishVel.x) > FLT_EPSILON )
+		{
+			boostFactor = data->wishVel.x > 0.0f ? 1.0f : -1.0f;
+		}
+
+		data->wishVel.x += Parametric_SinePeak((float)elapsed / data->zipDuration) * data->zipVelocityBoost * boostFactor;
 	}
 
 	if ( data->activatedZipJumpThisFrame )
@@ -290,7 +302,7 @@ void PlayerMovementLogic_SetOnComponent(LogicComponent* component)
 	// Defaults:
 	data->horizontalInputSpeed = 200.0f;
 	data->jumpImpulse = 450.0f;
-	data->zipVelocityMultiplier = 3.0f;
+	data->zipVelocityBoost = 500.0f;
 	data->zipDuration = 0.2f;
 	data->zipJumpImpulse = 200.0f;
 }

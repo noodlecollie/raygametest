@@ -26,7 +26,7 @@ typedef struct PlayerLogicData
 	Vector2 wishVel;
 
 	// Zip movement
-	float zipVelocityMultiplier;
+	float zipVelocityBoost;	// Max extra speed, in units per second
 	float zipJumpImpulse;
 	float zipDuration;
 	bool activatedZipJumpThisFrame;
