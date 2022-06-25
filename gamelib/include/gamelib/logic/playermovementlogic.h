@@ -8,6 +8,7 @@
 typedef struct PlayerLogicData
 {
 	bool onGround;
+	bool inJump;
 
 	// Animations
 	char animStanding[PLAYERLOGIC_ANIM_NAME_MAX_LENGTH];

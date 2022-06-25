@@ -61,6 +61,7 @@ static void CheckActivateZipJump(PlayerMovementLogicData* data, Entity* ent, dou
 
 	if ( !IsKeyDown(KEY_UP) ||
 	     data->onGround ||
+	     !data->inJump ||
 	     fabsf(data->inputDir.x) < FLT_EPSILON ||
 	     currentTime - data->lastZipJumpTime < data->zipDuration )
 	{
@@ -129,9 +130,10 @@ static void OnPreThink(LogicComponent* component)
 			data->inputDir.x -= 1.0f;
 		}
 
-		if ( IsKeyPressed(KEY_UP) && data->onGround )
+		if ( IsKeyPressed(KEY_UP) && data->onGround && !data->inJump )
 		{
 			data->inputDir.y -= 1.0f;
+			data->inJump = true;
 		}
 
 		CheckActivateZipJump(data, ownerEnt, currentTime);
@@ -154,6 +156,11 @@ static void OnPostThink(LogicComponent* component)
 	Entity* thisEntity = LogicComponent_GetOwnerEntity(component);
 
 	data->onGround = CheckIfStandingOnGround(thisEntity);
+
+	if ( data->onGround )
+	{
+		data->inJump = false;
+	}
 
 	SpriteComponent* playerSprite = Entity_GetSpriteComponent(thisEntity);
 	PhysicsComponent* playerPhys = Entity_GetPhysicsComponent(thisEntity);
