@@ -38,7 +38,6 @@ int main(int argc, char** argv)
 
 	Entity* cameraEnt = World_CreateEntity(world);
 	CameraComponent* camComp = Entity_CreateCameraComponent(cameraEnt);
-	World_SetActiveCamera(world, camComp);
 
 	const Vector2 playerStartPos = (Vector2){ 1000.0f, 0.0f };
 
@@ -97,7 +96,7 @@ int main(int argc, char** argv)
 		BeginDrawing();
 
 		ClearBackground(LIGHTGRAY);
-		World_Render(world);
+		World_Render(world, camComp);
 
 		int leftMargin = (int)(10.0f * dpiScale.x);
 		int fontSize = (int)(10.0f * dpiScale.y);

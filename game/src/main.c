@@ -48,8 +48,6 @@ int main(int argc, char** argv)
 	CameraComponent* camComp = Entity_CreateCameraComponent(cameraEnt);
 	camComp->zoom = 1.0f;
 
-	World_SetActiveCamera(world, camComp);
-
 	SetTargetFPS(60);
 
 	while ( !WindowShouldClose() )
@@ -74,7 +72,7 @@ int main(int argc, char** argv)
 
 		BeginDrawing();
 		ClearBackground(LIGHTGRAY);
-		World_Render(world);
+		World_Render(world, camComp);
 		EndDrawing();
 	}
 

@@ -1,5 +1,6 @@
 #include <math.h>
 #include <float.h>
+#include <pthread.h>
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/world.h"
 #include "gamelib/physics.h"
@@ -16,13 +17,16 @@
 #include "rendering/debugrendering.h"
 #include "rendering/debugrendercustom_impl.h"
 
+typedef struct
+{
+	size_t count;
+	EntityImpl* head;
+	EntityImpl* tail;
+} EntityList;
+
 typedef struct WorldImpl
 {
-	size_t entityCount;
-	EntityImpl* entitiesHead;
-	EntityImpl* entitiesTail;
-
-	CameraComponent* activeCamera;
+	EntityList entities;
 } WorldImpl;
 
 static inline void IncreaseSubsystemRefCount()
@@ -39,11 +43,11 @@ static inline void DecreaseSubsystemRefCount()
 
 static void DestroyAllEntities(WorldImpl* impl)
 {
-	EntityImpl* slot = impl->entitiesHead;
+	EntityImpl* slot = impl->entities.head;
 
-	impl->entitiesHead = NULL;
-	impl->entitiesTail = NULL;
-	impl->entityCount = 0;
+	impl->entities.head = NULL;
+	impl->entities.tail = NULL;
+	impl->entities.count = 0;
 
 	while ( slot )
 	{
@@ -101,7 +105,7 @@ struct Entity* World_CreateEntity(World* world)
 
 	WorldImpl* impl = world->impl;
 
-	if ( impl->entityCount >= WORLD_MAX_ENTITIES )
+	if ( impl->entities.count >= WORLD_MAX_ENTITIES )
 	{
 		return NULL;
 	}
@@ -111,9 +115,9 @@ struct Entity* World_CreateEntity(World* world)
 	slot->ownerWorld = world;
 	slot->entity.impl = slot;
 
-	DBL_LL_ADD_TO_TAIL(slot, prev, next, impl, entitiesHead, entitiesTail);
+	DBL_LL_ADD_TO_TAIL(slot, prev, next, &impl->entities, head, tail);
 
-	++impl->entityCount;
+	++impl->entities.count;
 
 	return &slot->entity;
 }
@@ -133,7 +137,7 @@ void World_DestroyEntity(struct Entity* ent)
 	}
 	else if ( slot->ownerWorld )
 	{
-		slot->ownerWorld->impl->entitiesHead = slot->next;
+		slot->ownerWorld->impl->entities.head = slot->next;
 	}
 
 	if ( slot->next )
@@ -142,12 +146,12 @@ void World_DestroyEntity(struct Entity* ent)
 	}
 	else if ( slot->ownerWorld )
 	{
-		slot->ownerWorld->impl->entitiesTail = slot->prev;
+		slot->ownerWorld->impl->entities.tail = slot->prev;
 	}
 
-	if ( slot->ownerWorld && slot->ownerWorld->impl->entityCount > 0 )
+	if ( slot->ownerWorld && slot->ownerWorld->impl->entities.count > 0 )
 	{
-		--slot->ownerWorld->impl->entityCount;
+		--slot->ownerWorld->impl->entities.count;
 	}
 
 	EntityImpl_Destroy(slot);
@@ -155,7 +159,7 @@ void World_DestroyEntity(struct Entity* ent)
 
 struct Entity* World_GetEntityListHead(World* world)
 {
-	return (world && world->impl->entitiesHead) ? &world->impl->entitiesHead->entity : NULL;
+	return (world && world->impl->entities.head) ? &world->impl->entities.head->entity : NULL;
 }
 
 struct Entity* World_GetPreviousEntity(struct Entity* ent)
@@ -180,7 +184,7 @@ struct Entity* World_GetNextEntity(struct Entity* ent)
 
 size_t World_GetEntityCount(const World* world)
 {
-	return world ? world->impl->entityCount : 0;
+	return world ? world->impl->entities.count : 0;
 }
 
 void World_Update(World* world)
@@ -218,16 +222,6 @@ void World_Update(World* world)
 			}
 		}
 	}
-}
-
-void World_SetActiveCamera(World* world, struct CameraComponent* camera)
-{
-	if ( !world )
-	{
-		return;
-	}
-
-	world->impl->activeCamera = camera;
 }
 
 /*
@@ -284,20 +278,14 @@ void World_SetActiveCamera(World* world, struct CameraComponent* camera)
 	to optimise. We could provide the bounds for the area that we are drawing, and provide
 	texture uniforms for other pieces of information.
  */
-void World_Render(World* world)
+void World_Render(World* world, struct CameraComponent* camComp)
 {
-	if ( !world )
+	if ( !world || !camComp )
 	{
 		return;
 	}
 
-	if ( !world->impl->activeCamera )
-	{
-		TraceLog(LOG_WARNING, "WORLD: Render call without active camera set!");
-		return;
-	}
-
-	CameraComponentImpl* camImpl = world->impl->activeCamera->impl;
+	CameraComponentImpl* camImpl = camComp->impl;
 
 	if ( fabsf(camImpl->component.zoom) < FLT_EPSILON )
 	{

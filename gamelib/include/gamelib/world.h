@@ -25,7 +25,5 @@ size_t World_GetEntityCount(const World* world);
 
 void World_Update(World* world);
 
-void World_SetActiveCamera(World* world, struct CameraComponent* camera);
-
 // BeginDrawing() should be called before this function is called.
-void World_Render(World* world);
+void World_Render(World* world, struct CameraComponent* camera);
