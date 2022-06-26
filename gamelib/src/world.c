@@ -17,6 +17,63 @@
 #include "rendering/debugrendering.h"
 #include "rendering/debugrendercustom_impl.h"
 
+/*
+	THREADING PROTECTION FOR ENTITIES LIST
+
+	This is going to take a little bit of thought, which I don't have the brainpower for
+	right now, but I'll make some preliminary notes anyway.
+
+	When we asychronously load a chunk of the world, what race conditions do we want to
+	protect against? We want to avoid the worker thread changing any data structures
+	from under the feet of the main thread.
+
+	The linked list of entities is an awkward one here, because there are many different
+	places from which the data may be accessed. CreateEntity and DestroyEntity are the
+	obvious ones, but GetEntityListHead, GetPreviousEntity, GetNextEntity etc. also access
+	entities as well, as do calls to Update and Render. Really, anyone from anywhere could
+	access the entities list at any time as far as the worker thread is concerned.
+
+	This means it's certainly not a good idea to try and protect the entities list overall
+	with a mutex, because this would only protect the head and tail pointers, really - other
+	list elements could still be iterated over from anywhere else. The domain of data that
+	needs access protection is too large.
+
+	What we could do instead is require that the worker thread does not modify any shared
+	data while it is running. It can simply produce a new chain of entities for the list,
+	and signal with an atomic primitive when the chain is ready. The chain can then be
+	added by acting on the signal from the main thread, mitigating any need for further
+	threading protections.
+
+	We will also probably want to *unload* world chunks in the same way. This might be more
+	complicated, though, since when loading entities they're "secret" (the main thread
+	doesn't know they exist until the signal is raised), but in the unloading case these
+	entities are known about and may actively be in use. How do we deal with this?
+
+	Perhaps we need to introduce the concept of a "group", or "chunk", or whatever,
+	more formally. Chunks must be added or removed as an atom, and although entities
+	within the chunk can be interacted with and referenced by other entities, they can only
+	be brought into existence together, or removed from existence together. While it is
+	safe to cache a pointer to a non-chunked entity (and react to the entity being destroyed
+	via the OnEntityDestroyed callback, for an entity that is a member of a chunk,
+	the chunk itself will have a destroy callback called, which represents all entities
+	within the chunk. Individual entities within the chunk will *not* have their
+	callbacks called, as if there are a whole load of entities then this could block the
+	main thread.
+
+	By design, there should not be a large number of chunks in the world - their number
+	should be small so that they can be iterated over quickly. They should be considered
+	coarse groupings of entities, which have long lifetimes. (Perhaps better to call
+	them "scenes", as this better reflects their intended usage? Though it should be
+	possible of course to have more than one scene loaded in the world, as this is the
+	use case we are catering for...)
+
+	PS. One other thing that hasn't been noted yet, but which is important, is that any
+	worker threads must be waited for if the world that owns them is destroyed. This
+	will block the main thread, but if it's the world that's being destroyed then that's
+	OK because chances are the entire engine is shutting down, and if the user really
+	wants to avoid blocking then they can check whether any worker threads still exist
+	before they call destroy.
+*/
 typedef struct
 {
 	size_t count;
