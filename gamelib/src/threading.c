@@ -34,3 +34,14 @@ void Threading_UnlockMutex(pthread_mutex_t* mutex, const char* file, int line)
 		return;
 	}
 }
+
+void Threading_InitDefaultMutex(pthread_mutex_t* mutex, const char* file, int line)
+{
+	const int result = pthread_mutex_init(mutex, NULL);
+
+	if ( result != 0 )
+	{
+		TraceLog(LOG_FATAL, "THREADING: %s:%d: pthread_mutex_init returned error code %d!", file, line, result);
+		return;
+	}
+}
