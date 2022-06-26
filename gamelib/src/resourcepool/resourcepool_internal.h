@@ -1,7 +1,7 @@
 #pragma once
 
-#include <pthread.h>
 #include "external/uthash_wrapper.h"
+#include "threading.h"
 
 typedef struct ResourcePoolItem
 {

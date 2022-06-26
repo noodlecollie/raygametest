@@ -101,10 +101,7 @@ ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
 		return NULL;
 	}
 
-	if ( !mutex || pthread_mutex_lock(mutex) != 0 )
-	{
-		return NULL;
-	}
+	THREADING_LOCK_MUTEX(mutex);
 
 	ResourcePoolItem* item = FindOrCreateItem(head, key, createFunc);
 
@@ -113,7 +110,7 @@ ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
 		AddRef(item);
 	}
 
-	pthread_mutex_unlock(mutex);
+	THREADING_UNLOCK_MUTEX(mutex);
 	return item;
 }
 
@@ -127,13 +124,9 @@ void ResourcePoolInternal_AddRef(
 		return;
 	}
 
-	if ( !mutex || pthread_mutex_lock(mutex) != 0 )
-	{
-		return;
-	}
-
+	THREADING_LOCK_MUTEX(mutex);
 	AddRef(item);
-	pthread_mutex_unlock(mutex);
+	THREADING_UNLOCK_MUTEX(mutex);
 }
 
 void ResourcePoolInternal_RemoveRef(
@@ -147,10 +140,7 @@ void ResourcePoolInternal_RemoveRef(
 		return;
 	}
 
-	if ( !mutex || pthread_mutex_lock(mutex) != 0 )
-	{
-		return;
-	}
+	THREADING_LOCK_MUTEX(mutex);
 
 	RemoveRef(item);
 
@@ -166,5 +156,5 @@ void ResourcePoolInternal_RemoveRef(
 		DestroyItemGeneric(item);
 	}
 
-	pthread_mutex_unlock(mutex);
+	THREADING_UNLOCK_MUTEX(mutex);
 }

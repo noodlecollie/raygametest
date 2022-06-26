@@ -36,6 +36,7 @@ add_library(gamelib STATIC
 	src/parametric.c
 	src/physics.c
 	src/stringutil.c
+	src/threading.c
 	src/trace.c
 	src/world.c
 )
