@@ -9,7 +9,10 @@ struct ResourcePoolTexture
 };
 
 static ResourcePoolItem* TexturePoolHead = NULL;
+static pthread_mutex_t TexturePoolMutex = PTHREAD_MUTEX_INITIALIZER;
+
 static ResourcePoolItem* PresetTexturePoolHead = NULL;
+static pthread_mutex_t PresetTexturePoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static bool LocalLoadTexture(Texture2D* texture, const char* path)
 {
@@ -84,6 +87,7 @@ static void DestroyTexturePayload(ResourcePoolItem* item)
 ResourcePoolTexture* ResourcePool_LoadTextureAndAddRef(const char* path)
 {
 	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
+		&TexturePoolMutex,
 		&TexturePoolHead,
 		path,
 		&CreateTexturePayload
@@ -95,6 +99,7 @@ ResourcePoolTexture* ResourcePool_LoadTextureAndAddRef(const char* path)
 ResourcePoolTexture* ResourcePool_LoadPresetTextureAndAddRef(const char* name)
 {
 	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
+		&PresetTexturePoolMutex,
 		&PresetTexturePoolHead,
 		name,
 		&CreatePresetTexturePayload
@@ -110,7 +115,11 @@ ResourcePoolTexture* ResourcePool_AddTextureRef(ResourcePoolTexture* item)
 		return NULL;
 	}
 
-	ResourcePoolInternal_AddRef(item->owner);
+	pthread_mutex_t* mutex = item->owner->head == &PresetTexturePoolHead
+		? &PresetTexturePoolMutex
+		: &TexturePoolMutex;
+
+	ResourcePoolInternal_AddRef(mutex, item->owner);
 	return item;
 }
 
@@ -121,7 +130,11 @@ void ResourcePool_RemoveTextureRef(ResourcePoolTexture* item)
 		return;
 	}
 
-	ResourcePoolInternal_RemoveRef(item->owner, &DestroyTexturePayload);
+	pthread_mutex_t* mutex = item->owner->head == &PresetTexturePoolHead
+		? &PresetTexturePoolMutex
+		: &TexturePoolMutex;
+
+	ResourcePoolInternal_RemoveRef(mutex, item->owner, &DestroyTexturePayload);
 }
 
 Texture2D* ResourcePool_GetTexture(ResourcePoolTexture* item)

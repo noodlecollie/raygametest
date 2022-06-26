@@ -15,6 +15,12 @@ typedef struct ResourcePoolShader ResourcePoolShader;
 // Even on case-insensitive systems, they are used
 // as a case-sensitive key.
 
+// Modifying the pools themselves (ie. adding/removing refs)
+// is thread-safe, but accessing the contents of a resource is not.
+// This is to facilitate contents being asynchronously loaded.
+// Contents of resources should not be shared between threads
+// unless other thread protection is in place.
+
 ResourcePoolTexture* ResourcePool_LoadTextureAndAddRef(const char* path);
 ResourcePoolTexture* ResourcePool_LoadPresetTextureAndAddRef(const char* name);
 ResourcePoolTexture* ResourcePool_AddTextureRef(ResourcePoolTexture* item);

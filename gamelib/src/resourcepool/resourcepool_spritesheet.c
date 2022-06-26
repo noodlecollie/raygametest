@@ -8,7 +8,8 @@ struct ResourcePoolSpriteSheet
 	SpriteSheetDescriptor* descriptor;
 };
 
-static ResourcePoolItem* PoolHead = NULL;
+static ResourcePoolItem* SpriteSheetPoolHead = NULL;
+static pthread_mutex_t SpriteSheetPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void CreateSpriteSheetPayload(ResourcePoolItem* item)
 {
@@ -40,7 +41,8 @@ static void DestroySpriteSheetPayload(ResourcePoolItem* item)
 ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetAndAddRef(const char* path)
 {
 	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
-		&PoolHead,
+		&SpriteSheetPoolMutex,
+		&SpriteSheetPoolHead,
 		path,
 		&CreateSpriteSheetPayload
 	);
@@ -55,7 +57,7 @@ ResourcePoolSpriteSheet* ResourcePool_AddSpriteSheetRef(ResourcePoolSpriteSheet*
 		return NULL;
 	}
 
-	ResourcePoolInternal_AddRef(item->owner);
+	ResourcePoolInternal_AddRef(&SpriteSheetPoolMutex, item->owner);
 	return item;
 }
 
@@ -66,7 +68,7 @@ void ResourcePool_RemoveSpriteSheetRef(ResourcePoolSpriteSheet* item)
 		return;
 	}
 
-	ResourcePoolInternal_RemoveRef(item->owner, &DestroySpriteSheetPayload);
+	ResourcePoolInternal_RemoveRef(&SpriteSheetPoolMutex, item->owner, &DestroySpriteSheetPayload);
 }
 
 struct SpriteSheetDescriptor* ResourcePool_GetSpriteSheet(ResourcePoolSpriteSheet* item)

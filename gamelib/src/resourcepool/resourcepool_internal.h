@@ -1,5 +1,6 @@
 #pragma once
 
+#include <pthread.h>
 #include "external/uthash_wrapper.h"
 
 typedef struct ResourcePoolItem
@@ -19,16 +20,19 @@ typedef void (* ResourcePoolCreatePayloadFunc)(ResourcePoolItem* item);
 typedef void (* ResourcePoolDestroyPayloadFunc)(ResourcePoolItem* item);
 
 ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
+	pthread_mutex_t* mutex,
 	ResourcePoolItem** head,
 	const char* key,
 	ResourcePoolCreatePayloadFunc createFunc
 );
 
 void ResourcePoolInternal_AddRef(
+	pthread_mutex_t* mutex,
 	ResourcePoolItem* item
 );
 
 void ResourcePoolInternal_RemoveRef(
+	pthread_mutex_t* mutex,
 	ResourcePoolItem* item,
 	ResourcePoolDestroyPayloadFunc destroyFunc
 );

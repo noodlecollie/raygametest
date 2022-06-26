@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include "resourcepool/resourcepool.h"
 #include "resourcepool/resourcepool_internal.h"
 #include "presets/presetmeshes.h"
@@ -8,7 +9,8 @@ struct ResourcePoolMesh
 	Mesh mesh;
 };
 
-ResourcePoolItem* PresetMeshPoolHead = NULL;
+static ResourcePoolItem* PresetMeshPoolHead = NULL;
+static pthread_mutex_t PresetMeshPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void CreatePresetMeshPayload(ResourcePoolItem* item)
 {
@@ -40,6 +42,7 @@ static void DestroyMeshPayload(ResourcePoolItem* item)
 ResourcePoolMesh* ResourcePool_LoadPresetMeshAndAddRef(const char* name)
 {
 	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
+		&PresetMeshPoolMutex,
 		&PresetMeshPoolHead,
 		name,
 		&CreatePresetMeshPayload
@@ -55,7 +58,7 @@ ResourcePoolMesh* ResourcePool_AddMeshRef(ResourcePoolMesh* item)
 		return NULL;
 	}
 
-	ResourcePoolInternal_AddRef(item->owner);
+	ResourcePoolInternal_AddRef(&PresetMeshPoolMutex, item->owner);
 	return item;
 }
 
@@ -66,7 +69,7 @@ void ResourcePool_RemoveMeshRef(ResourcePoolMesh* item)
 		return;
 	}
 
-	ResourcePoolInternal_RemoveRef(item->owner, &DestroyMeshPayload);
+	ResourcePoolInternal_RemoveRef(&PresetMeshPoolMutex, item->owner, &DestroyMeshPayload);
 }
 
 Mesh* ResourcePool_GetMesh(ResourcePoolMesh* item)

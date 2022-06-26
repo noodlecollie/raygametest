@@ -38,6 +38,33 @@ static inline void RemoveItemFromHash(ResourcePoolItem* item)
 	HASH_DEL(*item->head, item);
 }
 
+static ResourcePoolItem* FindOrCreateItem(
+	ResourcePoolItem** head,
+	const char* key,
+	ResourcePoolCreatePayloadFunc createFunc
+)
+{
+	ResourcePoolItem* item = FindItemByPath(*head, key);
+
+	if ( !item )
+	{
+		item = CreateItemBase(key);
+		(*createFunc)(item);
+
+		if ( item->payload )
+		{
+			AddItemToHash(head, item);
+		}
+		else
+		{
+			DestroyItemGeneric(item);
+			item = NULL;
+		}
+	}
+
+	return item;
+}
+
 static inline void AddRef(ResourcePoolItem* item)
 {
 	if ( (item->refCount + 1) < item->refCount )
@@ -63,6 +90,7 @@ static inline void RemoveRef(ResourcePoolItem* item)
 }
 
 ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
+	pthread_mutex_t* mutex,
 	ResourcePoolItem** head,
 	const char* key,
 	ResourcePoolCreatePayloadFunc createFunc
@@ -73,43 +101,53 @@ ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
 		return NULL;
 	}
 
-	ResourcePoolItem* item = FindItemByPath(*head, key);
-
-	if ( !item )
+	if ( !mutex || pthread_mutex_lock(mutex) != 0 )
 	{
-		item = CreateItemBase(key);
-		(*createFunc)(item);
-
-		if ( !item->payload )
-		{
-			DestroyItemGeneric(item);
-			return NULL;
-		}
-
-		AddItemToHash(head, item);
+		return NULL;
 	}
 
-	AddRef(item);
+	ResourcePoolItem* item = FindOrCreateItem(head, key, createFunc);
 
-	return item;
-}
-
-void ResourcePoolInternal_AddRef(
-	ResourcePoolItem* item
-)
-{
 	if ( item )
 	{
 		AddRef(item);
 	}
+
+	pthread_mutex_unlock(mutex);
+	return item;
+}
+
+void ResourcePoolInternal_AddRef(
+	pthread_mutex_t* mutex,
+	ResourcePoolItem* item
+)
+{
+	if ( !item )
+	{
+		return;
+	}
+
+	if ( !mutex || pthread_mutex_lock(mutex) != 0 )
+	{
+		return;
+	}
+
+	AddRef(item);
+	pthread_mutex_unlock(mutex);
 }
 
 void ResourcePoolInternal_RemoveRef(
+	pthread_mutex_t* mutex,
 	ResourcePoolItem* item,
 	ResourcePoolDestroyPayloadFunc destroyFunc
 )
 {
 	if ( !item )
+	{
+		return;
+	}
+
+	if ( !mutex || pthread_mutex_lock(mutex) != 0 )
 	{
 		return;
 	}
@@ -127,4 +165,6 @@ void ResourcePoolInternal_RemoveRef(
 
 		DestroyItemGeneric(item);
 	}
+
+	pthread_mutex_unlock(mutex);
 }

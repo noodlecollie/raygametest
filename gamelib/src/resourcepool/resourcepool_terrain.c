@@ -8,7 +8,8 @@ struct ResourcePoolTerrain
 	TerrainDescriptor* descriptor;
 };
 
-static ResourcePoolItem* PoolHead = NULL;
+static ResourcePoolItem* TerrainPoolHead = NULL;
+static pthread_mutex_t TerrainPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void CreateTerrainPayload(ResourcePoolItem* item)
 {
@@ -40,7 +41,8 @@ static void DestroyTerrainPayload(ResourcePoolItem* item)
 ResourcePoolTerrain* ResourcePool_LoadTerrainAndAddRef(const char* path)
 {
 	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
-		&PoolHead,
+		&TerrainPoolMutex,
+		&TerrainPoolHead,
 		path,
 		&CreateTerrainPayload
 	);
@@ -55,7 +57,7 @@ ResourcePoolTerrain* ResourcePool_AddTerrainRef(ResourcePoolTerrain* item)
 		return NULL;
 	}
 
-	ResourcePoolInternal_AddRef(item->owner);
+	ResourcePoolInternal_AddRef(&TerrainPoolMutex, item->owner);
 	return item;
 }
 
@@ -66,7 +68,7 @@ void ResourcePool_RemoveTerrainRef(ResourcePoolTerrain* item)
 		return;
 	}
 
-	ResourcePoolInternal_RemoveRef(item->owner, &DestroyTerrainPayload);
+	ResourcePoolInternal_RemoveRef(&TerrainPoolMutex, item->owner, &DestroyTerrainPayload);
 }
 
 struct TerrainDescriptor* ResourcePool_GetTerrain(ResourcePoolTerrain* item)
