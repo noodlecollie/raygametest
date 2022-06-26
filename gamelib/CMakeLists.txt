@@ -56,4 +56,10 @@ target_link_libraries(gamelib PRIVATE
 	cJSON
 )
 
+if(WIN32)
+	target_link_libraries(gamelib PRIVATE
+		pthreads-win32
+	)
+endif()
+
 apply_pedantic_compile_options(gamelib)
