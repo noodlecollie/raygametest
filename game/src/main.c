@@ -24,12 +24,12 @@ int main(int argc, char** argv)
 	World* world = World_Create();
 	world->gravity = 500.0f;
 
-	Entity* terrainEnt = World_CreateEntity(world);
+	Entity* terrainEnt = World_CreateEntityInDefaultGroup(world);
 	TerrainComponent* terrain = Entity_CreateTerrainComponent(terrainEnt);
 	terrain->scale = 30.0f;
 	TerrainComponent_SetTerrain(terrain, "res/terrain/sample.json");
 
-	Entity* playerEnt = World_CreateEntity(world);
+	Entity* playerEnt = World_CreateEntityInDefaultGroup(world);
 
 	PhysicsComponent* playerPhys = Entity_CreatePhysicsComponent(playerEnt);
 	playerPhys->collisionHull = (Rectangle){ -5.0f, -5.0f, 10.0f, 10.0f };
@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 	LogicComponent* playerMovementLogic = Entity_AddLogicComponent(playerEnt);
 	PlayerMovementLogic_SetOnComponent(playerMovementLogic);
 
-	Entity* cameraEnt = World_CreateEntity(world);
+	Entity* cameraEnt = World_CreateEntityInDefaultGroup(world);
 	CameraComponent* camComp = Entity_CreateCameraComponent(cameraEnt);
 	camComp->zoom = 1.0f;
 

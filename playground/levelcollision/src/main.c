@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 	const Rectangle guiBounds = { 0.0f, 0.0f, 260.0f * dpiScale.x, 140.0f * dpiScale.y };
 
 	World* world = World_Create();
-	Entity* terrainEnt = World_CreateEntity(world);
+	Entity* terrainEnt = World_CreateEntityInDefaultGroup(world);
 	TerrainComponent* terrainComponent = Entity_CreateTerrainComponent(terrainEnt);
 
 	terrainComponent->scale = (float)guiValues.levelScale;

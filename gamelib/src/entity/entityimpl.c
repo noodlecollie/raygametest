@@ -1,6 +1,7 @@
 #include "entity/entityimpl.h"
 #include "gamelib/gameutil.h"
 #include "listmacros.h"
+#include "world_impl.h"
 
 static void DestroyAllLogicComponents(EntityImpl* impl)
 {
@@ -69,7 +70,12 @@ void EntityImpl_Render(EntityImpl* impl, Camera3D camera)
 
 struct World* Entity_GetWorld(Entity* ent)
 {
-	return ent ? ent->impl->ownerWorld : NULL;
+	return ent ? &ent->impl->ownerGroup->ownerWorld->world : NULL;
+}
+
+struct EntityGroup* Entity_GetGroup(Entity* ent)
+{
+	return ent ? ent->impl->ownerGroup : NULL;
 }
 
 struct PhysicsComponent* Entity_GetPhysicsComponent(Entity* ent)

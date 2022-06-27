@@ -48,7 +48,7 @@ static void DestroyAllEntities(EntityGroup* group)
 
 static void RenderDebug(World* world, Camera3D camera)
 {
-	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
+	for ( Entity* ent = World_GetEntityGroupHead(&world->impl->defaultEntityGroup); ent; ent = World_GetNextEntity(ent) )
 	{
 		DebugRender_Entity(ent->impl, camera);
 	}
@@ -63,12 +63,14 @@ World* World_Create(void)
 {
 	IncreaseSubsystemRefCount();
 
-	World* world = (World*)MemAlloc(sizeof(World));
-	world->impl = (WorldImpl*)MemAlloc(sizeof(WorldImpl));
+	WorldImpl* impl = (WorldImpl*)MemAlloc(sizeof(WorldImpl));
 
-	world->gravity = 800.0f;
+	impl->world.impl = impl;
+	impl->defaultEntityGroup.ownerWorld = impl;
 
-	return world;
+	impl->world.gravity = 800.0f;
+
+	return &impl->world;
 }
 
 void World_Destroy(World* world)
@@ -78,37 +80,41 @@ void World_Destroy(World* world)
 		return;
 	}
 
-	DestroyAllEntities(&world->impl->defaultEntityGroup);
-	MemFree(world->impl);
-	MemFree(world);
+	WorldImpl* impl = world->impl;
+
+	DestroyAllEntities(&impl->defaultEntityGroup);
+	MemFree(impl);
 
 	DecreaseSubsystemRefCount();
 }
 
-struct Entity* World_CreateEntity(World* world)
+EntityGroup* World_GetDefaultEntityGroup(World* world)
 {
-	if ( !world )
+	return world ? &world->impl->defaultEntityGroup : NULL;
+}
+
+struct Entity* World_CreateEntity(EntityGroup* group)
+{
+	if ( !group )
 	{
 		return NULL;
 	}
 
-	WorldImpl* impl = world->impl;
+	EntityImpl* impl = (EntityImpl*)MemAlloc(sizeof(EntityImpl));
 
-	if ( impl->defaultEntityGroup.count >= WORLD_MAX_ENTITIES )
-	{
-		return NULL;
-	}
+	impl->ownerGroup = group;
+	impl->entity.impl = impl;
 
-	EntityImpl* slot = (EntityImpl*)MemAlloc(sizeof(EntityImpl));
+	DBL_LL_ADD_TO_TAIL(impl, prev, next, group, head, tail);
 
-	slot->ownerWorld = world;
-	slot->entity.impl = slot;
+	++group->count;
 
-	DBL_LL_ADD_TO_TAIL(slot, prev, next, &impl->defaultEntityGroup, head, tail);
+	return &impl->entity;
+}
 
-	++impl->defaultEntityGroup.count;
-
-	return &slot->entity;
+struct Entity* World_CreateEntityInDefaultGroup(World* world)
+{
+	return world ? World_CreateEntity(&world->impl->defaultEntityGroup) : NULL;
 }
 
 void World_DestroyEntity(struct Entity* ent)
@@ -118,37 +124,37 @@ void World_DestroyEntity(struct Entity* ent)
 		return;
 	}
 
-	EntityImpl* slot = ent->impl;
+	EntityImpl* impl = ent->impl;
 
-	if ( slot->prev )
+	if ( impl->prev )
 	{
-		slot->prev->next = slot->next;
+		impl->prev->next = impl->next;
 	}
-	else if ( slot->ownerWorld )
+	else
 	{
-		slot->ownerWorld->impl->defaultEntityGroup.head = slot->next;
-	}
-
-	if ( slot->next )
-	{
-		slot->next->prev = slot->prev;
-	}
-	else if ( slot->ownerWorld )
-	{
-		slot->ownerWorld->impl->defaultEntityGroup.tail = slot->prev;
+		impl->ownerGroup->head = impl->next;
 	}
 
-	if ( slot->ownerWorld && slot->ownerWorld->impl->defaultEntityGroup.count > 0 )
+	if ( impl->next )
 	{
-		--slot->ownerWorld->impl->defaultEntityGroup.count;
+		impl->next->prev = impl->prev;
+	}
+	else
+	{
+		impl->ownerGroup->tail = impl->prev;
 	}
 
-	EntityImpl_Destroy(slot);
+	if ( impl->ownerGroup->count > 0 )
+	{
+		--impl->ownerGroup->count;
+	}
+
+	EntityImpl_Destroy(impl);
 }
 
-struct Entity* World_GetEntityListHead(World* world)
+struct Entity* World_GetEntityGroupHead(EntityGroup* group)
 {
-	return (world && world->impl->defaultEntityGroup.head) ? &world->impl->defaultEntityGroup.head->entity : NULL;
+	return (group && group->head) ? &group->head->entity : NULL;
 }
 
 struct Entity* World_GetPreviousEntity(struct Entity* ent)
@@ -171,9 +177,9 @@ struct Entity* World_GetNextEntity(struct Entity* ent)
 	return (ent && ent->impl->next) ? &ent->impl->next->entity : NULL;
 }
 
-size_t World_GetEntityCount(const World* world)
+size_t World_GetEntityCount(const EntityGroup* group)
 {
-	return world ? world->impl->defaultEntityGroup.count : 0;
+	return group ? group->count : 0;
 }
 
 void World_Update(World* world)
@@ -183,7 +189,7 @@ void World_Update(World* world)
 		return;
 	}
 
-	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
+	for ( Entity* ent = World_GetEntityGroupHead(&world->impl->defaultEntityGroup); ent; ent = World_GetNextEntity(ent) )
 	{
 		for ( LogicComponent* logic = Entity_GetLogicComponentListHead(ent); logic; logic = Entity_GetNextLogicComponent(logic) )
 		{
@@ -295,7 +301,7 @@ void World_Render(World* world, struct CameraComponent* camComp)
 
 	BeginMode3D(camera);
 
-	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
+	for ( Entity* ent = World_GetEntityGroupHead(&world->impl->defaultEntityGroup); ent; ent = World_GetNextEntity(ent) )
 	{
 		EntityImpl_Render(ent->impl, camera);
 	}

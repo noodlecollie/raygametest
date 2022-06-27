@@ -8,10 +8,11 @@
 #include "entity/cameracomponentimpl.h"
 
 struct World;
+struct EntityGroup;
 
 typedef struct EntityImpl
 {
-	struct World* ownerWorld;
+	struct EntityGroup* ownerGroup;
 
 	Entity entity;
 	struct EntityImpl* prev;

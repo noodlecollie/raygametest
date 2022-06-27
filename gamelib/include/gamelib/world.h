@@ -1,27 +1,30 @@
 #pragma once
 
-#define WORLD_MAX_ENTITIES 2048
-
 struct WorldImpl;
 struct Entity;
 struct CameraComponent;
 
+typedef struct EntityGroup EntityGroup;
+
 typedef struct World
 {
-	struct WorldImpl* impl;
-
 	float gravity;
+	struct WorldImpl* impl;
 } World;
 
 World* World_Create(void);
 void World_Destroy(World* world);
 
-struct Entity* World_CreateEntity(World* world);
+EntityGroup* World_GetDefaultEntityGroup(World* world);
+
+struct Entity* World_CreateEntity(EntityGroup* group);
+struct Entity* World_CreateEntityInDefaultGroup(World* world);
 void World_DestroyEntity(struct Entity* ent);
-struct Entity* World_GetEntityListHead(World* world);
+
+struct Entity* World_GetEntityGroupHead(EntityGroup* group);
 struct Entity* World_GetPreviousEntity(struct Entity* ent);
 struct Entity* World_GetNextEntity(struct Entity* ent);
-size_t World_GetEntityCount(const World* world);
+size_t World_GetEntityCount(const EntityGroup* group);
 
 void World_Update(World* world);
 

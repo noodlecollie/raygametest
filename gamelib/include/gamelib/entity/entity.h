@@ -8,6 +8,7 @@ struct TerrainComponent;
 struct LogicComponent;
 struct SpriteComponent;
 struct World;
+struct EntityGroup;
 
 typedef struct Entity
 {
@@ -16,6 +17,7 @@ typedef struct Entity
 } Entity;
 
 struct World* Entity_GetWorld(Entity* ent);
+struct EntityGroup* Entity_GetGroup(Entity* ent);
 
 struct PhysicsComponent* Entity_GetPhysicsComponent(Entity* ent);
 struct PhysicsComponent* Entity_CreatePhysicsComponent(Entity* ent);

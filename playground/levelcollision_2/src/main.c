@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 	World* world = World_Create();
 	world->gravity = 0.0f;
 
-	Entity* terrainEnt = World_CreateEntity(world);
+	Entity* terrainEnt = World_CreateEntityInDefaultGroup(world);
 	TerrainComponent* terrain = Entity_CreateTerrainComponent(terrainEnt);
 	terrain->scale = (float)guiValues.levelScale;
 
@@ -105,7 +105,7 @@ int main(int argc, char** argv)
 	Vector2 beginPos = Vector2Zero();
 	Vector2 endPos = Vector2Zero();
 
-	Entity* playerEnt = World_CreateEntity(world);
+	Entity* playerEnt = World_CreateEntityInDefaultGroup(world);
 	PhysicsComponent* playerPhys = Entity_CreatePhysicsComponent(playerEnt);
 	playerPhys->collisionHull = (Rectangle){ -5.0f, -10.0f, 10.0f, 20.0f };
 	playerPhys->collisionMask = 0xFFFFFFFF;

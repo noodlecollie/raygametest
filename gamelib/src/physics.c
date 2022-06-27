@@ -170,7 +170,8 @@ TraceResult Physics_TraceHullInWorld(
 	TraceResult shortestTraceResult = TraceResultNoCollision(Vector2Add(hullPos, delta));
 
 	// TODO: This is a naive search. It should be optimised with use of a quadtree.
-	for ( Entity* ent = World_GetEntityListHead(world); ent; ent = World_GetNextEntity(ent) )
+	EntityGroup* group = World_GetDefaultEntityGroup(world);
+	for ( Entity* ent = World_GetEntityGroupHead(group); ent; ent = World_GetNextEntity(ent) )
 	{
 		if ( ent == hullOwner )
 		{
