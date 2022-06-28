@@ -2,6 +2,7 @@ include(compile_options)
 
 add_library(gamelib STATIC
 	src/descriptor/descriptorutil.c
+	src/descriptor/entitygroupdescriptor.c
 	src/descriptor/spritesheetdescriptor.c
 	src/descriptor/terraindescriptor.c
 	src/entity/cameracomponentimpl.c

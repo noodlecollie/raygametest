@@ -5,14 +5,14 @@
 struct EntityImpl;
 struct WorldImpl;
 
-typedef struct EntityGroup
+struct EntityGroup
 {
 	struct WorldImpl* ownerWorld;
 
 	size_t count;
 	struct EntityImpl* head;
 	struct EntityImpl* tail;
-} EntityGroup;
+};
 
 typedef struct WorldImpl
 {
