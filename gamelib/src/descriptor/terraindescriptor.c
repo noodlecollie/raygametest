@@ -279,7 +279,7 @@ static void LoadLayers(const char* filePath, cJSON* content, TerrainDescriptor* 
 	}
 }
 
-TerrainDescriptor* TerrainDescriptor_LoadFromJSON(const char* filePath)
+TerrainDescriptor* TerrainDescriptor_LoadFromJSONFile(const char* filePath)
 {
 	if ( !filePath || !(*filePath) )
 	{

@@ -11,7 +11,7 @@ struct EntityGroupDescriptor
 	int dummy;
 };
 
-EntityGroupDescriptor* EntityGroupDescriptor_LoadFromJSON(const char* filePath)
+EntityGroupDescriptor* EntityGroupDescriptor_LoadFromJSONFile(const char* filePath)
 {
 	if ( !filePath || !(*filePath) )
 	{

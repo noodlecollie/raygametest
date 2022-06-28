@@ -13,7 +13,7 @@ static pthread_mutex_t SpriteSheetPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void CreateSpriteSheetPayload(ResourcePoolItem* item)
 {
-	SpriteSheetDescriptor* descriptor = SpriteSheetDescriptor_LoadFromJSON(item->key);
+	SpriteSheetDescriptor* descriptor = SpriteSheetDescriptor_LoadFromJSONFile(item->key);
 
 	if ( !descriptor )
 	{

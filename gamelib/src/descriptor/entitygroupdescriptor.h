@@ -2,5 +2,5 @@
 
 typedef struct EntityGroupDescriptor EntityGroupDescriptor;
 
-EntityGroupDescriptor* EntityGroupDescriptor_LoadFromJSON(const char* filePath);
+EntityGroupDescriptor* EntityGroupDescriptor_LoadFromJSONFile(const char* filePath);
 void EntityGroupDescriptor_Destroy(EntityGroupDescriptor* descriptor);

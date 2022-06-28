@@ -10,7 +10,7 @@
 
 typedef struct TerrainDescriptor TerrainDescriptor;
 
-TerrainDescriptor* TerrainDescriptor_LoadFromJSON(const char* filePath);
+TerrainDescriptor* TerrainDescriptor_LoadFromJSONFile(const char* filePath);
 void TerrainDescriptor_Destroy(TerrainDescriptor* descriptor);
 
 Vector2i TerrainDescriptor_GetDimensionsInPixels(TerrainDescriptor* descriptor);

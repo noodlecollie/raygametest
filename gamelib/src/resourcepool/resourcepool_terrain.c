@@ -13,7 +13,7 @@ static pthread_mutex_t TerrainPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void CreateTerrainPayload(ResourcePoolItem* item)
 {
-	TerrainDescriptor* descriptor = TerrainDescriptor_LoadFromJSON(item->key);
+	TerrainDescriptor* descriptor = TerrainDescriptor_LoadFromJSONFile(item->key);
 
 	if ( !descriptor )
 	{

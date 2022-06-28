@@ -6,7 +6,7 @@
 typedef struct SpriteSheetDescriptor SpriteSheetDescriptor;
 typedef struct SpriteSheetAnimation SpriteSheetAnimation;
 
-SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSON(const char* filePath);
+SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSONFile(const char* filePath);
 void SpriteSheetDescriptor_Destroy(SpriteSheetDescriptor* descriptor);
 
 SpriteSheetAnimation* SpriteSheetDescriptor_GetAnimation(SpriteSheetDescriptor* descriptor, const char* animName);

@@ -317,7 +317,7 @@ static void LoadAnimations(const char* filePath, cJSON* content, SpriteSheetDesc
 	}
 }
 
-SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSON(const char* filePath)
+SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSONFile(const char* filePath)
 {
 	if ( !filePath || !(*filePath) )
 	{
