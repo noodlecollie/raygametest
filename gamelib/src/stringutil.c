@@ -1,5 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <ctype.h>
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/stringutil.h"
 
@@ -34,11 +36,54 @@ void CopyString(char* dest, size_t destSize, const char* source)
 	}
 
 #ifdef _MSC_VER
-	strncpy_s(dest, destSize, source, destSize - 1);
+	strcpy_s(dest, destSize, source);
 #else
 	strncpy(dest, source, destSize);
 
 	// Cheap way to stay safe:
 	dest[destSize - 1] = '\0';
 #endif
+}
+
+void FormatStringBuffer(char* dest, size_t destSize, const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	FormatStringBufferV(dest, destSize, format, args);
+	va_end(args);
+}
+
+void FormatStringBufferV(char* dest, size_t destSize, const char* format, va_list args)
+{
+	if ( !dest || destSize < 1 )
+	{
+		return;
+	}
+
+#ifdef _MSC_VER
+	vsprintf_s(dest, destSize, format, args);
+#else
+	vsnprintf(dest, destSize, format, args);
+
+	// Cheap way to stay safe:
+	dest[destSize - 1] = '\0';
+#endif
+}
+
+const char* FirstNonWhitespace(const char* str)
+{
+	if ( !str )
+	{
+		return NULL;
+	}
+
+	while ( *str )
+	{
+		if ( !isspace(*str) )
+		{
+			break;
+		}
+	}
+
+	return str;
 }

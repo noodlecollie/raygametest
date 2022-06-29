@@ -1,9 +1,11 @@
 #include <stddef.h>
+#include <string.h>
 #include "descriptor/entitygroupdescriptor.h"
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/stringutil.h"
 #include "external/cJSON_wrapper.h"
 #include "descriptor/descriptorutil.h"
+#include "listmacros.h"
 
 #define SUPPORTED_VERSION 1
 
@@ -17,28 +19,54 @@ struct EntityGroupItem
 {
 	EntityGroupItem* prev;
 	EntityGroupItem* next;
-	ItemType itemType;
-	void* item;
+
+	char* name;
+	size_t index;
 };
 
 struct EntityGroupDescriptor
 {
 	char* name;
+	size_t count;
 	EntityGroupItem* head;
 	EntityGroupItem* tail;
 };
 
 static void DestroyItem(EntityGroupItem* item)
 {
+	if ( item->name )
+	{
+		MemFree(item->name);
+	}
+
 	MemFree(item);
 }
 
-static void LoadEntity(const char* filePath, cJSON* ent, EntityGroupDescriptor* descriptor)
+static void LoadEntity(const char* filePath, cJSON* ent, size_t index, EntityGroupDescriptor* descriptor)
 {
-	// TODO
-	(void)filePath;
-	(void)ent;
-	(void)descriptor;
+	if ( ent->type != cJSON_Object )
+	{
+		TraceLog(LOG_WARNING, "ENTITY GROUP DESCRIPTOR: [%s] Entity entry %zu was not specified as an object, skipping", filePath, index + 1);
+		return;
+	}
+
+	EntityGroupItem* item = (EntityGroupItem*)MemAlloc(sizeof(EntityGroupItem));
+
+	cJSON* nameJSON = cJSONWrapper_GetObjectItemOfType(ent, "name", cJSON_String);
+	const char* entName = nameJSON ? FirstNonWhitespace(nameJSON->valuestring) : NULL;
+	const bool hasValidName = entName && *entName;
+
+	if ( hasValidName )
+	{
+		item->name = DuplicateString(entName);
+	}
+
+	item->index = index;
+
+	// TODO: Other properties
+
+	DBL_LL_ADD_TO_TAIL(item, prev, next, descriptor, head, tail);
+	++descriptor->count;
 }
 
 static void LoadEntities(const char* filePath, cJSON* content, EntityGroupDescriptor* descriptor)
@@ -50,9 +78,10 @@ static void LoadEntities(const char* filePath, cJSON* content, EntityGroupDescri
 		return;
 	}
 
-	for ( cJSON* child = entities->child; child; child = child->next )
+	size_t index = 0;
+	for ( cJSON* child = entities->child; child; child = child->next, ++index )
 	{
-		LoadEntity(filePath, child, descriptor);
+		LoadEntity(filePath, child, index, descriptor);
 	}
 }
 
@@ -78,7 +107,7 @@ static EntityGroupDescriptor* Load(const char* filePath, cJSON* root)
 
 			LoadEntities(filePath, content, descriptor);
 
-			TraceLog(LOG_INFO, "ENTITY GROUP DESCRIPTOR: [%s] Loaded successfully", filePath);
+			TraceLog(LOG_INFO, "ENTITY GROUP DESCRIPTOR: [%s] Loaded successfully (%zu entities)", filePath, descriptor->count);
 		}
 		else
 		{
