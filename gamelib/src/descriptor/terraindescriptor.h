@@ -5,12 +5,14 @@
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/drawingdepth.h"
 #include "gamelib/collisionclasses.h"
+#include "external/cJSON_wrapper.h"
 
 #define TERRAIN_MAX_LAYERS 32
 
 typedef struct TerrainDescriptor TerrainDescriptor;
 
 TerrainDescriptor* TerrainDescriptor_LoadFromJSONFile(const char* filePath);
+TerrainDescriptor* TerrainDescriptor_LoadFromJSONObject(cJSON* root);
 void TerrainDescriptor_Destroy(TerrainDescriptor* descriptor);
 
 Vector2i TerrainDescriptor_GetDimensionsInPixels(TerrainDescriptor* descriptor);

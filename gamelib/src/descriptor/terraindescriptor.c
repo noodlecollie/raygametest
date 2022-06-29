@@ -262,7 +262,7 @@ static void LoadLayers(const char* filePath, cJSON* content, TerrainDescriptor* 
 
 	if ( !layers )
 	{
-		TraceLog(LOG_WARNING, "TERRAIN DESCRIPTOR: [%s] File did not contain a valid terrain layers array.", filePath);
+		TraceLog(LOG_WARNING, "TERRAIN DESCRIPTOR: [%s] Did not contain a valid terrain layers array.", filePath);
 		return;
 	}
 
@@ -279,21 +279,8 @@ static void LoadLayers(const char* filePath, cJSON* content, TerrainDescriptor* 
 	}
 }
 
-TerrainDescriptor* TerrainDescriptor_LoadFromJSONFile(const char* filePath)
+static TerrainDescriptor* Load(const char* filePath, cJSON* root)
 {
-	if ( !filePath || !(*filePath) )
-	{
-		return NULL;
-	}
-
-	cJSON* root = cJSONWrapper_ParseFile(filePath);
-
-	if ( !root )
-	{
-		TraceLog(LOG_ERROR, "TERRAIN DESCRIPTOR: [%s] Could not load file", filePath);
-		return NULL;
-	}
-
 	TerrainDescriptor* descriptor = NULL;
 	cJSON* content = Descriptor_GetContent(root, "terrain", SUPPORTED_VERSION);
 
@@ -328,11 +315,41 @@ TerrainDescriptor* TerrainDescriptor_LoadFromJSONFile(const char* filePath)
 	}
 	else
 	{
-		TraceLog(LOG_ERROR, "TERRAIN DESCRIPTOR: [%s] File did not describe a version %d terrain", filePath, SUPPORTED_VERSION);
+		TraceLog(LOG_ERROR, "TERRAIN DESCRIPTOR: [%s] Did not describe a version %d terrain", filePath, SUPPORTED_VERSION);
 	}
 
-	cJSON_Delete(root);
 	return descriptor;
+}
+
+TerrainDescriptor* TerrainDescriptor_LoadFromJSONFile(const char* filePath)
+{
+	if ( !filePath || !(*filePath) )
+	{
+		return NULL;
+	}
+
+	cJSON* root = cJSONWrapper_ParseFile(filePath);
+
+	if ( !root )
+	{
+		TraceLog(LOG_ERROR, "TERRAIN DESCRIPTOR: [%s] Could not load file", filePath);
+		return NULL;
+	}
+
+	TerrainDescriptor* descriptor = Load(filePath, root);
+	cJSON_Delete(root);
+
+	return descriptor;
+}
+
+TerrainDescriptor* TerrainDescriptor_LoadFromJSONObject(cJSON* root)
+{
+	if ( !root )
+	{
+		return NULL;
+	}
+
+	return Load("local object", root);
 }
 
 void TerrainDescriptor_Destroy(TerrainDescriptor* descriptor)

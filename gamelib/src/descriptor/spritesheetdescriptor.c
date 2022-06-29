@@ -306,7 +306,7 @@ static void LoadAnimations(const char* filePath, cJSON* content, SpriteSheetDesc
 
 	if ( !animationsItem )
 	{
-		TraceLog(LOG_WARNING, "SPRITESHEET DESCRIPTOR: [%s] File did not contain a valid animations array, spritesheet will be empty", filePath);
+		TraceLog(LOG_WARNING, "SPRITESHEET DESCRIPTOR: [%s] Did not contain a valid animations array, spritesheet will be empty", filePath);
 		return;
 	}
 
@@ -315,6 +315,30 @@ static void LoadAnimations(const char* filePath, cJSON* content, SpriteSheetDesc
 	{
 		LoadAnimation(filePath, item, index, descriptor);
 	}
+}
+
+static SpriteSheetDescriptor* Load(const char* filePath, cJSON* root)
+{
+	SpriteSheetDescriptor* descriptor = NULL;
+	cJSON* content = Descriptor_GetContent(root, "spritesheet", SUPPORTED_VERSION);
+
+	if ( content )
+	{
+		descriptor = (SpriteSheetDescriptor*)MemAlloc(sizeof(SpriteSheetDescriptor));
+
+		// Optional:
+		cJSONUtil_GetVector2Item(content, "origin", &descriptor->defaultOrigin);
+
+		LoadAnimations(filePath, content, descriptor);
+
+		TraceLog(LOG_INFO, "SPRITESHEET DESCRIPTOR: [%s] Loaded successfully (%zu animations)", filePath, descriptor->numAnimations);
+	}
+	else
+	{
+		TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: [%s] Did not describe a version %d spritesheet", filePath, SUPPORTED_VERSION);
+	}
+
+	return descriptor;
 }
 
 SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSONFile(const char* filePath)
@@ -332,27 +356,20 @@ SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSONFile(const char* filePa
 		return NULL;
 	}
 
-	SpriteSheetDescriptor* descriptor = NULL;
-	cJSON* content = Descriptor_GetContent(root, "spritesheet", SUPPORTED_VERSION);
-
-	if ( content )
-	{
-		descriptor = (SpriteSheetDescriptor*)MemAlloc(sizeof(SpriteSheetDescriptor));
-
-		// Optional:
-		cJSONUtil_GetVector2Item(content, "origin", &descriptor->defaultOrigin);
-
-		LoadAnimations(filePath, content, descriptor);
-
-		TraceLog(LOG_INFO, "SPRITESHEET DESCRIPTOR: [%s] Loaded successfully (%zu animations)", filePath, descriptor->numAnimations);
-	}
-	else
-	{
-		TraceLog(LOG_ERROR, "SPRITESHEET DESCRIPTOR: [%s] File did not describe a version %d spritesheet", filePath, SUPPORTED_VERSION);
-	}
+	SpriteSheetDescriptor* descriptor = Load(filePath, root);
 
 	cJSON_Delete(root);
 	return descriptor;
+}
+
+SpriteSheetDescriptor* SpriteSheetDescriptor_LoadFromJSONObject(cJSON* root)
+{
+	if ( !root )
+	{
+		return NULL;
+	}
+
+	return Load("local object", root);
 }
 
 void SpriteSheetDescriptor_Destroy(SpriteSheetDescriptor* descriptor)

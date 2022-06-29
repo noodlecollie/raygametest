@@ -37,7 +37,7 @@ EntityGroupDescriptor* EntityGroupDescriptor_LoadFromJSONFile(const char* filePa
 	}
 	else
 	{
-		TraceLog(LOG_ERROR, "ENTITY GROUP DESCRIPTOR: [%s] File did not describe a version %d entity group", filePath, SUPPORTED_VERSION);
+		TraceLog(LOG_ERROR, "ENTITY GROUP DESCRIPTOR: [%s] Did not describe a version %d entity group", filePath, SUPPORTED_VERSION);
 	}
 
 	cJSON_Delete(root);
