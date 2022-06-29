@@ -12,8 +12,14 @@ struct ResourcePoolMesh
 static ResourcePoolItem* PresetMeshPoolHead = NULL;
 static pthread_mutex_t PresetMeshPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
-static void CreatePresetMeshPayload(ResourcePoolItem* item)
+static void CreatePresetMeshPayload(ResourcePoolItem* item, struct cJSON* jsonObject)
 {
+	if ( jsonObject )
+	{
+		TraceLog(LOG_WARNING, "RESOURCE POOL: Loading preset mesh directly from JSON object is not yet implemented");
+		return;
+	}
+
 	Mesh mesh = PresetMeshes_Create(item->key);
 
 	if ( mesh.vertexCount == 0 )
@@ -45,6 +51,7 @@ ResourcePoolMesh* ResourcePool_LoadPresetMeshAndAddRef(const char* name)
 		&PresetMeshPoolMutex,
 		&PresetMeshPoolHead,
 		name,
+		NULL,
 		&CreatePresetMeshPayload
 	);
 

@@ -11,8 +11,14 @@ struct ResourcePoolTerrain
 static ResourcePoolItem* TerrainPoolHead = NULL;
 static pthread_mutex_t TerrainPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
-static void CreateTerrainPayload(ResourcePoolItem* item)
+static void CreateTerrainPayload(ResourcePoolItem* item, struct cJSON* jsonObject)
 {
+	if ( jsonObject )
+	{
+		TraceLog(LOG_WARNING, "RESOURCE POOL: Loading terrain directly from JSON object is not yet implemented");
+		return;
+	}
+
 	TerrainDescriptor* descriptor = TerrainDescriptor_LoadFromJSONFile(item->key);
 
 	if ( !descriptor )
@@ -44,6 +50,7 @@ ResourcePoolTerrain* ResourcePool_LoadTerrainAndAddRef(const char* path)
 		&TerrainPoolMutex,
 		&TerrainPoolHead,
 		path,
+		NULL,
 		&CreateTerrainPayload
 	);
 

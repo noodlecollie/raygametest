@@ -41,6 +41,7 @@ static inline void RemoveItemFromHash(ResourcePoolItem* item)
 static ResourcePoolItem* FindOrCreateItem(
 	ResourcePoolItem** head,
 	const char* key,
+	struct cJSON* jsonObject,
 	ResourcePoolCreatePayloadFunc createFunc
 )
 {
@@ -49,7 +50,7 @@ static ResourcePoolItem* FindOrCreateItem(
 	if ( !item )
 	{
 		item = CreateItemBase(key);
-		(*createFunc)(item);
+		(*createFunc)(item, jsonObject);
 
 		if ( item->payload )
 		{
@@ -93,6 +94,7 @@ ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
 	pthread_mutex_t* mutex,
 	ResourcePoolItem** head,
 	const char* key,
+	struct cJSON* jsonObject,
 	ResourcePoolCreatePayloadFunc createFunc
 )
 {
@@ -103,7 +105,7 @@ ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
 
 	THREADING_LOCK_MUTEX(mutex);
 
-	ResourcePoolItem* item = FindOrCreateItem(head, key, createFunc);
+	ResourcePoolItem* item = FindOrCreateItem(head, key, jsonObject, createFunc);
 
 	if ( item )
 	{

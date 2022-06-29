@@ -11,8 +11,14 @@ struct ResourcePoolShader
 static ResourcePoolItem* PresetShaderPoolHead = NULL;
 static pthread_mutex_t PresetShaderPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
-static void CreatePresetShaderPayload(ResourcePoolItem* item)
+static void CreatePresetShaderPayload(ResourcePoolItem* item, struct cJSON* jsonObject)
 {
+	if ( jsonObject )
+	{
+		TraceLog(LOG_WARNING, "RESOURCE POOL: Loading preset shader directly from JSON object is not yet implemented");
+		return;
+	}
+
 	Shader shader = PresetShaders_Create(item->key);
 
 	if ( shader.id == 0 )
@@ -44,6 +50,7 @@ ResourcePoolShader* ResourcePool_LoadPresetShaderAndAddRef(const char* name)
 		&PresetShaderPoolMutex,
 		&PresetShaderPoolHead,
 		name,
+		NULL,
 		&CreatePresetShaderPayload
 	);
 

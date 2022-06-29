@@ -3,6 +3,8 @@
 #include "external/uthash_wrapper.h"
 #include "threading.h"
 
+struct cJSON;
+
 typedef struct ResourcePoolItem
 {
 	UT_hash_handle hh;
@@ -13,7 +15,10 @@ typedef struct ResourcePoolItem
 } ResourcePoolItem;
 
 // The create function should allocate and initialise the memory for the item payload.
-typedef void (* ResourcePoolCreatePayloadFunc)(ResourcePoolItem* item);
+// If the JSON object is valid then it should be treated as being the root object in
+// the descriptor file; if it is not valid, the item's key should be treated as the
+// path to the descriptor file on disk.
+typedef void (* ResourcePoolCreatePayloadFunc)(ResourcePoolItem* item, struct cJSON* jsonObject);
 
 // The destroy function should clea up any resources held in the payload,
 // but should NOT free the payload itself.
@@ -23,6 +28,7 @@ ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
 	pthread_mutex_t* mutex,
 	ResourcePoolItem** head,
 	const char* key,
+	struct cJSON* jsonObject,
 	ResourcePoolCreatePayloadFunc createFunc
 );
 

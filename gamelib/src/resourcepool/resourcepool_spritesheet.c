@@ -11,8 +11,14 @@ struct ResourcePoolSpriteSheet
 static ResourcePoolItem* SpriteSheetPoolHead = NULL;
 static pthread_mutex_t SpriteSheetPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
-static void CreateSpriteSheetPayload(ResourcePoolItem* item)
+static void CreateSpriteSheetPayload(ResourcePoolItem* item, struct cJSON* jsonObject)
 {
+	if ( jsonObject )
+	{
+		TraceLog(LOG_WARNING, "RESOURCE POOL: Loading sprite sheet directly from JSON object is not yet implemented");
+		return;
+	}
+
 	SpriteSheetDescriptor* descriptor = SpriteSheetDescriptor_LoadFromJSONFile(item->key);
 
 	if ( !descriptor )
@@ -44,6 +50,7 @@ ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetAndAddRef(const char* path)
 		&SpriteSheetPoolMutex,
 		&SpriteSheetPoolHead,
 		path,
+		NULL,
 		&CreateSpriteSheetPayload
 	);
 
