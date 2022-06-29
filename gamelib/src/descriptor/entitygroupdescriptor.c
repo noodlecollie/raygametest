@@ -6,6 +6,7 @@
 #include "external/cJSON_wrapper.h"
 #include "descriptor/descriptorutil.h"
 #include "listmacros.h"
+#include "resourcepool/resourcepool.h"
 
 #define SUPPORTED_VERSION 1
 
@@ -22,6 +23,8 @@ struct EntityGroupItem
 
 	char* name;
 	size_t index;
+
+	ResourcePoolTerrain* terrain;
 };
 
 struct EntityGroupDescriptor
@@ -34,12 +37,60 @@ struct EntityGroupDescriptor
 
 static void DestroyItem(EntityGroupItem* item)
 {
+	if ( item->terrain )
+	{
+		ResourcePool_RemoveTerrainRef(item->terrain);
+		item->terrain = NULL;
+	}
+
 	if ( item->name )
 	{
 		MemFree(item->name);
 	}
 
 	MemFree(item);
+}
+
+static void LoadTerrainComponent(const char* filePath, cJSON* terrain, EntityGroupItem* item)
+{
+	switch ( terrain->type )
+	{
+		case cJSON_String:
+		{
+			// item->terrain = ResourcePool_LoadTerrainFromFileAndAddRef(terrain->valuestring);
+			break;
+		}
+
+		case cJSON_Object:
+		{
+			// item->terrain = ResourcePool_LoadTerrainFromJSONAndAddRef(, terrain);
+			break;
+		}
+
+		default:
+		{
+			TraceLog(
+				LOG_WARNING,
+				"ENTITY GROUP DESCRIPTOR: [%s] Entity entry %zu (\"%s\") terrain component was not specified as a file path or inline object",
+				filePath,
+				item->index + 1,
+				item->name ? item->name : ""
+			);
+
+			return;
+		}
+	}
+
+	if ( !item->terrain )
+	{
+		TraceLog(
+			LOG_WARNING,
+			"ENTITY GROUP DESCRIPTOR: [%s] Entity entry %zu (\"%s\"): could not load terrain component",
+			filePath,
+			item->index + 1,
+			item->name ? item->name : ""
+		);
+	}
 }
 
 static void LoadEntity(const char* filePath, cJSON* ent, size_t index, EntityGroupDescriptor* descriptor)
@@ -63,10 +114,15 @@ static void LoadEntity(const char* filePath, cJSON* ent, size_t index, EntityGro
 
 	item->index = index;
 
-	// TODO: Other properties
-
 	DBL_LL_ADD_TO_TAIL(item, prev, next, descriptor, head, tail);
 	++descriptor->count;
+
+	cJSON* terrain = cJSON_GetObjectItem(ent, "terrain");
+
+	if ( terrain )
+	{
+		LoadTerrainComponent(filePath, terrain, item);
+	}
 }
 
 static void LoadEntities(const char* filePath, cJSON* content, EntityGroupDescriptor* descriptor)
