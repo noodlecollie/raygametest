@@ -16,7 +16,7 @@ static void CreatePresetMeshPayload(ResourcePoolItem* item, struct cJSON* jsonOb
 {
 	if ( jsonObject )
 	{
-		TraceLog(LOG_WARNING, "RESOURCE POOL: Loading preset mesh directly from JSON object is not yet implemented");
+		TraceLog(LOG_ERROR, "RESOURCE POOL: Loading preset mesh from JSON object is not supported");
 		return;
 	}
 

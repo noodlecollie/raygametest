@@ -35,6 +35,20 @@ struct EntityGroupDescriptor
 	EntityGroupItem* tail;
 };
 
+static char* GenerateUniqueResourceName(const char* filePath, size_t index, const char* componentType)
+{
+	char suffix[32];
+
+	FormatStringBuffer(suffix, sizeof(suffix), ":%zu:%s", index, componentType);
+
+	size_t nameSize = strlen(filePath) + strlen(suffix) + 1;
+	char* name = (char*)GameAlloc(nameSize);
+
+	FormatStringBuffer(name, nameSize, "%s%s", filePath, suffix);
+
+	return name;
+}
+
 static void DestroyItem(EntityGroupItem* item)
 {
 	if ( item->terrain )
@@ -57,13 +71,15 @@ static void LoadTerrainComponent(const char* filePath, cJSON* terrain, EntityGro
 	{
 		case cJSON_String:
 		{
-			// item->terrain = ResourcePool_LoadTerrainFromFileAndAddRef(terrain->valuestring);
+			item->terrain = ResourcePool_LoadTerrainFromFileAndAddRef(terrain->valuestring);
 			break;
 		}
 
 		case cJSON_Object:
 		{
-			// item->terrain = ResourcePool_LoadTerrainFromJSONAndAddRef(, terrain);
+			const char* terrainKey = GenerateUniqueResourceName(filePath, terrain->index, "terrain");
+			item->terrain = ResourcePool_LoadTerrainFromJSONAndAddRef(terrainKey, terrain);
+			GameFree(terrainKey);
 			break;
 		}
 

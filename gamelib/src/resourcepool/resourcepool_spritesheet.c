@@ -13,17 +13,27 @@ static pthread_mutex_t SpriteSheetPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void CreateSpriteSheetPayload(ResourcePoolItem* item, struct cJSON* jsonObject)
 {
+	SpriteSheetDescriptor* descriptor = NULL;
+
 	if ( jsonObject )
 	{
-		TraceLog(LOG_WARNING, "RESOURCE POOL: Loading sprite sheet directly from JSON object is not yet implemented");
+		descriptor = SpriteSheetDescriptor_LoadFromJSONObject(jsonObject);
 		return;
 	}
-
-	SpriteSheetDescriptor* descriptor = SpriteSheetDescriptor_LoadFromJSONFile(item->key);
+	else
+	{
+		descriptor = SpriteSheetDescriptor_LoadFromJSONFile(item->key);
+	}
 
 	if ( !descriptor )
 	{
-		TraceLog(LOG_DEBUG, "RESOURCE POOL: Unable to load sprite sheet descriptor \"%s\"", item->key);
+		TraceLog(
+			LOG_DEBUG,
+			"RESOURCE POOL: Unable to load sprite sheet descriptor \"%s\" from %s",
+			item->key,
+			jsonObject ? "JSON" : "file"
+		);
+
 		return;
 	}
 

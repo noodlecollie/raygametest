@@ -68,7 +68,7 @@ static void CreateTexturePayload(ResourcePoolItem* item, struct cJSON* jsonObjec
 {
 	if ( jsonObject )
 	{
-		TraceLog(LOG_WARNING, "RESOURCE POOL: Loading texture directly from JSON object is not yet implemented");
+		TraceLog(LOG_ERROR, "RESOURCE POOL: Loading texture from JSON object is not supported");
 		return;
 	}
 
@@ -79,7 +79,7 @@ static void CreatePresetTexturePayload(ResourcePoolItem* item, struct cJSON* jso
 {
 	if ( jsonObject )
 	{
-		TraceLog(LOG_WARNING, "RESOURCE POOL: Loading preset texture directly from JSON object is not yet implemented");
+		TraceLog(LOG_ERROR, "RESOURCE POOL: Loading preset texture from JSON object is not supported");
 		return;
 	}
 

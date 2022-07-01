@@ -15,7 +15,7 @@ static void CreatePresetShaderPayload(ResourcePoolItem* item, struct cJSON* json
 {
 	if ( jsonObject )
 	{
-		TraceLog(LOG_WARNING, "RESOURCE POOL: Loading preset shader directly from JSON object is not yet implemented");
+		TraceLog(LOG_ERROR, "RESOURCE POOL: Loading preset shader from JSON object is not supported");
 		return;
 	}
 

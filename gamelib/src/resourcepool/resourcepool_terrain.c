@@ -13,17 +13,24 @@ static pthread_mutex_t TerrainPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void CreateTerrainPayload(ResourcePoolItem* item, struct cJSON* jsonObject)
 {
+	TerrainDescriptor* descriptor = NULL;
+
 	if ( jsonObject )
 	{
-		TraceLog(LOG_WARNING, "RESOURCE POOL: Loading terrain directly from JSON object is not yet implemented");
-		return;
+		descriptor = TerrainDescriptor_LoadFromJSONObject(jsonObject);
 	}
 
 	TerrainDescriptor* descriptor = TerrainDescriptor_LoadFromJSONFile(item->key);
 
 	if ( !descriptor )
 	{
-		TraceLog(LOG_DEBUG, "RESOURCE POOL: Unable to load terrain descriptor \"%s\"", item->key);
+		TraceLog(
+			LOG_DEBUG,
+			"RESOURCE POOL: Unable to load terrain descriptor \"%s\" from %s",
+			item->key,
+			jsonObject ? "JSON" : "file"
+		);
+
 		return;
 	}
 
