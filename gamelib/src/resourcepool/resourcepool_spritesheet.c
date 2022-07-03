@@ -67,6 +67,25 @@ ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetFromFileAndAddRef(const cha
 	return item ? (ResourcePoolSpriteSheet*)item->payload : NULL;
 }
 
+ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetFromJSONAndAddRef(const char* key, struct cJSON* root)
+{
+	// Check this first, otherwise a file load would be attempted.
+	if ( !root )
+	{
+		return NULL;
+	}
+
+	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
+		&SpriteSheetPoolMutex,
+		&SpriteSheetPoolHead,
+		key,
+		root,
+		&CreateSpriteSheetPayload
+	);
+
+	return item ? (ResourcePoolSpriteSheet*)item->payload : NULL;
+}
+
 ResourcePoolSpriteSheet* ResourcePool_AddSpriteSheetRef(ResourcePoolSpriteSheet* item)
 {
 	if ( !item )

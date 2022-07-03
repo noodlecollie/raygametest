@@ -30,6 +30,7 @@ Texture2D* ResourcePool_GetTexture(ResourcePoolTexture* item);
 const char* ResourcePool_GetTextureFileKey(ResourcePoolTexture* item);
 
 ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetFromFileAndAddRef(const char* path);
+ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetFromJSONAndAddRef(const char* key, struct cJSON* root);
 ResourcePoolSpriteSheet* ResourcePool_AddSpriteSheetRef(ResourcePoolSpriteSheet* item);
 void ResourcePool_RemoveSpriteSheetRef(ResourcePoolSpriteSheet* item);
 struct SpriteSheetDescriptor* ResourcePool_GetSpriteSheet(ResourcePoolSpriteSheet* item);

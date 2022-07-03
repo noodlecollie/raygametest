@@ -27,6 +27,7 @@ struct EntityGroupItem
 	size_t tagCount;
 
 	ResourcePoolTerrain* terrain;
+	ResourcePoolSpriteSheet* spriteSheet;
 };
 
 struct EntityGroupDescriptor
@@ -58,6 +59,12 @@ static void DestroyItem(EntityGroupItem* item)
 	{
 		ResourcePool_RemoveTerrainRef(item->terrain);
 		item->terrain = NULL;
+	}
+
+	if ( item->spriteSheet )
+	{
+		ResourcePool_RemoveSpriteSheetRef(item->spriteSheet);
+		item->spriteSheet = NULL;
 	}
 
 	if ( item->tags )
@@ -110,6 +117,50 @@ static void LoadTerrainComponent(const char* filePath, cJSON* terrain, EntityGro
 		TraceLog(
 			LOG_WARNING,
 			"ENTITY GROUP DESCRIPTOR: [%s] Entity entry %zu (\"%s\"): could not load terrain component",
+			filePath,
+			item->index + 1,
+			item->name ? item->name : ""
+		);
+	}
+}
+
+static void LoadSpriteSheetComponent(const char* filePath, cJSON* spriteSheet, EntityGroupItem* item)
+{
+	switch ( spriteSheet->type )
+	{
+		case cJSON_String:
+		{
+			item->spriteSheet = ResourcePool_LoadSpriteSheetFromFileAndAddRef(spriteSheet->valuestring);
+			break;
+		}
+
+		case cJSON_Object:
+		{
+			char* spriteSheetKey = GenerateUniqueResourceName(filePath, item->index, "spritesheet");
+			item->spriteSheet = ResourcePool_LoadSpriteSheetFromJSONAndAddRef(spriteSheetKey, spriteSheet);
+			GameFree(spriteSheetKey);
+			break;
+		}
+
+		default:
+		{
+			TraceLog(
+				LOG_WARNING,
+				"ENTITY GROUP DESCRIPTOR: [%s] Entity entry %zu (\"%s\") sprite sheet component was not specified as a file path or inline object",
+				filePath,
+				item->index + 1,
+				item->name ? item->name : ""
+			);
+
+			return;
+		}
+	}
+
+	if ( !item->spriteSheet )
+	{
+		TraceLog(
+			LOG_WARNING,
+			"ENTITY GROUP DESCRIPTOR: [%s] Entity entry %zu (\"%s\"): could not load sprite sheet component",
 			filePath,
 			item->index + 1,
 			item->name ? item->name : ""
@@ -186,6 +237,13 @@ static void LoadEntity(const char* filePath, cJSON* ent, size_t index, EntityGro
 	if ( terrain )
 	{
 		LoadTerrainComponent(filePath, terrain, item);
+	}
+
+	cJSON* spriteSheet = cJSON_GetObjectItem(ent, "spritesheet");
+
+	if ( spriteSheet )
+	{
+		LoadSpriteSheetComponent(filePath, spriteSheet, item);
 	}
 }
 
