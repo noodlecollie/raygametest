@@ -23,6 +23,8 @@ struct EntityGroupItem
 
 	char* name;
 	size_t index;
+	char** tags;
+	size_t tagCount;
 
 	ResourcePoolTerrain* terrain;
 };
@@ -35,6 +37,7 @@ struct EntityGroupDescriptor
 	EntityGroupItem* tail;
 };
 
+// Name is in the format "filePath:entityIndex:componentType"
 static char* GenerateUniqueResourceName(const char* filePath, size_t index, const char* componentType)
 {
 	char suffix[32];
@@ -55,6 +58,11 @@ static void DestroyItem(EntityGroupItem* item)
 	{
 		ResourcePool_RemoveTerrainRef(item->terrain);
 		item->terrain = NULL;
+	}
+
+	if ( item->tags )
+	{
+		MemFree(item->tags);
 	}
 
 	if ( item->name )
@@ -109,6 +117,44 @@ static void LoadTerrainComponent(const char* filePath, cJSON* terrain, EntityGro
 	}
 }
 
+static void LoadTags(cJSON* ent, EntityGroupItem* item)
+{
+	cJSON* tagsArray = cJSONWrapper_GetObjectItemOfType(ent, "tags", cJSON_Array);
+
+	if ( !tagsArray )
+	{
+		return;
+	}
+
+	size_t count = 0;
+
+	for ( cJSON* child = tagsArray->child; child; child = child->next )
+	{
+		if ( child->type == cJSON_String && child->valuestring && *child->valuestring )
+		{
+			++count;
+		}
+	}
+
+	item->tagCount = count;
+
+	if ( item->tagCount < 1 )
+	{
+		return;
+	}
+
+	item->tags = (char**)MemAlloc((int)(count * sizeof(char*)));
+
+	count = 0;
+	for ( cJSON* child = tagsArray->child; child; child = child->next )
+	{
+		if ( child->type == cJSON_String && child->valuestring && *child->valuestring )
+		{
+			item->tags[count++] = DuplicateString(child->valuestring);
+		}
+	}
+}
+
 static void LoadEntity(const char* filePath, cJSON* ent, size_t index, EntityGroupDescriptor* descriptor)
 {
 	if ( ent->type != cJSON_Object )
@@ -132,6 +178,8 @@ static void LoadEntity(const char* filePath, cJSON* ent, size_t index, EntityGro
 
 	DBL_LL_ADD_TO_TAIL(item, prev, next, descriptor, head, tail);
 	++descriptor->count;
+
+	LoadTags(ent, item);
 
 	cJSON* terrain = cJSON_GetObjectItem(ent, "terrain");
 
