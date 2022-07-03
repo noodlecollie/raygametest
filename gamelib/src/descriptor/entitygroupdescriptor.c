@@ -77,7 +77,7 @@ static void LoadTerrainComponent(const char* filePath, cJSON* terrain, EntityGro
 
 		case cJSON_Object:
 		{
-			const char* terrainKey = GenerateUniqueResourceName(filePath, terrain->index, "terrain");
+			char* terrainKey = GenerateUniqueResourceName(filePath, item->index, "terrain");
 			item->terrain = ResourcePool_LoadTerrainFromJSONAndAddRef(terrainKey, terrain);
 			GameFree(terrainKey);
 			break;

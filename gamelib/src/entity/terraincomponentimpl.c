@@ -163,7 +163,7 @@ bool TerrainComponent_SetTerrain(TerrainComponent* component, const char* filePa
 		return false;
 	}
 
-	ResourcePoolTerrain* terrain = ResourcePool_LoadTerrainAndAddRef(filePath);
+	ResourcePoolTerrain* terrain = ResourcePool_LoadTerrainFromFileAndAddRef(filePath);
 
 	if ( terrain != component->impl->terrainResource )
 	{

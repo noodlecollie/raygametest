@@ -96,7 +96,7 @@ static void DestroyTexturePayload(ResourcePoolItem* item)
 	}
 }
 
-ResourcePoolTexture* ResourcePool_LoadTextureAndAddRef(const char* path)
+ResourcePoolTexture* ResourcePool_LoadTextureFromFileAndAddRef(const char* path)
 {
 	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
 		&TexturePoolMutex,

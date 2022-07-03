@@ -2,6 +2,7 @@
 
 #include "gamelib/external/raylibheaders.h"
 
+struct cJSON;
 struct SpriteSheetDescriptor;
 struct TerrainDescriptor;
 
@@ -21,20 +22,21 @@ typedef struct ResourcePoolShader ResourcePoolShader;
 // Contents of resources should not be shared between threads
 // unless other thread protection is in place.
 
-ResourcePoolTexture* ResourcePool_LoadTextureAndAddRef(const char* path);
+ResourcePoolTexture* ResourcePool_LoadTextureFromFileAndAddRef(const char* path);
 ResourcePoolTexture* ResourcePool_LoadPresetTextureAndAddRef(const char* name);
 ResourcePoolTexture* ResourcePool_AddTextureRef(ResourcePoolTexture* item);
 void ResourcePool_RemoveTextureRef(ResourcePoolTexture* item);
 Texture2D* ResourcePool_GetTexture(ResourcePoolTexture* item);
 const char* ResourcePool_GetTextureFileKey(ResourcePoolTexture* item);
 
-ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetAndAddRef(const char* path);
+ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetFromFileAndAddRef(const char* path);
 ResourcePoolSpriteSheet* ResourcePool_AddSpriteSheetRef(ResourcePoolSpriteSheet* item);
 void ResourcePool_RemoveSpriteSheetRef(ResourcePoolSpriteSheet* item);
 struct SpriteSheetDescriptor* ResourcePool_GetSpriteSheet(ResourcePoolSpriteSheet* item);
 const char* ResourcePool_GetSpriteSheetKey(ResourcePoolSpriteSheet* item);
 
-ResourcePoolTerrain* ResourcePool_LoadTerrainAndAddRef(const char* path);
+ResourcePoolTerrain* ResourcePool_LoadTerrainFromFileAndAddRef(const char* path);
+ResourcePoolTerrain* ResourcePool_LoadTerrainFromJSONAndAddRef(const char* key, struct cJSON* root);
 ResourcePoolTerrain* ResourcePool_AddTerrainRef(ResourcePoolTerrain* item);
 void ResourcePool_RemoveTerrainRef(ResourcePoolTerrain* item);
 struct TerrainDescriptor* ResourcePool_GetTerrain(ResourcePoolTerrain* item);

@@ -54,7 +54,7 @@ static void DestroySpriteSheetPayload(ResourcePoolItem* item)
 	}
 }
 
-ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetAndAddRef(const char* path)
+ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetFromFileAndAddRef(const char* path)
 {
 	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
 		&SpriteSheetPoolMutex,

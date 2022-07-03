@@ -136,7 +136,7 @@ bool SpriteComponent_SetSpriteSheet(SpriteComponent* component, const char* file
 		return false;
 	}
 
-	ResourcePoolSpriteSheet* item = ResourcePool_LoadSpriteSheetAndAddRef(filePath);
+	ResourcePoolSpriteSheet* item = ResourcePool_LoadSpriteSheetFromFileAndAddRef(filePath);
 
 	if ( item != component->impl->sprSheetResource )
 	{

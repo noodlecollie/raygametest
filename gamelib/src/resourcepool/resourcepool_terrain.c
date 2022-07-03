@@ -19,8 +19,10 @@ static void CreateTerrainPayload(ResourcePoolItem* item, struct cJSON* jsonObjec
 	{
 		descriptor = TerrainDescriptor_LoadFromJSONObject(jsonObject);
 	}
-
-	TerrainDescriptor* descriptor = TerrainDescriptor_LoadFromJSONFile(item->key);
+	else
+	{
+		descriptor = TerrainDescriptor_LoadFromJSONFile(item->key);
+	}
 
 	if ( !descriptor )
 	{
@@ -51,13 +53,32 @@ static void DestroyTerrainPayload(ResourcePoolItem* item)
 	}
 }
 
-ResourcePoolTerrain* ResourcePool_LoadTerrainAndAddRef(const char* path)
+ResourcePoolTerrain* ResourcePool_LoadTerrainFromFileAndAddRef(const char* path)
 {
 	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
 		&TerrainPoolMutex,
 		&TerrainPoolHead,
 		path,
 		NULL,
+		&CreateTerrainPayload
+	);
+
+	return item ? (ResourcePoolTerrain*)item->payload : NULL;
+}
+
+ResourcePoolTerrain* ResourcePool_LoadTerrainFromJSONAndAddRef(const char* key, struct cJSON* root)
+{
+	// Check this first, otherwise a file load would be attempted.
+	if ( !root )
+	{
+		return NULL;
+	}
+
+	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
+		&TerrainPoolMutex,
+		&TerrainPoolHead,
+		key,
+		root,
 		&CreateTerrainPayload
 	);
 
