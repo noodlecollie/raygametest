@@ -8,6 +8,12 @@
 #include <semaphore.h>
 #include <pthread.h>
 
+#ifdef WIN32
+#define THREADING_FUNC_CDECL __cdecl
+#else
+#define THREADING_FUNC_CDECL
+#endif
+
 // These throw fatal errors if their operations fail.
 
 // Mutexes:
@@ -16,7 +22,7 @@ void Threading_UnlockMutex(pthread_mutex_t* mutex, const char* file, int line);
 void Threading_InitDefaultMutex(pthread_mutex_t* mutex, const char* file, int line);
 
 // Threads:
-void Threading_Create(pthread_t* thread, const pthread_attr_t* attr, void* (__cdecl * start) (void*), void* arg, const char* file, int line);
+void Threading_Create(pthread_t* thread, const pthread_attr_t* attr, void* (THREADING_FUNC_CDECL * start) (void*), void* arg, const char* file, int line);
 void Threading_Join(pthread_t thread, void** returnValue, const char* file, int line);
 
 // Semaphores:
