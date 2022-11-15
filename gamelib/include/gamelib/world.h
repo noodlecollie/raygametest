@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 struct WorldImpl;
 struct Entity;
 struct CameraComponent;
@@ -25,6 +27,8 @@ struct Entity* World_GetEntityGroupHead(EntityGroup* group);
 struct Entity* World_GetPreviousEntity(struct Entity* ent);
 struct Entity* World_GetNextEntity(struct Entity* ent);
 size_t World_GetEntityCount(const EntityGroup* group);
+
+bool World_BeginLoadEntityGroup(World* world, const char* filePath);
 
 void World_Update(World* world);
 

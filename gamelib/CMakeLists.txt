@@ -1,6 +1,7 @@
 include(compile_options)
 
 add_library(gamelib STATIC
+	src/asyncload/asyncload.c
 	src/descriptor/descriptorutil.c
 	src/descriptor/entitygroupdescriptor.c
 	src/descriptor/spritesheetdescriptor.c

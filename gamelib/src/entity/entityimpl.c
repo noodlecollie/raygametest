@@ -1,7 +1,7 @@
 #include "entity/entityimpl.h"
 #include "gamelib/gameutil.h"
 #include "listmacros.h"
-#include "world_impl.h"
+#include "worldimpl.h"
 
 static void DestroyAllLogicComponents(EntityImpl* impl)
 {
