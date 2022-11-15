@@ -31,6 +31,7 @@ void Threading_DestroySemaphore(sem_t* semaphore, const char* file, int line);
 void Threading_IncrementSemaphore(sem_t* semaphore, const char* file, int line);
 void Threading_DecrementSemaphore(sem_t* semaphore, const char* file, int line);
 int Threading_GetSemaphoreValue(sem_t* semaphore, const char* file, int line);
+void Threading_AssertSemaphoreHasValue(sem_t* semaphore, int value, const char* file, int line);
 
 #define THREADING_LOCK_MUTEX(mutex) Threading_LockMutex((mutex), __FILE__, __LINE__)
 #define THREADING_UNLOCK_MUTEX(mutex) Threading_UnlockMutex((mutex), __FILE__, __LINE__)
@@ -44,3 +45,4 @@ int Threading_GetSemaphoreValue(sem_t* semaphore, const char* file, int line);
 #define THREADING_INCREMENT_SEMAPHORE(semaphore) Threading_IncrementSemaphore((semaphore), __FILE__, __LINE__)
 #define THREADING_DECREMENT_SEMAPHORE(semaphore) Threading_DecrementSemaphore((semaphore), __FILE__, __LINE__)
 #define THREADING_GET_SEMAPHORE_VALUE(semaphore) Threading_GetSemaphoreValue((semaphore), __FILE__, __LINE__)
+#define THREADING_ASSERT_SEMAPHORE_HAS_VALUE(semaphore, value) Threading_AssertSemaphoreHasValue((semaphore), (value), __FILE__, __LINE__)

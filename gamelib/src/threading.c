@@ -163,3 +163,14 @@ int Threading_GetSemaphoreValue(sem_t* semaphore, const char* file, int line)
 
 	return semaphoreValue;
 }
+
+void Threading_AssertSemaphoreHasValue(sem_t* semaphore, int value, const char* file, int line)
+{
+	const int actualValue = Threading_GetSemaphoreValue(semaphore, file, line);
+
+	if ( actualValue != value )
+	{
+		TraceLog(LOG_FATAL, "THREADING: %s:%d: Assertion failed: semaphore value %d did not match expected value %d", actualValue, value);
+		return;
+	}
+}

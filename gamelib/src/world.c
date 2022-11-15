@@ -1,10 +1,12 @@
 #include <math.h>
 #include <float.h>
 #include <pthread.h>
+#include "entity/entitygroup.h"
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/world.h"
 #include "gamelib/physics.h"
 #include "gamelib/entity/entity.h"
+#include "raylib.h"
 #include "worldimpl.h"
 #include "entity/entityimpl.h"
 #include "entity/cameracomponentimpl.h"
@@ -33,25 +35,27 @@ static inline void DecreaseSubsystemRefCount()
 	SpriteRenderer_RemoveRef();
 }
 
+static void RenderDebug(World* world, Camera3D camera)
+{
+	for ( Entity* ent = World_GetEntityGroupHead(world->impl->defaultEntityGroup); ent; ent = World_GetNextEntity(ent) )
+	{
+		DebugRender_Entity(ent->impl, camera);
+	}
+
+	if ( Debugging.renderCustomDebugItems )
+	{
+		DebugRenderCustom_RenderAll();
+	}
+}
+
 static inline bool AsyncThreadIsRunning(WorldImpl* impl)
 {
 	return impl->asyncLoadThreadArgs != NULL;
 }
 
-static void DestroyAllEntities(EntityGroup* group)
+static inline bool AsyncLoadThreadIsFinished(WorldImpl* impl)
 {
-	EntityImpl* slot = group->head;
-
-	group->head = NULL;
-	group->tail = NULL;
-	group->count = 0;
-
-	while ( slot )
-	{
-		EntityImpl* next = slot->next;
-		EntityImpl_Destroy(slot);
-		slot = next;
-	}
+	return THREADING_GET_SEMAPHORE_VALUE(&impl->asyncLoadSemaphore) == ASYNCLOAD_SEM_READY;
 }
 
 static void CreateAsyncLoadThreadArgs(WorldImpl* impl, const char* filePath)
@@ -77,38 +81,79 @@ static void JoinAsyncLoadThread(WorldImpl* impl)
 		return;
 	}
 
+	TraceLog(LOG_DEBUG, "WORLD: Joining entity async load thread.");
+
+	// TODO: Do we want a timeout on this?
+	// If it doesn't join in time, do we want to throw a fatal error?
 	THREADING_JOIN(impl->asyncLoadThread, NULL);
 
-	// TODO: Copy the actual data that we need.
-	CopyString(impl->asyncMessage, sizeof(impl->asyncMessage), impl->asyncLoadThreadArgs->message);
+	if ( impl->asyncLoadThreadArgs->loadedEntityGroup )
+	{
+		// A group was loaded, so take ownership of it.
+
+		TraceLog(
+			LOG_INFO,
+			"WORLD: Entity group of %zu entities was loaded asynchronously from %s",
+			impl->asyncLoadThreadArgs->loadedEntityGroup->count,
+			impl->asyncLoadThreadArgs->filePath
+		);
+
+		impl->asyncLoadedEntityGroup = impl->asyncLoadThreadArgs->loadedEntityGroup;
+		impl->asyncLoadThreadArgs->loadedEntityGroup = NULL;
+	}
+	else
+	{
+		TraceLog(LOG_WARNING, "WORLD: Async entity load failed to load any entity group from %s", impl->asyncLoadThreadArgs->filePath);
+	}
 
 	DestroyAsyncLoadThreadArgs(impl);
 }
 
 static void DestroyUnintegratedEntityGroup(WorldImpl* impl)
 {
-	// TODO: If an async load has completed but the results have not
-	// been dealt with yet, this function should delete and clean up
-	// the resources.
+	const int semaphoreValue = THREADING_GET_SEMAPHORE_VALUE(&impl->asyncLoadSemaphore);
 
-	if ( impl->asyncMessage[0] )
+	// Semaphore should never be busy when we do this.
+	if ( semaphoreValue != ASYNCLOAD_SEM_IDLE && semaphoreValue != ASYNCLOAD_SEM_READY )
 	{
-		TraceLog(LOG_INFO, "WORLD: Async message when destroying: \"%s\"", impl->asyncMessage);
-		impl->asyncMessage[0] = '\0';
+		TraceLog(LOG_FATAL, "WORLD: Unexpected async load semaphore value of %d when destroying unintegrated entity group.", semaphoreValue);
+		return;
 	}
+
+	if ( impl->asyncLoadedEntityGroup )
+	{
+		TraceLog(LOG_INFO, "WORLD: Entity group of %zu entities being discarded after async load.", impl->asyncLoadedEntityGroup->count);
+
+		EntityGroup_Destroy(impl->asyncLoadedEntityGroup);
+		impl->asyncLoadedEntityGroup = NULL;
+	}
+
+	if ( semaphoreValue != ASYNCLOAD_SEM_IDLE )
+	{
+		// This function was called before we'd finalised the entity group.
+		// Decrement the semaphore back to idle, just in case it
+		// would screw anything up otherwise.
+		THREADING_DECREMENT_SEMAPHORE(&impl->asyncLoadSemaphore);
+	}
+
+	THREADING_ASSERT_SEMAPHORE_HAS_VALUE(&impl->asyncLoadSemaphore, ASYNCLOAD_SEM_IDLE);
 }
 
-static void RenderDebug(World* world, Camera3D camera)
+static void IntegrateEntityGroup(WorldImpl* impl)
 {
-	for ( Entity* ent = World_GetEntityGroupHead(&world->impl->defaultEntityGroup); ent; ent = World_GetNextEntity(ent) )
+	JoinAsyncLoadThread(impl);
+
+	if ( impl->asyncLoadedEntityGroup )
 	{
-		DebugRender_Entity(ent->impl, camera);
+		TraceLog(LOG_INFO, "WORLD: Integrating new group of %zu entities.", impl->asyncLoadedEntityGroup->count);
+
+		// TODO: Do this properly
+		EntityGroup_Destroy(impl->asyncLoadedEntityGroup);
+		impl->asyncLoadedEntityGroup = NULL;
 	}
 
-	if ( Debugging.renderCustomDebugItems )
-	{
-		DebugRenderCustom_RenderAll();
-	}
+	THREADING_DECREMENT_SEMAPHORE(&impl->asyncLoadSemaphore);
+	THREADING_ASSERT_SEMAPHORE_HAS_VALUE(&impl->asyncLoadSemaphore, ASYNCLOAD_SEM_IDLE);
 }
 
 World* World_Create(void)
@@ -118,7 +163,7 @@ World* World_Create(void)
 	WorldImpl* impl = (WorldImpl*)MemAlloc(sizeof(WorldImpl));
 
 	impl->world.impl = impl;
-	impl->defaultEntityGroup.ownerWorld = impl;
+	impl->defaultEntityGroup = EntityGroup_Create(impl);
 
 	THREADING_INIT_SEMAPHORE(&impl->asyncLoadSemaphore, 0, ASYNCLOAD_SEM_IDLE);
 
@@ -139,7 +184,7 @@ void World_Destroy(World* world)
 	JoinAsyncLoadThread(impl);
 	DestroyUnintegratedEntityGroup(impl);
 
-	DestroyAllEntities(&impl->defaultEntityGroup);
+	EntityGroup_Destroy(impl->defaultEntityGroup);
 	THREADING_DESTROY_SEMAPHORE(&impl->asyncLoadSemaphore);
 
 	MemFree(impl);
@@ -147,9 +192,9 @@ void World_Destroy(World* world)
 	DecreaseSubsystemRefCount();
 }
 
-EntityGroup* World_GetDefaultEntityGroup(World* world)
+struct EntityGroup* World_GetDefaultEntityGroup(World* world)
 {
-	return world ? &world->impl->defaultEntityGroup : NULL;
+	return world ? world->impl->defaultEntityGroup : NULL;
 }
 
 struct Entity* World_CreateEntity(EntityGroup* group)
@@ -173,7 +218,7 @@ struct Entity* World_CreateEntity(EntityGroup* group)
 
 struct Entity* World_CreateEntityInDefaultGroup(World* world)
 {
-	return world ? World_CreateEntity(&world->impl->defaultEntityGroup) : NULL;
+	return world ? World_CreateEntity(world->impl->defaultEntityGroup) : NULL;
 }
 
 void World_DestroyEntity(struct Entity* ent)
@@ -211,7 +256,7 @@ void World_DestroyEntity(struct Entity* ent)
 	EntityImpl_Destroy(impl);
 }
 
-struct Entity* World_GetEntityGroupHead(EntityGroup* group)
+struct Entity* World_GetEntityGroupHead(struct EntityGroup* group)
 {
 	return (group && group->head) ? &group->head->entity : NULL;
 }
@@ -236,7 +281,7 @@ struct Entity* World_GetNextEntity(struct Entity* ent)
 	return (ent && ent->impl->next) ? &ent->impl->next->entity : NULL;
 }
 
-size_t World_GetEntityCount(const EntityGroup* group)
+size_t World_GetEntityCount(const struct EntityGroup* group)
 {
 	return group ? group->count : 0;
 }
@@ -267,6 +312,8 @@ bool World_BeginLoadEntityGroup(World* world, const char* filePath)
 		return false;
 	}
 
+	TraceLog(LOG_INFO, "WORLD: Beginning async load of entities from %s", filePath);
+
 	CreateAsyncLoadThreadArgs(world->impl, filePath);
 
 	// Increment the semaphore twice.
@@ -280,6 +327,11 @@ bool World_BeginLoadEntityGroup(World* world, const char* filePath)
 	return true;
 }
 
+bool World_IsLoadingEntityGroup(World* world)
+{
+	return world ? THREADING_GET_SEMAPHORE_VALUE(&world->impl->asyncLoadSemaphore) != ASYNCLOAD_SEM_IDLE : false;
+}
+
 void World_Update(World* world)
 {
 	if ( !world )
@@ -287,7 +339,12 @@ void World_Update(World* world)
 		return;
 	}
 
-	for ( Entity* ent = World_GetEntityGroupHead(&world->impl->defaultEntityGroup); ent; ent = World_GetNextEntity(ent) )
+	if ( AsyncLoadThreadIsFinished(world->impl) )
+	{
+		IntegrateEntityGroup(world->impl);
+	}
+
+	for ( Entity* ent = World_GetEntityGroupHead(world->impl->defaultEntityGroup); ent; ent = World_GetNextEntity(ent) )
 	{
 		for ( LogicComponent* logic = Entity_GetLogicComponentListHead(ent); logic; logic = Entity_GetNextLogicComponent(logic) )
 		{
@@ -399,7 +456,7 @@ void World_Render(World* world, struct CameraComponent* camComp)
 
 	BeginMode3D(camera);
 
-	for ( Entity* ent = World_GetEntityGroupHead(&world->impl->defaultEntityGroup); ent; ent = World_GetNextEntity(ent) )
+	for ( Entity* ent = World_GetEntityGroupHead(world->impl->defaultEntityGroup); ent; ent = World_GetNextEntity(ent) )
 	{
 		EntityImpl_Render(ent->impl, camera);
 	}

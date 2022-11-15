@@ -1,4 +1,5 @@
 #include "asyncload/asyncload.h"
+#include "entity/entitygroup.h"
 #include "threading.h"
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/stringutil.h"
@@ -20,6 +21,12 @@ void AsyncLoadArgs_Destroy(AsyncLoadArgs* args)
 		return;
 	}
 
+	if ( args->loadedEntityGroup )
+	{
+		EntityGroup_Destroy(args->loadedEntityGroup);
+		args->loadedEntityGroup = NULL;
+	}
+
 	if ( args->filePath )
 	{
 		MemFree(args->filePath);
@@ -34,7 +41,6 @@ void* AsyncLoad_Routine(void* args)
 	AsyncLoadArgs* inArgs = (AsyncLoadArgs*)args;
 
 	// TODO: Do the thing
-	FormatStringBuffer(inArgs->message, sizeof(inArgs->message), "TODO: Do the thing");
 
 	THREADING_DECREMENT_SEMAPHORE(inArgs->semaphore);
 	return NULL;

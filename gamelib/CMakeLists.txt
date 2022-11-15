@@ -1,5 +1,6 @@
 include(compile_options)
 
+# TODO: Need to add headers to this as well
 add_library(gamelib STATIC
 	src/asyncload/asyncload.c
 	src/descriptor/descriptorutil.c
@@ -7,6 +8,7 @@ add_library(gamelib STATIC
 	src/descriptor/spritesheetdescriptor.c
 	src/descriptor/terraindescriptor.c
 	src/entity/cameracomponentimpl.c
+	src/entity/entitygroup.c
 	src/entity/entityimpl.c
 	src/entity/logiccomponentimpl.c
 	src/entity/physicscomponentimpl.c

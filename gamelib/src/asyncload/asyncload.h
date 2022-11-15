@@ -2,6 +2,8 @@
 
 #include "threading.h"
 
+struct EntityGroup;
+
 // Values for async load semaphore.
 // If the semaphore value is ASYNCLOAD_SEM_IDLE, no load has been
 // requested and there is no entity group ready.
@@ -30,8 +32,7 @@ typedef struct AsyncLoadArgs
 	sem_t* semaphore;
 	char* filePath;
 
-	// REMOVE ME: Replace with something more useful
-	char message[128];
+	struct EntityGroup* loadedEntityGroup;
 } AsyncLoadArgs;
 
 // These functions should only be called by the thread that currently

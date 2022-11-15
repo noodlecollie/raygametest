@@ -3,23 +3,15 @@
 #include "threading.h"
 #include "gamelib/world.h"
 #include "asyncload/asyncload.h"
+#include "entity/entitygroup.h"
 
 struct EntityImpl;
 struct WorldImpl;
 
-struct EntityGroup
-{
-	struct WorldImpl* ownerWorld;
-
-	size_t count;
-	struct EntityImpl* head;
-	struct EntityImpl* tail;
-};
-
 typedef struct WorldImpl
 {
 	World world;
-	EntityGroup defaultEntityGroup;
+	EntityGroup* defaultEntityGroup;
 
 	sem_t asyncLoadSemaphore;
 	pthread_t asyncLoadThread;
@@ -28,6 +20,5 @@ typedef struct WorldImpl
 	// If not present, async load thread has been joined.
 	AsyncLoadArgs* asyncLoadThreadArgs;
 
-	// TODO: Replace with something more useful
-	char asyncMessage[128];
+	EntityGroup* asyncLoadedEntityGroup;
 } WorldImpl;

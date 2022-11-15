@@ -1,12 +1,12 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 
 struct WorldImpl;
 struct Entity;
 struct CameraComponent;
-
-typedef struct EntityGroup EntityGroup;
+struct EntityGroup;
 
 typedef struct World
 {
@@ -17,18 +17,19 @@ typedef struct World
 World* World_Create(void);
 void World_Destroy(World* world);
 
-EntityGroup* World_GetDefaultEntityGroup(World* world);
+struct EntityGroup* World_GetDefaultEntityGroup(World* world);
 
-struct Entity* World_CreateEntity(EntityGroup* group);
+struct Entity* World_CreateEntity(struct EntityGroup* group);
 struct Entity* World_CreateEntityInDefaultGroup(World* world);
 void World_DestroyEntity(struct Entity* ent);
 
-struct Entity* World_GetEntityGroupHead(EntityGroup* group);
+struct Entity* World_GetEntityGroupHead(struct EntityGroup* group);
 struct Entity* World_GetPreviousEntity(struct Entity* ent);
 struct Entity* World_GetNextEntity(struct Entity* ent);
-size_t World_GetEntityCount(const EntityGroup* group);
+size_t World_GetEntityCount(const struct EntityGroup* group);
 
 bool World_BeginLoadEntityGroup(World* world, const char* filePath);
+bool World_IsLoadingEntityGroup(World* world);
 
 void World_Update(World* world);
 
