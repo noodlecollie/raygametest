@@ -93,9 +93,9 @@ static void JoinAsyncLoadThread(WorldImpl* impl)
 
 		TraceLog(
 			LOG_INFO,
-			"WORLD: Entity group of %zu entities was loaded asynchronously from %s",
-			impl->asyncLoadThreadArgs->loadedEntityGroup->count,
-			impl->asyncLoadThreadArgs->filePath
+			"WORLD: [%s] Entity group of %zu entities was loaded asynchronously.",
+			impl->asyncLoadThreadArgs->filePath,
+			impl->asyncLoadThreadArgs->loadedEntityGroup->count
 		);
 
 		impl->asyncLoadedEntityGroup = impl->asyncLoadThreadArgs->loadedEntityGroup;
@@ -103,7 +103,7 @@ static void JoinAsyncLoadThread(WorldImpl* impl)
 	}
 	else
 	{
-		TraceLog(LOG_WARNING, "WORLD: Async entity load failed to load any entity group from %s", impl->asyncLoadThreadArgs->filePath);
+		TraceLog(LOG_WARNING, "WORLD: [%s] Async entity load failed to load any entity group.", impl->asyncLoadThreadArgs->filePath);
 	}
 
 	DestroyAsyncLoadThreadArgs(impl);
@@ -199,21 +199,7 @@ struct EntityGroup* World_GetDefaultEntityGroup(World* world)
 
 struct Entity* World_CreateEntity(EntityGroup* group)
 {
-	if ( !group )
-	{
-		return NULL;
-	}
-
-	EntityImpl* impl = (EntityImpl*)MemAlloc(sizeof(EntityImpl));
-
-	impl->ownerGroup = group;
-	impl->entity.impl = impl;
-
-	DBL_LL_ADD_TO_TAIL(impl, prev, next, group, head, tail);
-
-	++group->count;
-
-	return &impl->entity;
+	return EntityGroup_CreateEntity(group);
 }
 
 struct Entity* World_CreateEntityInDefaultGroup(World* world)
@@ -312,7 +298,7 @@ bool World_BeginLoadEntityGroup(World* world, const char* filePath)
 		return false;
 	}
 
-	TraceLog(LOG_INFO, "WORLD: Beginning async load of entities from %s", filePath);
+	TraceLog(LOG_INFO, "WORLD: [%s] Beginning async load of entities.", filePath);
 
 	CreateAsyncLoadThreadArgs(world->impl, filePath);
 
@@ -322,6 +308,7 @@ bool World_BeginLoadEntityGroup(World* world, const char* filePath)
 	// produced entity group is imported into the world.
 	THREADING_INCREMENT_SEMAPHORE(&world->impl->asyncLoadSemaphore);
 	THREADING_INCREMENT_SEMAPHORE(&world->impl->asyncLoadSemaphore);
+	THREADING_ASSERT_SEMAPHORE_HAS_VALUE(&world->impl->asyncLoadSemaphore, ASYNCLOAD_SEM_BUSY);
 
 	THREADING_CREATE(&world->impl->asyncLoadThread, NULL, &AsyncLoad_Routine, world->impl->asyncLoadThreadArgs);
 	return true;

@@ -6,10 +6,12 @@ typedef struct EntityGroupDescriptor EntityGroupDescriptor;
 typedef struct EntityGroupItem EntityGroupItem;
 
 struct ResourcePoolTerrain;
+struct ResourcePoolSpriteSheet;
 
 EntityGroupDescriptor* EntityGroupDescriptor_LoadFromJSONFile(const char* filePath);
 EntityGroupDescriptor* EntityGroupDescriptor_LoadFromJSONObject(cJSON* root);
 void EntityGroupDescriptor_Destroy(EntityGroupDescriptor* descriptor);
+const char* EntityGroupDescriptor_GetName(EntityGroupDescriptor* descriptor);
 
 size_t EntityGroupDescriptor_GetItemCount(const EntityGroupDescriptor* descriptor);
 EntityGroupItem* EntityGroupDescriptor_GetFirstItem(EntityGroupDescriptor* descriptor);
@@ -22,3 +24,4 @@ size_t EntityGroupDescriptor_GetItemTagCount(EntityGroupItem* item);
 const char* EntityGroupDescriptor_GetItemTag(EntityGroupItem* item, size_t index);
 
 struct ResourcePoolTerrain* EntityGroupDescriptor_GetTerrainResource(EntityGroupItem* item);
+struct ResourcePoolSpriteSheet* EntityGroupDescriptor_GetSpriteSheetResource(EntityGroupItem* item);

@@ -98,7 +98,7 @@ ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
 	ResourcePoolCreatePayloadFunc createFunc
 )
 {
-	if ( *head || !createFunc || !key || !(*key) )
+	if ( !head || !createFunc || !key || !(*key) )
 	{
 		return NULL;
 	}

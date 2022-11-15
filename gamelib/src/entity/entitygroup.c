@@ -1,5 +1,6 @@
 #include "entity/entitygroup.h"
 #include "entity/entityimpl.h"
+#include "listmacros.h"
 
 EntityGroup* EntityGroup_Create(struct WorldImpl* ownerWorld)
 {
@@ -40,4 +41,23 @@ void EntityGroup_DestroyAllEntities(EntityGroup* group)
 		EntityImpl_Destroy(slot);
 		slot = next;
 	}
+}
+
+struct Entity* EntityGroup_CreateEntity(EntityGroup* group)
+{
+	if ( !group )
+	{
+		return NULL;
+	}
+
+	EntityImpl* impl = (EntityImpl*)MemAlloc(sizeof(EntityImpl));
+
+	impl->ownerGroup = group;
+	impl->entity.impl = impl;
+
+	DBL_LL_ADD_TO_TAIL(impl, prev, next, group, head, tail);
+
+	++group->count;
+
+	return &impl->entity;
 }

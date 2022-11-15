@@ -308,7 +308,7 @@ EntityGroupDescriptor* EntityGroupDescriptor_LoadFromJSONFile(const char* filePa
 
 	if ( !root )
 	{
-		TraceLog(LOG_ERROR, "TERRAIN DESCRIPTOR: [%s] Could not load file", filePath);
+		TraceLog(LOG_ERROR, "ENTITY GROUP DESCRIPTOR: [%s] Could not load file", filePath);
 		return NULL;
 	}
 
@@ -356,7 +356,12 @@ void EntityGroupDescriptor_Destroy(EntityGroupDescriptor* descriptor)
 	MemFree(descriptor);
 }
 
-size_t EntityGroupDescriptor_GetEntityCount(const EntityGroupDescriptor* descriptor)
+const char* EntityGroupDescriptor_GetName(EntityGroupDescriptor* descriptor)
+{
+	return descriptor ? descriptor->name : NULL;
+}
+
+size_t EntityGroupDescriptor_GetItemCount(const EntityGroupDescriptor* descriptor)
 {
 	return descriptor ? descriptor->count : 0;
 }
@@ -399,4 +404,9 @@ const char* EntityGroupDescriptor_GetItemTag(EntityGroupItem* item, size_t index
 struct ResourcePoolTerrain* EntityGroupDescriptor_GetTerrainResource(EntityGroupItem* item)
 {
 	return item ? item->terrain : NULL;
+}
+
+struct ResourcePoolSpriteSheet* EntityGroupDescriptor_GetSpriteSheetResource(EntityGroupItem* item)
+{
+	return item ? item->spriteSheet : NULL;
 }

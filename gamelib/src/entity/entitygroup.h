@@ -20,3 +20,5 @@ typedef struct EntityGroup
 EntityGroup* EntityGroup_Create(struct WorldImpl* ownerWorld);
 void EntityGroup_Destroy(EntityGroup* group);
 void EntityGroup_DestroyAllEntities(EntityGroup* group);
+
+struct Entity* EntityGroup_CreateEntity(EntityGroup* group);
