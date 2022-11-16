@@ -9,7 +9,6 @@ struct ResourcePoolSpriteSheet
 };
 
 static ResourcePoolItem* SpriteSheetPoolHead = NULL;
-static pthread_mutex_t SpriteSheetPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void CreateSpriteSheetPayload(ResourcePoolItem* item, struct cJSON* jsonObject)
 {
@@ -57,7 +56,6 @@ static void DestroySpriteSheetPayload(ResourcePoolItem* item)
 ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetFromFileAndAddRef(const char* path)
 {
 	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
-		&SpriteSheetPoolMutex,
 		&SpriteSheetPoolHead,
 		path,
 		NULL,
@@ -76,7 +74,6 @@ ResourcePoolSpriteSheet* ResourcePool_LoadSpriteSheetFromJSONAndAddRef(const cha
 	}
 
 	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
-		&SpriteSheetPoolMutex,
 		&SpriteSheetPoolHead,
 		key,
 		root,
@@ -93,7 +90,7 @@ ResourcePoolSpriteSheet* ResourcePool_AddSpriteSheetRef(ResourcePoolSpriteSheet*
 		return NULL;
 	}
 
-	ResourcePoolInternal_AddRef(&SpriteSheetPoolMutex, item->owner);
+	ResourcePoolInternal_AddRef(item->owner);
 	return item;
 }
 
@@ -104,7 +101,7 @@ void ResourcePool_RemoveSpriteSheetRef(ResourcePoolSpriteSheet* item)
 		return;
 	}
 
-	ResourcePoolInternal_RemoveRef(&SpriteSheetPoolMutex, item->owner, &DestroySpriteSheetPayload);
+	ResourcePoolInternal_RemoveRef(item->owner, &DestroySpriteSheetPayload);
 }
 
 struct SpriteSheetDescriptor* ResourcePool_GetSpriteSheet(ResourcePoolSpriteSheet* item)

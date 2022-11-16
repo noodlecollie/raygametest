@@ -9,7 +9,6 @@ struct ResourcePoolShader
 };
 
 static ResourcePoolItem* PresetShaderPoolHead = NULL;
-static pthread_mutex_t PresetShaderPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void CreatePresetShaderPayload(ResourcePoolItem* item, struct cJSON* jsonObject)
 {
@@ -47,7 +46,6 @@ static void DestroyShaderPayload(ResourcePoolItem* item)
 ResourcePoolShader* ResourcePool_LoadPresetShaderAndAddRef(const char* name)
 {
 	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
-		&PresetShaderPoolMutex,
 		&PresetShaderPoolHead,
 		name,
 		NULL,
@@ -64,7 +62,7 @@ ResourcePoolShader* ResourcePool_AddShaderRef(ResourcePoolShader* item)
 		return NULL;
 	}
 
-	ResourcePoolInternal_AddRef(&PresetShaderPoolMutex, item->owner);
+	ResourcePoolInternal_AddRef(item->owner);
 	return item;
 }
 
@@ -75,7 +73,7 @@ void ResourcePool_RemoveShaderRef(ResourcePoolShader* item)
 		return;
 	}
 
-	ResourcePoolInternal_RemoveRef(&PresetShaderPoolMutex, item->owner, &DestroyShaderPayload);
+	ResourcePoolInternal_RemoveRef(item->owner, &DestroyShaderPayload);
 }
 
 Shader* ResourcePool_GetShader(ResourcePoolShader* item)

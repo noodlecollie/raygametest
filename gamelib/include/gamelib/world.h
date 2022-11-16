@@ -28,9 +28,6 @@ struct Entity* World_GetPreviousEntity(struct Entity* ent);
 struct Entity* World_GetNextEntity(struct Entity* ent);
 size_t World_GetEntityCount(const struct EntityGroup* group);
 
-bool World_BeginLoadEntityGroup(World* world, const char* filePath);
-bool World_IsLoadingEntityGroup(World* world);
-
 void World_Update(World* world);
 
 // BeginDrawing() should be called before this function is called.

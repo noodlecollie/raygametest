@@ -91,7 +91,6 @@ static inline void RemoveRef(ResourcePoolItem* item)
 }
 
 ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
-	pthread_mutex_t* mutex,
 	ResourcePoolItem** head,
 	const char* key,
 	struct cJSON* jsonObject,
@@ -103,8 +102,6 @@ ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
 		return NULL;
 	}
 
-	THREADING_LOCK_MUTEX(mutex);
-
 	ResourcePoolItem* item = FindOrCreateItem(head, key, jsonObject, createFunc);
 
 	if ( item )
@@ -112,12 +109,10 @@ ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
 		AddRef(item);
 	}
 
-	THREADING_UNLOCK_MUTEX(mutex);
 	return item;
 }
 
 void ResourcePoolInternal_AddRef(
-	pthread_mutex_t* mutex,
 	ResourcePoolItem* item
 )
 {
@@ -126,13 +121,10 @@ void ResourcePoolInternal_AddRef(
 		return;
 	}
 
-	THREADING_LOCK_MUTEX(mutex);
 	AddRef(item);
-	THREADING_UNLOCK_MUTEX(mutex);
 }
 
 void ResourcePoolInternal_RemoveRef(
-	pthread_mutex_t* mutex,
 	ResourcePoolItem* item,
 	ResourcePoolDestroyPayloadFunc destroyFunc
 )
@@ -141,8 +133,6 @@ void ResourcePoolInternal_RemoveRef(
 	{
 		return;
 	}
-
-	THREADING_LOCK_MUTEX(mutex);
 
 	RemoveRef(item);
 
@@ -157,6 +147,4 @@ void ResourcePoolInternal_RemoveRef(
 
 		DestroyItemGeneric(item);
 	}
-
-	THREADING_UNLOCK_MUTEX(mutex);
 }

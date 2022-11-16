@@ -9,7 +9,6 @@ struct ResourcePoolTerrain
 };
 
 static ResourcePoolItem* TerrainPoolHead = NULL;
-static pthread_mutex_t TerrainPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void CreateTerrainPayload(ResourcePoolItem* item, struct cJSON* jsonObject)
 {
@@ -56,7 +55,6 @@ static void DestroyTerrainPayload(ResourcePoolItem* item)
 ResourcePoolTerrain* ResourcePool_LoadTerrainFromFileAndAddRef(const char* path)
 {
 	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
-		&TerrainPoolMutex,
 		&TerrainPoolHead,
 		path,
 		NULL,
@@ -75,7 +73,6 @@ ResourcePoolTerrain* ResourcePool_LoadTerrainFromJSONAndAddRef(const char* key, 
 	}
 
 	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
-		&TerrainPoolMutex,
 		&TerrainPoolHead,
 		key,
 		root,
@@ -92,7 +89,7 @@ ResourcePoolTerrain* ResourcePool_AddTerrainRef(ResourcePoolTerrain* item)
 		return NULL;
 	}
 
-	ResourcePoolInternal_AddRef(&TerrainPoolMutex, item->owner);
+	ResourcePoolInternal_AddRef(item->owner);
 	return item;
 }
 
@@ -103,7 +100,7 @@ void ResourcePool_RemoveTerrainRef(ResourcePoolTerrain* item)
 		return;
 	}
 
-	ResourcePoolInternal_RemoveRef(&TerrainPoolMutex, item->owner, &DestroyTerrainPayload);
+	ResourcePoolInternal_RemoveRef(item->owner, &DestroyTerrainPayload);
 }
 
 struct TerrainDescriptor* ResourcePool_GetTerrain(ResourcePoolTerrain* item)

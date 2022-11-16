@@ -1,6 +1,5 @@
 #include <math.h>
 #include <float.h>
-#include <pthread.h>
 #include "entity/entitygroup.h"
 #include "gamelib/external/raylibheaders.h"
 #include "gamelib/world.h"
@@ -20,8 +19,6 @@
 #include "rendering/spriterenderer.h"
 #include "rendering/debugrendering.h"
 #include "rendering/debugrendercustom_impl.h"
-#include "asyncload/asyncload.h"
-#include "threading.h"
 
 static inline void IncreaseSubsystemRefCount()
 {
@@ -48,114 +45,6 @@ static void RenderDebug(World* world, Camera3D camera)
 	}
 }
 
-static inline bool AsyncThreadIsRunning(WorldImpl* impl)
-{
-	return impl->asyncLoadThreadArgs != NULL;
-}
-
-static inline bool AsyncLoadThreadIsFinished(WorldImpl* impl)
-{
-	return THREADING_GET_SEMAPHORE_VALUE(&impl->asyncLoadSemaphore) == ASYNCLOAD_SEM_READY;
-}
-
-static void CreateAsyncLoadThreadArgs(WorldImpl* impl, const char* filePath)
-{
-	if ( impl->asyncLoadThreadArgs )
-	{
-		return;
-	}
-
-	impl->asyncLoadThreadArgs = AsyncLoadArgs_Create(&impl->asyncLoadSemaphore, filePath);
-}
-
-static void DestroyAsyncLoadThreadArgs(WorldImpl* impl)
-{
-	AsyncLoadArgs_Destroy(impl->asyncLoadThreadArgs);
-	impl->asyncLoadThreadArgs = NULL;
-}
-
-static void JoinAsyncLoadThread(WorldImpl* impl)
-{
-	if ( !AsyncThreadIsRunning(impl) )
-	{
-		return;
-	}
-
-	TraceLog(LOG_DEBUG, "WORLD: Joining entity async load thread.");
-
-	// TODO: Do we want a timeout on this?
-	// If it doesn't join in time, do we want to throw a fatal error?
-	THREADING_JOIN(impl->asyncLoadThread, NULL);
-
-	if ( impl->asyncLoadThreadArgs->loadedEntityGroup )
-	{
-		// A group was loaded, so take ownership of it.
-
-		TraceLog(
-			LOG_INFO,
-			"WORLD: [%s] Entity group of %zu entities was loaded asynchronously.",
-			impl->asyncLoadThreadArgs->filePath,
-			impl->asyncLoadThreadArgs->loadedEntityGroup->count
-		);
-
-		impl->asyncLoadedEntityGroup = impl->asyncLoadThreadArgs->loadedEntityGroup;
-		impl->asyncLoadThreadArgs->loadedEntityGroup = NULL;
-	}
-	else
-	{
-		TraceLog(LOG_WARNING, "WORLD: [%s] Async entity load failed to load any entity group.", impl->asyncLoadThreadArgs->filePath);
-	}
-
-	DestroyAsyncLoadThreadArgs(impl);
-}
-
-static void DestroyUnintegratedEntityGroup(WorldImpl* impl)
-{
-	const int semaphoreValue = THREADING_GET_SEMAPHORE_VALUE(&impl->asyncLoadSemaphore);
-
-	// Semaphore should never be busy when we do this.
-	if ( semaphoreValue != ASYNCLOAD_SEM_IDLE && semaphoreValue != ASYNCLOAD_SEM_READY )
-	{
-		TraceLog(LOG_FATAL, "WORLD: Unexpected async load semaphore value of %d when destroying unintegrated entity group.", semaphoreValue);
-		return;
-	}
-
-	if ( impl->asyncLoadedEntityGroup )
-	{
-		TraceLog(LOG_INFO, "WORLD: Entity group of %zu entities being discarded after async load.", impl->asyncLoadedEntityGroup->count);
-
-		EntityGroup_Destroy(impl->asyncLoadedEntityGroup);
-		impl->asyncLoadedEntityGroup = NULL;
-	}
-
-	if ( semaphoreValue != ASYNCLOAD_SEM_IDLE )
-	{
-		// This function was called before we'd finalised the entity group.
-		// Decrement the semaphore back to idle, just in case it
-		// would screw anything up otherwise.
-		THREADING_DECREMENT_SEMAPHORE(&impl->asyncLoadSemaphore);
-	}
-
-	THREADING_ASSERT_SEMAPHORE_HAS_VALUE(&impl->asyncLoadSemaphore, ASYNCLOAD_SEM_IDLE);
-}
-
-static void IntegrateEntityGroup(WorldImpl* impl)
-{
-	JoinAsyncLoadThread(impl);
-
-	if ( impl->asyncLoadedEntityGroup )
-	{
-		TraceLog(LOG_INFO, "WORLD: Integrating new group of %zu entities.", impl->asyncLoadedEntityGroup->count);
-
-		// TODO: Do this properly
-		EntityGroup_Destroy(impl->asyncLoadedEntityGroup);
-		impl->asyncLoadedEntityGroup = NULL;
-	}
-
-	THREADING_DECREMENT_SEMAPHORE(&impl->asyncLoadSemaphore);
-	THREADING_ASSERT_SEMAPHORE_HAS_VALUE(&impl->asyncLoadSemaphore, ASYNCLOAD_SEM_IDLE);
-}
-
 World* World_Create(void)
 {
 	IncreaseSubsystemRefCount();
@@ -164,8 +53,6 @@ World* World_Create(void)
 
 	impl->world.impl = impl;
 	impl->defaultEntityGroup = EntityGroup_Create(impl);
-
-	THREADING_INIT_SEMAPHORE(&impl->asyncLoadSemaphore, 0, ASYNCLOAD_SEM_IDLE);
 
 	impl->world.gravity = 800.0f;
 
@@ -181,12 +68,7 @@ void World_Destroy(World* world)
 
 	WorldImpl* impl = world->impl;
 
-	JoinAsyncLoadThread(impl);
-	DestroyUnintegratedEntityGroup(impl);
-
 	EntityGroup_Destroy(impl->defaultEntityGroup);
-	THREADING_DESTROY_SEMAPHORE(&impl->asyncLoadSemaphore);
-
 	MemFree(impl);
 
 	DecreaseSubsystemRefCount();
@@ -272,63 +154,11 @@ size_t World_GetEntityCount(const struct EntityGroup* group)
 	return group ? group->count : 0;
 }
 
-bool World_BeginLoadEntityGroup(World* world, const char* filePath)
-{
-	if ( !world )
-	{
-		TraceLog(LOG_WARNING, "WORLD: Cannot load new entity group into a null world.");
-		return false;
-	}
-
-	if ( !filePath || !filePath[0] )
-	{
-		TraceLog(LOG_WARNING, "WORLD: Cannot load new entity group from an invalid file.");
-		return false;
-	}
-
-	if ( AsyncThreadIsRunning(world->impl) )
-	{
-		TraceLog(LOG_WARNING, "WORLD: Cannot load new entity group as an async load is already in progress.");
-		return false;
-	}
-
-	if ( THREADING_GET_SEMAPHORE_VALUE(&world->impl->asyncLoadSemaphore) != ASYNCLOAD_SEM_IDLE)
-	{
-		TraceLog(LOG_WARNING, "WORLD: Cannot load new entity group as a previous group has not yet been integrated.");
-		return false;
-	}
-
-	TraceLog(LOG_INFO, "WORLD: [%s] Beginning async load of entities.", filePath);
-
-	CreateAsyncLoadThreadArgs(world->impl, filePath);
-
-	// Increment the semaphore twice.
-	// The thread will decrement the semaphore once it's done,
-	// and then the main thread will decrement it again once the
-	// produced entity group is imported into the world.
-	THREADING_INCREMENT_SEMAPHORE(&world->impl->asyncLoadSemaphore);
-	THREADING_INCREMENT_SEMAPHORE(&world->impl->asyncLoadSemaphore);
-	THREADING_ASSERT_SEMAPHORE_HAS_VALUE(&world->impl->asyncLoadSemaphore, ASYNCLOAD_SEM_BUSY);
-
-	THREADING_CREATE(&world->impl->asyncLoadThread, NULL, &AsyncLoad_Routine, world->impl->asyncLoadThreadArgs);
-	return true;
-}
-
-bool World_IsLoadingEntityGroup(World* world)
-{
-	return world ? THREADING_GET_SEMAPHORE_VALUE(&world->impl->asyncLoadSemaphore) != ASYNCLOAD_SEM_IDLE : false;
-}
-
 void World_Update(World* world)
 {
 	if ( !world )
 	{
 		return;
-	}
-
-	if ( AsyncLoadThreadIsFinished(world->impl) )
-	{
-		IntegrateEntityGroup(world->impl);
 	}
 
 	for ( Entity* ent = World_GetEntityGroupHead(world->impl->defaultEntityGroup); ent; ent = World_GetNextEntity(ent) )

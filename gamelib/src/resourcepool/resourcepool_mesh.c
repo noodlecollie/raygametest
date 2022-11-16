@@ -1,4 +1,3 @@
-#include <pthread.h>
 #include "resourcepool/resourcepool.h"
 #include "resourcepool/resourcepool_internal.h"
 #include "presets/presetmeshes.h"
@@ -10,7 +9,6 @@ struct ResourcePoolMesh
 };
 
 static ResourcePoolItem* PresetMeshPoolHead = NULL;
-static pthread_mutex_t PresetMeshPoolMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void CreatePresetMeshPayload(ResourcePoolItem* item, struct cJSON* jsonObject)
 {
@@ -48,7 +46,6 @@ static void DestroyMeshPayload(ResourcePoolItem* item)
 ResourcePoolMesh* ResourcePool_LoadPresetMeshAndAddRef(const char* name)
 {
 	ResourcePoolItem* item = ResourcePoolInternal_CreateAndAddRef(
-		&PresetMeshPoolMutex,
 		&PresetMeshPoolHead,
 		name,
 		NULL,
@@ -65,7 +62,7 @@ ResourcePoolMesh* ResourcePool_AddMeshRef(ResourcePoolMesh* item)
 		return NULL;
 	}
 
-	ResourcePoolInternal_AddRef(&PresetMeshPoolMutex, item->owner);
+	ResourcePoolInternal_AddRef(item->owner);
 	return item;
 }
 
@@ -76,7 +73,7 @@ void ResourcePool_RemoveMeshRef(ResourcePoolMesh* item)
 		return;
 	}
 
-	ResourcePoolInternal_RemoveRef(&PresetMeshPoolMutex, item->owner, &DestroyMeshPayload);
+	ResourcePoolInternal_RemoveRef(item->owner, &DestroyMeshPayload);
 }
 
 Mesh* ResourcePool_GetMesh(ResourcePoolMesh* item)

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "external/uthash_wrapper.h"
-#include "threading.h"
 
 struct cJSON;
 
@@ -25,7 +24,6 @@ typedef void (* ResourcePoolCreatePayloadFunc)(ResourcePoolItem* item, struct cJ
 typedef void (* ResourcePoolDestroyPayloadFunc)(ResourcePoolItem* item);
 
 ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
-	pthread_mutex_t* mutex,
 	ResourcePoolItem** head,
 	const char* key,
 	struct cJSON* jsonObject,
@@ -33,12 +31,10 @@ ResourcePoolItem* ResourcePoolInternal_CreateAndAddRef(
 );
 
 void ResourcePoolInternal_AddRef(
-	pthread_mutex_t* mutex,
 	ResourcePoolItem* item
 );
 
 void ResourcePoolInternal_RemoveRef(
-	pthread_mutex_t* mutex,
 	ResourcePoolItem* item,
 	ResourcePoolDestroyPayloadFunc destroyFunc
 );

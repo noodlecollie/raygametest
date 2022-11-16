@@ -71,8 +71,6 @@ int main(int argc, char** argv)
 
 	SetTargetFPS(60);
 
-	World_BeginLoadEntityGroup(world, "fake/path.json");
-
 	while ( !WindowShouldClose() )
 	{
 		float wheelDelta = GetMouseWheelMove() * 0.25f;
